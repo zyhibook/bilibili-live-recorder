@@ -15,17 +15,19 @@
     },
     "permissions": [
         "tabs",
-        "https://*.bilibili.com/*"
+        "*://*.bilibili.com/*"
     ],
     "options_page": "./options/index.html",
     "options_ui": {
         "page": "./options/index.html"
     },
-    "browser_action": {},
+    "browser_action": {
+        "default_popup": "./popup/index.html"
+    },
     "content_scripts": [
         {
             "matches": [
-                "https://*.bilibili.com/*"
+                "*://*.bilibili.com/*"
             ],
             "js": [
                 "./content/index.js"
