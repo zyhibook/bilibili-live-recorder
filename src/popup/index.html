@@ -13,7 +13,8 @@
     <div class="container">
         <header class="header">
             <div class="item active">创建任务</div>
-            <div class="item">任务列表</div>
+            <div class="item">任务列表<span class="num">5</span></div>
+            <div class="item">关于软件</div>
         </header>
         <section class="main">
             <div class="panel active">
@@ -27,6 +28,14 @@
                     <div class="name">保存目录:</div>
                     <div class="value">
                         <input class="fileDir" type="text" disabled placeholder="点击选取">
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="name">保存格式:</div>
+                    <div class="value">
+                        <select class="format">
+                            <option value="format_flv" selected>FLV</option>
+                        </select>
                     </div>
                 </div>
                 <div class="item">
@@ -54,19 +63,22 @@
                     <div class="save">确定</div>
                 </div>
                 <div class="item">
-                    <p class="tip">确定后页面会刷新一遍以获取完整数据，任务开始后请勿修改画质或切换线路。</p>
+                    <p class="tip">注意：确定后页面会刷新一遍以获取完整数据，任务开始后请勿修改画质或切换线路。</p>
                 </div>
                 <div class="disabled">
                     请先进入 Bilibili 直播间
                 </div>
             </div>
             <div class="panel">
-                2
+                任务列表
+            </div>
+            <div class="panel">
+                关于软件
             </div>
         </section>
         <footer class="footer">
-            <a href="#">关于</a>
-            <a href="#">捐助</a>
+            <a class="version" href="#"></a>
+            <a class="feedback" href="#">反馈</a>
         </footer>
     </div>
     <script src="./index.js"></script>

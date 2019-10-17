@@ -69,6 +69,12 @@
     classCallCheck(this, Background);
 
     console.log(this.constructor.name);
+    chrome.browserAction.setBadgeText({
+      text: '5'
+    });
+    chrome.browserAction.setBadgeBackgroundColor({
+      color: 'red'
+    });
   };
 
   var index = new Background();

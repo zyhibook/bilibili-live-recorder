@@ -30,6 +30,10 @@
 
   var createClass = _createClass;
 
+  var bilibili = 'https://live.bilibili.com';
+  var github = 'https://github.com/zhw2590582/bilibili-live-downloader';
+  var webstore = 'https://chrome.google.com/webstore/category/extensions';
+
   var Popup =
   /*#__PURE__*/
   function () {
@@ -47,9 +51,26 @@
       this.$duration = document.querySelector('.duration');
       this.$fileSize = document.querySelector('.fileSize');
       this.$fileDuration = document.querySelector('.fileDuration');
+      this.$version = document.querySelector('.version');
+      this.$feedback = document.querySelector('.feedback');
       this.initInfo();
       this.initSwitch();
       this.initLimit();
+
+      var _chrome$runtime$getMa = chrome.runtime.getManifest(),
+          version = _chrome$runtime$getMa.version;
+
+      this.$version.textContent = version;
+      this.$version.addEventListener('click', function () {
+        chrome.tabs.create({
+          url: webstore
+        });
+      });
+      this.$feedback.addEventListener('click', function () {
+        chrome.tabs.create({
+          url: github
+        });
+      });
     }
 
     createClass(Popup, [{
@@ -63,7 +84,7 @@
           if (tabs && tabs[0]) {
             var tab = tabs[0];
 
-            if (tab.url.startsWith('https://live.bilibili.com')) {
+            if (tab.url.startsWith(bilibili)) {
               _this.$fileName.value = tab.title;
             }
           }

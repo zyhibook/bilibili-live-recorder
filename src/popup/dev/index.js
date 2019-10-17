@@ -1,5 +1,6 @@
 import 'normalize.css';
 import './index.scss';
+import { bilibili, github, webstore } from '../../constant';
 
 class Popup {
     constructor() {
@@ -14,10 +15,21 @@ class Popup {
         this.$duration = document.querySelector('.duration');
         this.$fileSize = document.querySelector('.fileSize');
         this.$fileDuration = document.querySelector('.fileDuration');
+        this.$version = document.querySelector('.version');
+        this.$feedback = document.querySelector('.feedback');
 
         this.initInfo();
         this.initSwitch();
         this.initLimit();
+
+        const { version } = chrome.runtime.getManifest();
+        this.$version.textContent = version;
+        this.$version.addEventListener('click', () => {
+            chrome.tabs.create({ url: webstore });
+        });
+        this.$feedback.addEventListener('click', () => {
+            chrome.tabs.create({ url: github });
+        });
     }
 
     initInfo() {
@@ -28,7 +40,7 @@ class Popup {
             tabs => {
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
-                    if (tab.url.startsWith('https://live.bilibili.com')) {
+                    if (tab.url.startsWith(bilibili)) {
                         this.$fileName.value = tab.title;
                     } else {
                         // this.$disabled.classList.add('show');
