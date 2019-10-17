@@ -30,15 +30,6 @@
       var _event$data = event.data,
           type = _event$data.type,
           data = _event$data.data;
-
-      switch (type) {
-        case 'buffer':
-          console.log(data);
-          break;
-
-        default:
-          break;
-      }
     });
 
 }));

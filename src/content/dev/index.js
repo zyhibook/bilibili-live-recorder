@@ -15,8 +15,11 @@ window.addEventListener('message', event => {
     if (event.origin !== 'https://live.bilibili.com') return;
     const { type, data } = event.data;
     switch (type) {
-        case 'buffer':
-            console.log(data);
+        case 'MP4Buffer':
+            // console.log(data);
+            break;
+        case 'FLVBuffer':
+            // console.log(data);
             break;
         default:
             break;
