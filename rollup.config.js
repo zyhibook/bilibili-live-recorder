@@ -16,7 +16,7 @@ module.exports = ['background', 'content', 'options'].map(item => {
             file: isProd ? `dist/${name}/${item}/index.js` : `src/${item}/index.js`,
             format: 'umd',
             sourcemap: !isProd,
-            name: item,
+            name: item[0].toUpperCase() + item.slice(1),
         },
         plugins: [
             eslint({
