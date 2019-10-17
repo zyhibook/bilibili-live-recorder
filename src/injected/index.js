@@ -17,10 +17,13 @@
 
     ReadableStreamDefaultReader.prototype.read = function () {
       var promiseResult = read.call(this);
-      promiseResult.then(function (result) {
+      promiseResult.then(function (_ref) {
+        var done = _ref.done,
+            value = _ref.value;
+        if (done) return;
         window.postMessage({
           type: 'FLVBuffer',
-          data: result
+          data: value.slice()
         });
       });
       return promiseResult;

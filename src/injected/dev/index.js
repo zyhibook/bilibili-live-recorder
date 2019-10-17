@@ -12,10 +12,11 @@ SourceBuffer.prototype.appendBuffer = function(buf) {
 const { read } = ReadableStreamDefaultReader.prototype;
 ReadableStreamDefaultReader.prototype.read = function() {
     const promiseResult = read.call(this);
-    promiseResult.then(result => {
+    promiseResult.then(({ done, value }) => {
+        if (done) return;
         window.postMessage({
             type: 'FLVBuffer',
-            data: result,
+            data: value.slice(),
         });
     });
     return promiseResult;
