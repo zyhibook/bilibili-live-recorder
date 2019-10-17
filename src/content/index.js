@@ -25,6 +25,21 @@
     sleep().then(function () {
       return document.head.appendChild($style);
     });
+    window.addEventListener('message', function (event) {
+      if (event.origin !== 'https://live.bilibili.com') return;
+      var _event$data = event.data,
+          type = _event$data.type,
+          data = _event$data.data;
+
+      switch (type) {
+        case 'buffer':
+          console.log(data);
+          break;
+
+        default:
+          break;
+      }
+    });
 
 }));
 //# sourceMappingURL=index.js.map

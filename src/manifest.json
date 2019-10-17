@@ -16,6 +16,7 @@
     "permissions": [
         "tabs",
         "webRequest",
+        "debugger",
         "https://*.bilibili.com/*"
     ],
     "options_page": "./options/index.html",

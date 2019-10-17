@@ -10,3 +10,15 @@ $style.rel = 'stylesheet';
 $style.type = 'text/css';
 $style.href = chrome.extension.getURL('injected/index.css');
 sleep().then(() => document.head.appendChild($style));
+
+window.addEventListener('message', event => {
+    if (event.origin !== 'https://live.bilibili.com') return;
+    const { type, data } = event.data;
+    switch (type) {
+        case 'buffer':
+            console.log(data);
+            break;
+        default:
+            break;
+    }
+});
