@@ -1,0 +1,31 @@
+{
+    "name": "bilibili-live-downloader",
+    "version": "1.0.0",
+    "description": "Chrome 扩展 - Bilibili 直播视频下载",
+    "scripts": {
+        "dev": "cross-env NODE_ENV=development rollup -c -m -w",
+        "build": "cross-env NODE_ENV=production rollup -c",
+        "lint": "eslint src"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.6.4",
+        "@babel/plugin-external-helpers": "^7.2.0",
+        "@babel/plugin-transform-runtime": "^7.6.2",
+        "@babel/preset-env": "^7.6.3",
+        "@babel/runtime": "^7.6.3",
+        "babel-eslint": "^10.0.3",
+        "cross-env": "^6.0.3",
+        "eslint": "^6.5.1",
+        "eslint-config-airbnb-base": "^14.0.0",
+        "eslint-config-prettier": "^6.4.0",
+        "eslint-plugin-import": "^2.18.2",
+        "rollup": "^1.24.0",
+        "rollup-plugin-babel": "^4.3.3",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-copy": "^3.1.0",
+        "rollup-plugin-eslint": "^7.0.0",
+        "rollup-plugin-json": "^4.0.0",
+        "rollup-plugin-node-resolve": "^5.2.0",
+        "rollup-plugin-uglify": "^6.0.3"
+    }
+}
