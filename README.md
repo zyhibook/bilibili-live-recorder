@@ -1,3 +1,3 @@
-# bilibili-live-downloader
+# bilibili-live-recorder
 
-> Chrome 扩展 - Bilibili 直播视频下载
+> Chrome 扩展 - Bilibili 直播录制器
