@@ -1,3 +1,9 @@
 import './index.scss';
 
-console.log('popup');
+class Popup {
+    constructor() {
+        console.log(this.constructor.name);
+    }
+}
+
+export default new Popup();

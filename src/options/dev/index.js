@@ -1,3 +1,9 @@
 import './index.scss';
 
-console.log('options');
+class Options {
+    constructor() {
+        console.log(this.constructor.name);
+    }
+}
+
+export default new Options();

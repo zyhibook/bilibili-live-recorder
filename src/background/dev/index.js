@@ -2,7 +2,7 @@ import 'crx-hotreload';
 
 class Background {
     constructor() {
-        console.log('Background');
+        console.log(this.constructor.name);
     }
 }
 

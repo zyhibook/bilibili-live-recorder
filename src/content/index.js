@@ -1,84 +1,88 @@
-(function (factory) {
-    typeof define === 'function' && define.amd ? define(factory) :
-    factory();
-}(function () { 'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = global || self, global.Content = factory());
+}(this, function () { 'use strict';
 
-    function sleep() {
-      var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-      return new Promise(function (resolve) {
-        return setTimeout(resolve, ms);
-      });
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var classCallCheck = _classCallCheck;
+
+  function sleep() {
+    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+    return new Promise(function (resolve) {
+      return setTimeout(resolve, ms);
+    });
+  }
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  var createClass = _createClass;
+
+  var FlvParser =
+  /*#__PURE__*/
+  function () {
+    function FlvParser() {
+      classCallCheck(this, FlvParser);
+
+      this.data = new Uint8Array();
     }
 
-    function _classCallCheck(instance, Constructor) {
-      if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
+    createClass(FlvParser, [{
+      key: "load",
+      value: function load() {//
       }
+    }, {
+      key: "download",
+      value: function download() {//
+      }
+    }]);
+
+    return FlvParser;
+  }();
+
+  var MP4Parser =
+  /*#__PURE__*/
+  function () {
+    function MP4Parser() {
+      classCallCheck(this, MP4Parser);
+
+      this.data = new Uint8Array();
     }
 
-    var classCallCheck = _classCallCheck;
-
-    function _defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
+    createClass(MP4Parser, [{
+      key: "load",
+      value: function load() {//
       }
-    }
-
-    function _createClass(Constructor, protoProps, staticProps) {
-      if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) _defineProperties(Constructor, staticProps);
-      return Constructor;
-    }
-
-    var createClass = _createClass;
-
-    var FlvParser =
-    /*#__PURE__*/
-    function () {
-      function FlvParser() {
-        classCallCheck(this, FlvParser);
-
-        this.data = new Uint8Array();
+    }, {
+      key: "download",
+      value: function download() {//
       }
+    }]);
 
-      createClass(FlvParser, [{
-        key: "load",
-        value: function load() {//
-        }
-      }, {
-        key: "download",
-        value: function download() {//
-        }
-      }]);
+    return MP4Parser;
+  }();
 
-      return FlvParser;
-    }();
-
-    var MP4Parser =
-    /*#__PURE__*/
-    function () {
-      function MP4Parser() {
-        classCallCheck(this, MP4Parser);
-
-        this.data = new Uint8Array();
-      }
-
-      createClass(MP4Parser, [{
-        key: "load",
-        value: function load() {//
-        }
-      }, {
-        key: "download",
-        value: function download() {//
-        }
-      }]);
-
-      return MP4Parser;
-    }();
+  var Content = function Content() {
+    classCallCheck(this, Content);
 
     var $script = document.createElement('script');
     $script.src = chrome.extension.getURL('injected/index.js');
@@ -124,6 +128,11 @@
           break;
       }
     });
+  };
+
+  var index = new Content();
+
+  return index;
 
 }));
 //# sourceMappingURL=index.js.map

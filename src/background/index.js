@@ -68,7 +68,7 @@
   var Background = function Background() {
     classCallCheck(this, Background);
 
-    console.log('Background');
+    console.log(this.constructor.name);
   };
 
   var index = new Background();
