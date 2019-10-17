@@ -1,11 +1,11 @@
 {
-    "name": "bilibili-live-downloader",
+    "name": "bilibili-live-recorder",
     "version": "1.0.0",
-    "description": "Chrome 扩展 - Bilibili 直播视频下载",
+    "description": "Chrome 扩展 - Bilibili 直播录制器",
     "scripts": {
         "dev": "cross-env NODE_ENV=development rollup -c -m -w",
         "build": "cross-env NODE_ENV=production rollup -c",
-        "lint": "eslint src"
+        "test": "eslint src"
     },
     "devDependencies": {
         "@babel/core": "^7.6.4",

@@ -19,6 +19,8 @@
     });
   }
 
+  var bilibili = 'https://live.bilibili.com';
+
   function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
@@ -102,7 +104,7 @@
     var flv = new FlvParser();
     var mp4 = new MP4Parser();
     window.addEventListener('message', function (event) {
-      if (event.origin !== 'https://live.bilibili.com') return;
+      if (event.origin !== bilibili) return;
       var _event$data = event.data,
           type = _event$data.type,
           data = _event$data.data;

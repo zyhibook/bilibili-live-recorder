@@ -1,4 +1,5 @@
 import { sleep } from '../../share';
+import { bilibili } from '../../constant';
 import FLVParser from './FLVParser';
 import MP4Parser from './MP4Parser';
 
@@ -18,7 +19,7 @@ class Content {
         const flv = new FLVParser();
         const mp4 = new MP4Parser();
         window.addEventListener('message', event => {
-            if (event.origin !== 'https://live.bilibili.com') return;
+            if (event.origin !== bilibili) return;
             const { type, data } = event.data;
             switch (type) {
                 case 'MP4Buffer':
