@@ -5,4 +5,4 @@
  * Released under the MIT License.
  */
 
-!function(n){"function"==typeof define&&define.amd?define(n):n()}(function(){"use strict";console.log("options")});
+!function(e){"function"==typeof define&&define.amd?define(e):e()}(function(){"use strict";console.log("injected")});

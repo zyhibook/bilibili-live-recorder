@@ -8,10 +8,9 @@ const copy = require('rollup-plugin-copy');
 const postcss = require('rollup-plugin-postcss');
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
-const { name } = require('./package.json');
+const { name, version, homepage } = require('./package.json');
 
 const isProd = process.env.NODE_ENV === 'production';
-
 module.exports = ['background', 'content', 'options', 'injected'].map(item => {
     return {
         input: `src/${item}/dev/index.js`,
@@ -49,9 +48,20 @@ module.exports = ['background', 'content', 'options', 'injected'].map(item => {
                     }),
                 ],
                 sourceMap: !isProd,
-                extract: isProd ? `dist/${item}/index.css` : `src/${item}/index.css`,
+                extract: isProd ? `dist/${name}/${item}/index.css` : `src/${item}/index.css`,
             }),
-            isProd && uglify(),
+            isProd &&
+                uglify({
+                    output: {
+                        preamble:
+                            '/*!\n' +
+                            ` * bilibili-live-downloader v${version}\n` +
+                            ` * Github: ${homepage}\n` +
+                            ` * (c) 2018-${new Date().getFullYear()} Harvey Zack\n` +
+                            ' * Released under the MIT License.\n' +
+                            ' */\n',
+                    },
+                }),
             isProd &&
                 copy({
                     targets: [
