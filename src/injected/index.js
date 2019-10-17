@@ -3,7 +3,7 @@
     factory();
 }(function () { 'use strict';
 
-    console.log('options');
+    console.log('injected');
 
 }));
 //# sourceMappingURL=index.js.map

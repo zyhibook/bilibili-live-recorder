@@ -1,1 +1,1 @@
-{"version":3,"file":"index.js","sources":["dev/index.js"],"sourcesContent":["console.log('options');"],"names":["console","log"],"mappings":";;;;;CAAAA,OAAO,CAACC,GAAR,CAAY,SAAZ;;;;"}
+{"version":3,"file":"index.js","sources":["dev/index.js"],"sourcesContent":["import './index.scss';\n\nconsole.log('options');\n"],"names":["console","log"],"mappings":";;;;;IAEAA,OAAO,CAACC,GAAR,CAAY,SAAZ;;;;"}

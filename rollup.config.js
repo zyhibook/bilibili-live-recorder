@@ -5,11 +5,14 @@ const json = require('rollup-plugin-json');
 const { eslint } = require('rollup-plugin-eslint');
 const { uglify } = require('rollup-plugin-uglify');
 const copy = require('rollup-plugin-copy');
+const postcss = require('rollup-plugin-postcss');
+const autoprefixer = require('autoprefixer');
+const cssnano = require('cssnano');
 const { name } = require('./package.json');
 
 const isProd = process.env.NODE_ENV === 'production';
 
-module.exports = ['background', 'content', 'options'].map(item => {
+module.exports = ['background', 'content', 'options', 'injected'].map(item => {
     return {
         input: `src/${item}/dev/index.js`,
         output: {
@@ -20,7 +23,7 @@ module.exports = ['background', 'content', 'options'].map(item => {
         },
         plugins: [
             eslint({
-                exclude: ['node_modules/**', 'src/config.json'],
+                exclude: ['node_modules/**', 'src/**/dev/*.scss'],
             }),
             json(),
             nodeResolve(),
@@ -37,6 +40,16 @@ module.exports = ['background', 'content', 'options'].map(item => {
                     ],
                 ],
                 plugins: ['@babel/plugin-external-helpers', '@babel/plugin-transform-runtime'],
+            }),
+            postcss({
+                plugins: [
+                    autoprefixer(),
+                    cssnano({
+                        preset: 'default',
+                    }),
+                ],
+                sourceMap: !isProd,
+                extract: isProd ? `dist/${item}/index.css` : `src/${item}/index.css`,
             }),
             isProd && uglify(),
             isProd &&

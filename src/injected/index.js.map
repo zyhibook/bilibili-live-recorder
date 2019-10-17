@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sources":["dev/index.js"],"sourcesContent":["import './index.scss';\n\nconsole.log('injected');\n"],"names":["console","log"],"mappings":";;;;;IAEAA,OAAO,CAACC,GAAR,CAAY,UAAZ;;;;"}
