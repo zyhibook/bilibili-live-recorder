@@ -1,9 +1,9 @@
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const nodeResolve = require('rollup-plugin-node-resolve');
-const json = require('rollup-plugin-json');
 const { eslint } = require('rollup-plugin-eslint');
-const { uglify } = require('rollup-plugin-uglify');
+const { terser } = require('rollup-plugin-terser');
+// const { uglify } = require('rollup-plugin-uglify');
 const copy = require('rollup-plugin-copy');
 const postcss = require('rollup-plugin-postcss');
 const autoprefixer = require('autoprefixer');
@@ -24,7 +24,6 @@ module.exports = ['background', 'content', 'injected', 'popup'].map(item => {
             eslint({
                 exclude: ['node_modules/**', 'src/**/dev/*.scss'],
             }),
-            json(),
             nodeResolve(),
             commonjs(),
             babel({
@@ -51,7 +50,7 @@ module.exports = ['background', 'content', 'injected', 'popup'].map(item => {
                 extract: isProd ? `dist/${name}/${item}/index.css` : `src/${item}/index.css`,
             }),
             isProd &&
-                uglify({
+                terser({
                     output: {
                         preamble:
                             '/*!\n' +
