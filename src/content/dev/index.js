@@ -14,24 +14,15 @@ class Content {
         this.roomId = isLiveRoom(location.href);
 
         if (this.roomId) {
-            this.initEvent();
-        }
-    }
-
-    initEvent() {
-        this.storage.get(this.roomId).then(config => {
-            if (config) {
+            storage.get(this.roomId).then(config => {
+                if (config) {
+                    this.storage.remove(this.roomId);
+                }
+            });
+            this.storage.onChanged(this.roomId, config => {
                 this.config = config;
-            }
-        });
-
-        this.storage.onChanged(this.roomId, config => {
-            this.config = config;
-        });
-
-        window.addEventListener('beforeunload', () => {
-            this.storage.remove(this.roomId);
-        });
+            });
+        }
 
         window.addEventListener('message', event => {
             if (event.origin !== BILIBILI) return;
