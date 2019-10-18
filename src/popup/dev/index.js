@@ -2,7 +2,15 @@ import 'normalize.css';
 import './index.scss';
 import Vue from 'vue/dist/vue';
 import { notify, isBilibiliRoom } from '../../share';
-import { GITHUB, WEBSTORE, BEFORE_RECORD, START_RECORD, STOP_RECORD, START_DOWNLOAD } from '../../constant';
+import {
+    GITHUB,
+    WEBSTORE,
+    BEFORE_RECORD,
+    START_RECORD,
+    STOP_RECORD,
+    START_DOWNLOAD,
+    TITLE_REPLACE,
+} from '../../constant';
 
 export default new Vue({
     el: '#app',
@@ -42,7 +50,7 @@ export default new Vue({
                     this.bilibiliRoom = bilibiliRoom;
                     if (bilibiliRoom) {
                         this.config.url = tab.url;
-                        this.config.name = tab.title;
+                        this.config.name = tab.title.replace(TITLE_REPLACE, '');
                     }
                 }
             },
@@ -52,7 +60,10 @@ export default new Vue({
             const { type, data } = request;
             switch (type) {
                 case 'config':
-                    this.config = data;
+                    this.config = {
+                        ...this.config,
+                        ...data,
+                    };
                     break;
                 default:
                     break;

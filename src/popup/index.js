@@ -11983,6 +11983,7 @@
   var START_RECORD = 'start_record';
   var STOP_RECORD = 'stop_record';
   var START_DOWNLOAD = 'start_download';
+  var TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
 
   function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {
@@ -12042,7 +12043,7 @@
 
           if (bilibiliRoom) {
             _this.config.url = tab.url;
-            _this.config.name = tab.title;
+            _this.config.name = tab.title.replace(TITLE_REPLACE, '');
           }
         }
       });
@@ -12052,7 +12053,7 @@
 
         switch (type) {
           case 'config':
-            _this.config = data;
+            _this.config = _objectSpread({}, _this.config, {}, data);
             break;
 
           default:

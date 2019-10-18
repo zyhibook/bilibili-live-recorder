@@ -15,3 +15,5 @@ export const AFTER_DOWNLOAD = 'after_download';
 
 export const MP4_BUFFER = 'mp4_buffer';
 export const FLV_BUFFER = 'flv_buffer';
+
+export const TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
