@@ -18,8 +18,9 @@ export function badge(text) {
 export function isLiveRoom(url) {
     const urlObj = new URL(url);
     const isBilibili = urlObj.origin === BILIBILI;
-    const isRoom = /^\d+$/.test(urlObj.pathname.slice(1));
-    return isBilibili && isRoom;
+    const roomId = urlObj.pathname.slice(1);
+    const isRoom = /^\d+$/.test(roomId);
+    return isBilibili && isRoom ? roomId : false;
 }
 
 export function getNowTime() {

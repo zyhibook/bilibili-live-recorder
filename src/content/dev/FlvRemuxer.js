@@ -7,10 +7,7 @@ export default class FlvRemuxer {
     }
 
     load(buf) {
-        this.data = mergeBuffer(this.data, buf);
-        this.bg.updateConfig({
-            currentSize: (this.data.byteLength / 1024 / 1024).toFixed(3),
-        });
+        //
     }
 
     stop() {

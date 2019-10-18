@@ -11980,12 +11980,8 @@
   var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
   var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions';
   var BEFORE_RECORD = 'before_record';
-  var START_RECORD = 'start_record';
   var RECORDING = 'recording';
-  var STOP_RECORD = 'stop_record';
   var AFTER_RECORD = 'after_record';
-  var START_DOWNLOAD = 'start_download';
-  var UPDATE_CONFIG = 'update_config';
   var TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
   var OPEN_LIVE = '请先打开Bilibili直播间';
   var RECORD_CREATED = '录制任务创建成功';
@@ -12004,13 +12000,95 @@
   function isLiveRoom(url) {
     var urlObj = new URL(url);
     var isBilibili = urlObj.origin === BILIBILI;
-    var isRoom = /^\d+$/.test(urlObj.pathname.slice(1));
-    return isBilibili && isRoom;
+    var roomId = urlObj.pathname.slice(1);
+    var isRoom = /^\d+$/.test(roomId);
+    return isBilibili && isRoom ? roomId : false;
   }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var classCallCheck = _classCallCheck;
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  var createClass = _createClass;
+
+  var Storage =
+  /*#__PURE__*/
+  function () {
+    function Storage() {
+      classCallCheck(this, Storage);
+    }
+
+    createClass(Storage, [{
+      key: "get",
+      value: function get(key, defaultValue) {
+        var _this = this;
+
+        return new Promise(function (resolve) {
+          chrome.storage.local.get([String(key)], function (result) {
+            if (result[key]) {
+              resolve(result[key]);
+            } else if (defaultValue) {
+              _this.set(key, defaultValue).then(function (value) {
+                resolve(value);
+              });
+            } else {
+              resolve();
+            }
+          });
+        });
+      }
+    }, {
+      key: "set",
+      value: function set(key, value) {
+        return new Promise(function (resolve) {
+          chrome.storage.local.set(defineProperty({}, key, value), function () {
+            resolve(value);
+          });
+        });
+      }
+    }, {
+      key: "remove",
+      value: function remove(key) {
+        chrome.storage.local.remove(String(key));
+      }
+    }, {
+      key: "onChanged",
+      value: function onChanged(key, callback) {
+        chrome.storage.onChanged.addListener(function (changes) {
+          if (changes[key] && changes[key].newValue) {
+            callback(changes[key].newValue);
+          }
+        });
+      }
+    }]);
+
+    return Storage;
+  }();
 
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  var storage = new Storage();
   var index = new Vue({
     el: '#app',
     data: {
@@ -12023,9 +12101,9 @@
       logo: chrome.extension.getURL('icons/icon48.png'),
       donate: chrome.extension.getURL('icons/donate.png'),
       config: {
+        id: 0,
         url: '',
         name: '',
-        room: '',
         chunk: 0,
         debug: '',
         duration: 10,
@@ -12048,26 +12126,22 @@
       }, function (tabs) {
         if (tabs && tabs[0]) {
           var tab = tabs[0];
-          var liveRoom = isLiveRoom(tab.url);
-          _this.liveRoom = liveRoom;
+          var roomId = isLiveRoom(tab.url);
+          _this.liveRoom = !!roomId;
 
-          if (liveRoom) {
+          if (roomId) {
+            _this.config.id = roomId;
             _this.config.url = tab.url;
             _this.config.name = tab.title.replace(TITLE_REPLACE, '');
+            storage.get(roomId).then(function (config) {
+              if (config) {
+                _this.config = config;
+              }
+            });
+            storage.onChanged(roomId, function (config) {
+              _this.config = config;
+            });
           }
-        }
-      });
-      chrome.runtime.onMessage.addListener(function (request) {
-        var type = request.type,
-            data = request.data;
-
-        switch (type) {
-          case UPDATE_CONFIG:
-            _this.config = _objectSpread({}, _this.config, {}, data);
-            break;
-
-          default:
-            break;
         }
       });
     },
@@ -12094,10 +12168,9 @@
         var _this2 = this;
 
         if (this.liveRoom) {
-          chrome.runtime.sendMessage({
-            type: START_RECORD,
-            data: _objectSpread({}, this.config)
-          }, function () {
+          storage.set(this.config.id, _objectSpread({}, this.config, {
+            state: RECORDING
+          })).then(function () {
             notify(RECORD_CREATED, _this2.fileUrl);
           });
         } else {
@@ -12107,18 +12180,18 @@
       stopRecord: function stopRecord() {
         var _this3 = this;
 
-        chrome.runtime.sendMessage({
-          type: STOP_RECORD
-        }, function () {
+        storage.set(this.config.id, _objectSpread({}, this.config, {
+          state: AFTER_RECORD
+        })).then(function () {
           notify(RECORD_STOP, _this3.fileUrl);
         });
       },
       startDownload: function startDownload() {
         var _this4 = this;
 
-        chrome.runtime.sendMessage({
-          type: START_DOWNLOAD
-        }, function () {
+        storage.set(this.config.id, _objectSpread({}, this.config, {
+          state: BEFORE_RECORD
+        })).then(function () {
           notify(RECORD_DOWNLOAD, _this4.fileUrl);
         });
       }

@@ -110,15 +110,16 @@ body {
     }
 
     .info {
-        height: 130px;
+        height: 100px;
         padding: 10px;
         border-top: 1px solid #e6e6e6;
         background: #f7f7f7;
 
         .record_config {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             .item {
-                margin-bottom: 15px;
-
                 .name {
                     font-size: 12px;
                     margin-bottom: 5px;

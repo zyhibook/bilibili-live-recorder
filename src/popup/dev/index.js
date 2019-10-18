@@ -2,23 +2,21 @@ import 'normalize.css';
 import './index.scss';
 import Vue from 'vue/dist/vue';
 import { notify, isLiveRoom } from '../../share';
+import Storage from '../../share/storage';
 import {
     GITHUB,
     WEBSTORE,
     RECORDING,
-    STOP_RECORD,
     AFTER_RECORD,
-    START_RECORD,
     BEFORE_RECORD,
     TITLE_REPLACE,
-    UPDATE_CONFIG,
-    START_DOWNLOAD,
     OPEN_LIVE,
     RECORD_CREATED,
     RECORD_STOP,
     RECORD_DOWNLOAD,
 } from '../../share/constant';
 
+const storage = new Storage();
 export default new Vue({
     el: '#app',
     data: {
@@ -31,9 +29,9 @@ export default new Vue({
         logo: chrome.extension.getURL('icons/icon48.png'),
         donate: chrome.extension.getURL('icons/donate.png'),
         config: {
+            id: 0,
             url: '',
             name: '',
-            room: '',
             chunk: 0,
             debug: '',
             duration: 10,
@@ -56,29 +54,24 @@ export default new Vue({
             tabs => {
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
-                    const liveRoom = isLiveRoom(tab.url);
-                    this.liveRoom = liveRoom;
-                    if (liveRoom) {
+                    const roomId = isLiveRoom(tab.url);
+                    this.liveRoom = !!roomId;
+                    if (roomId) {
+                        this.config.id = roomId;
                         this.config.url = tab.url;
                         this.config.name = tab.title.replace(TITLE_REPLACE, '');
+                        storage.get(roomId).then(config => {
+                            if (config) {
+                                this.config = config;
+                            }
+                        });
+                        storage.onChanged(roomId, config => {
+                            this.config = config;
+                        });
                     }
                 }
             },
         );
-
-        chrome.runtime.onMessage.addListener(request => {
-            const { type, data } = request;
-            switch (type) {
-                case UPDATE_CONFIG:
-                    this.config = {
-                        ...this.config,
-                        ...data,
-                    };
-                    break;
-                default:
-                    break;
-            }
-        });
     },
     methods: {
         goWebstore() {
@@ -95,38 +88,37 @@ export default new Vue({
         },
         startRecord() {
             if (this.liveRoom) {
-                chrome.runtime.sendMessage(
-                    {
-                        type: START_RECORD,
-                        data: { ...this.config },
-                    },
-                    () => {
+                storage
+                    .set(this.config.id, {
+                        ...this.config,
+                        state: RECORDING,
+                    })
+                    .then(() => {
                         notify(RECORD_CREATED, this.fileUrl);
-                    },
-                );
+                    });
             } else {
                 notify(OPEN_LIVE);
             }
         },
         stopRecord() {
-            chrome.runtime.sendMessage(
-                {
-                    type: STOP_RECORD,
-                },
-                () => {
+            storage
+                .set(this.config.id, {
+                    ...this.config,
+                    state: AFTER_RECORD,
+                })
+                .then(() => {
                     notify(RECORD_STOP, this.fileUrl);
-                },
-            );
+                });
         },
         startDownload() {
-            chrome.runtime.sendMessage(
-                {
-                    type: START_DOWNLOAD,
-                },
-                () => {
+            storage
+                .set(this.config.id, {
+                    ...this.config,
+                    state: BEFORE_RECORD,
+                })
+                .then(() => {
                     notify(RECORD_DOWNLOAD, this.fileUrl);
-                },
-            );
+                });
         },
     },
 });

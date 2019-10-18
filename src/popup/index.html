@@ -48,10 +48,6 @@
                     </div>
                     <div class="record_info" v-if="config.state === RECORDING || config.state === AFTER_RECORD">
                         <div class="item">
-                            <div class="name">直播地址：</div>
-                            <div class="value link" @click="goRoom" :title="config.url">{{config.url}}</div>
-                        </div>
-                        <div class="item">
                             <div class="name">文件名字：</div>
                             <div class="value" :title="fileUrl">{{fileUrl}}</div>
                         </div>

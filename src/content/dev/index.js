@@ -1,4 +1,5 @@
-import { sleep } from '../../share';
+import { sleep, isLiveRoom } from '../../share';
+import Storage from '../../share/storage';
 import { BILIBILI, MP4_BUFFER, FLV_BUFFER } from '../../share/constant';
 import FlvRemuxer from './FlvRemuxer';
 
@@ -6,9 +7,27 @@ class Content {
     constructor() {
         this.injectScript();
         this.injectStyle();
-        
+
         this.config = {};
+        this.storage = new Storage();
         this.flv = new FlvRemuxer(this);
+        this.roomId = isLiveRoom(location.href);
+
+        if (this.roomId) {
+            this.storage.get(this.roomId).then(config => {
+                if (config) {
+                    this.config = config;
+                }
+            });
+
+            this.storage.onChanged(this.roomId, config => {
+                this.config = config;
+            });
+
+            window.addEventListener('beforeunload', () => {
+                this.storage.remove(this.roomId);
+            });
+        }
 
         window.addEventListener('message', event => {
             if (event.origin !== BILIBILI) return;
@@ -17,28 +36,11 @@ class Content {
                 case MP4_BUFFER:
                     break;
                 case FLV_BUFFER:
-                    this.flv.load(data);
+                    // this.flv.load(data);
                     break;
                 default:
                     break;
             }
-        });
-
-        chrome.runtime.onMessage.addListener((request, sender, callback) => {
-            const { type, data } = request;
-            switch (type) {
-                case START_RECORD:
-                    this.config = data;
-                    break;
-                case STOP_RECORD:
-                    this.flv.stop();
-                    break;
-                case START_DOWNLOAD:
-                    this.flv.download();
-                default:
-                    break;
-            }
-            callback();
         });
     }
 

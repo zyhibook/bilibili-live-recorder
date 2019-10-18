@@ -31,28 +31,91 @@
   var createClass = _createClass;
 
   var BILIBILI = 'https://live.bilibili.com';
-  var MP4_BUFFER = 'mp4_buffer';
-  var FLV_BUFFER = 'flv_buffer';
 
+  function isLiveRoom(url) {
+    var urlObj = new URL(url);
+    var isBilibili = urlObj.origin === BILIBILI;
+    var roomId = urlObj.pathname.slice(1);
+    var isRoom = /^\d+$/.test(roomId);
+    return isBilibili && isRoom ? roomId : false;
+  }
   function sleep() {
     var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
     return new Promise(function (resolve) {
       return setTimeout(resolve, ms);
     });
   }
-  function mergeBuffer() {
-    for (var _len = arguments.length, buffers = new Array(_len), _key = 0; _key < _len; _key++) {
-      buffers[_key] = arguments[_key];
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
     }
 
-    var Cons = buffers[0].constructor;
-    return buffers.reduce(function (pre, val) {
-      var merge = new Cons((pre.byteLength | 0) + (val.byteLength | 0));
-      merge.set(pre, 0);
-      merge.set(val, pre.byteLength | 0);
-      return merge;
-    }, new Cons());
+    return obj;
   }
+
+  var defineProperty = _defineProperty;
+
+  var Storage =
+  /*#__PURE__*/
+  function () {
+    function Storage() {
+      classCallCheck(this, Storage);
+    }
+
+    createClass(Storage, [{
+      key: "get",
+      value: function get(key, defaultValue) {
+        var _this = this;
+
+        return new Promise(function (resolve) {
+          chrome.storage.local.get([String(key)], function (result) {
+            if (result[key]) {
+              resolve(result[key]);
+            } else if (defaultValue) {
+              _this.set(key, defaultValue).then(function (value) {
+                resolve(value);
+              });
+            } else {
+              resolve();
+            }
+          });
+        });
+      }
+    }, {
+      key: "set",
+      value: function set(key, value) {
+        return new Promise(function (resolve) {
+          chrome.storage.local.set(defineProperty({}, key, value), function () {
+            resolve(value);
+          });
+        });
+      }
+    }, {
+      key: "remove",
+      value: function remove(key) {
+        chrome.storage.local.remove(String(key));
+      }
+    }, {
+      key: "onChanged",
+      value: function onChanged(key, callback) {
+        chrome.storage.onChanged.addListener(function (changes) {
+          if (changes[key] && changes[key].newValue) {
+            callback(changes[key].newValue);
+          }
+        });
+      }
+    }]);
+
+    return Storage;
+  }();
 
   var FlvRemuxer =
   /*#__PURE__*/
@@ -66,11 +129,7 @@
 
     createClass(FlvRemuxer, [{
       key: "load",
-      value: function load(buf) {
-        this.data = mergeBuffer(this.data, buf);
-        this.bg.updateConfig({
-          currentSize: (this.data.byteLength / 1024 / 1024).toFixed(3)
-        });
+      value: function load(buf) {//
       }
     }, {
       key: "stop",
@@ -96,48 +155,29 @@
       this.injectScript();
       this.injectStyle();
       this.config = {};
+      this.storage = new Storage();
       this.flv = new FlvRemuxer(this);
+      this.roomId = isLiveRoom(location.href);
+
+      if (this.roomId) {
+        this.storage.get(this.roomId).then(function (config) {
+          if (config) {
+            _this.config = config;
+          }
+        });
+        this.storage.onChanged(this.roomId, function (config) {
+          _this.config = config;
+        });
+        window.addEventListener('beforeunload', function () {
+          _this.storage.remove(_this.roomId);
+        });
+      }
+
       window.addEventListener('message', function (event) {
         if (event.origin !== BILIBILI) return;
         var _event$data = event.data,
             type = _event$data.type,
             data = _event$data.data;
-
-        switch (type) {
-          case MP4_BUFFER:
-            break;
-
-          case FLV_BUFFER:
-            _this.flv.load(data);
-
-            break;
-
-          default:
-            break;
-        }
-      });
-      chrome.runtime.onMessage.addListener(function (request, sender, callback) {
-        var type = request.type,
-            data = request.data;
-
-        switch (type) {
-          case START_RECORD:
-            _this.config = data;
-            break;
-
-          case STOP_RECORD:
-            _this.flv.stop();
-
-            break;
-
-          case START_DOWNLOAD:
-            _this.flv.download();
-
-          default:
-            break;
-        }
-
-        callback();
       });
     }
 
