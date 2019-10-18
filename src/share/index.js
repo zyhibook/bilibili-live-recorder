@@ -1,4 +1,4 @@
-import { BILIBILI } from '../constant';
+import { BILIBILI } from './constant';
 
 export function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {

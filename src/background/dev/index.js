@@ -1,5 +1,5 @@
 import 'crx-hotreload';
-import { START_RECORD, STOP_RECORD, START_DOWNLOAD, MP4_BUFFER, FLV_BUFFER } from '../../constant';
+import { START_RECORD, STOP_RECORD, START_DOWNLOAD, MP4_BUFFER, FLV_BUFFER } from '../../share/constant';
 
 class Background {
     constructor() {

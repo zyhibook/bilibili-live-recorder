@@ -1,5 +1,5 @@
 import { sleep } from '../../share';
-import { BILIBILI, MP4_BUFFER, FLV_BUFFER } from '../../constant';
+import { BILIBILI, MP4_BUFFER, FLV_BUFFER } from '../../share/constant';
 
 class Content {
     constructor() {

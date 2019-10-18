@@ -1,5 +1,5 @@
 import './index.scss';
-import { MP4_BUFFER, FLV_BUFFER } from '../../constant';
+import { MP4_BUFFER, FLV_BUFFER } from '../../share/constant';
 
 class Injected {
     constructor() {

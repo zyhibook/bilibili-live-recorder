@@ -10,7 +10,7 @@ import {
     STOP_RECORD,
     START_DOWNLOAD,
     TITLE_REPLACE,
-} from '../../constant';
+} from '../../share/constant';
 
 export default new Vue({
     el: '#app',
