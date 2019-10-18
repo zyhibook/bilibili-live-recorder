@@ -50,6 +50,7 @@ export default new Vue({
         chrome.tabs.query(
             {
                 active: true,
+                lastFocusedWindow: true,
             },
             tabs => {
                 if (tabs && tabs[0]) {

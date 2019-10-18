@@ -14,7 +14,7 @@ class Content {
         this.roomId = isLiveRoom(location.href);
 
         if (this.roomId) {
-            storage.get(this.roomId).then(config => {
+            this.storage.get(this.roomId).then(config => {
                 if (config) {
                     this.storage.remove(this.roomId);
                 }

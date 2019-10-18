@@ -148,6 +148,8 @@
   /*#__PURE__*/
   function () {
     function Content() {
+      var _this = this;
+
       classCallCheck(this, Content);
 
       this.injectScript();
@@ -158,34 +160,25 @@
       this.roomId = isLiveRoom(location.href);
 
       if (this.roomId) {
-        this.initEvent();
-      }
-    }
-
-    createClass(Content, [{
-      key: "initEvent",
-      value: function initEvent() {
-        var _this = this;
-
         this.storage.get(this.roomId).then(function (config) {
           if (config) {
-            _this.config = config;
+            _this.storage.remove(_this.roomId);
           }
         });
         this.storage.onChanged(this.roomId, function (config) {
           _this.config = config;
         });
-        window.addEventListener('beforeunload', function () {
-          _this.storage.remove(_this.roomId);
-        });
-        window.addEventListener('message', function (event) {
-          if (event.origin !== BILIBILI) return;
-          var _event$data = event.data,
-              type = _event$data.type,
-              data = _event$data.data;
-        });
       }
-    }, {
+
+      window.addEventListener('message', function (event) {
+        if (event.origin !== BILIBILI) return;
+        var _event$data = event.data,
+            type = _event$data.type,
+            data = _event$data.data;
+      });
+    }
+
+    createClass(Content, [{
       key: "injectScript",
       value: function injectScript() {
         var $script = document.createElement('script');

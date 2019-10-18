@@ -12122,7 +12122,8 @@
       var _this = this;
 
       chrome.tabs.query({
-        active: true
+        active: true,
+        lastFocusedWindow: true
       }, function (tabs) {
         if (tabs && tabs[0]) {
           var tab = tabs[0];
