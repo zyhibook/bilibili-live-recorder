@@ -15,6 +15,7 @@
     },
     "permissions": [
         "tabs",
+        "webRequest",
         "*://*.bilibili.com/*"
     ],
     "browser_action": {

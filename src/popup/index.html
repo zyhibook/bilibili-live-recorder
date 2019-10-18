@@ -10,76 +10,30 @@
 </head>
 
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="item active">创建任务</div>
-            <div class="item">任务列表<span class="num">5</span></div>
-            <div class="item">关于软件</div>
-        </header>
-        <section class="main">
-            <div class="panel active">
-                <div class="item">
-                    <div class="name">保存名字:</div>
-                    <div class="value">
-                        <input class="fileName" type="text" maxlength="100" placeholder="点击设置">
+    <div class="container" id="app">
+        <div :class="{panels: true, [panel]: true}">
+            <div class="panel basis">
+                <header class="header">
+                    {{ message }}
+                </header>
+                <section class="main">
+                    <div class="btn recorder" v-if="state === 'before_record'">
+                        开始录制
                     </div>
-                </div>
-                <div class="item">
-                    <div class="name">保存目录:</div>
-                    <div class="value">
-                        <input class="fileDir" type="text" disabled placeholder="点击选取">
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="name">保存格式:</div>
-                    <div class="value">
-                        <select class="format">
-                            <option value="format_flv" selected>FLV</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="name">保存条件:</div>
-                    <div class="value">
-                        <select class="limit">
-                            <option value="limit_size" selected>按容量计算</option>
-                            <option value="limit_duration">按时长计算</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="item limit_size active">
-                    <div class="name">最大容量: <span class="size">500M</span></div>
-                    <div class="value">
-                        <input class="fileSize" type="range" value="500" min="100" max="1000" step="100">
-                    </div>
-                </div>
-                <div class="item limit_duration">
-                    <div class="name">最大时长: <span class="duration">30 分钟</span></div>
-                    <div class="value">
-                        <input class="fileDuration" type="range" value="30" min="15" max="60" step="15">
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="save">确定</div>
-                </div>
-                <div class="item">
-                    <p class="tip">注意：确定后页面会刷新一遍以获取完整数据，任务开始后请勿修改画质或切换线路。</p>
-                </div>
-                <div class="disabled">
-                    请先进入 Bilibili 直播间
-                </div>
+                </section>
+                <section class="info">
+                    info
+                </section>
+                <footer class="footer" @click="showPanel('panel_advanced')">
+                    高级设置
+                </footer>
             </div>
-            <div class="panel">
-                任务列表
+            <div class="panel advanced">
+                <header class="header" @click="showPanel('panel_basis')">
+                    基础设置
+                </header>
             </div>
-            <div class="panel">
-                关于软件
-            </div>
-        </section>
-        <footer class="footer">
-            <a class="version" href="#"></a>
-            <a class="feedback" href="#">反馈</a>
-        </footer>
+        </div>
     </div>
     <script src="./index.js"></script>
 </body>

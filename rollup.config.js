@@ -3,7 +3,7 @@ const commonjs = require('rollup-plugin-commonjs');
 const nodeResolve = require('rollup-plugin-node-resolve');
 const { eslint } = require('rollup-plugin-eslint');
 const { terser } = require('rollup-plugin-terser');
-// const { uglify } = require('rollup-plugin-uglify');
+const replace = require('rollup-plugin-replace');
 const copy = require('rollup-plugin-copy');
 const postcss = require('rollup-plugin-postcss');
 const autoprefixer = require('autoprefixer');
@@ -39,6 +39,9 @@ module.exports = ['background', 'content', 'injected', 'popup'].map(item => {
                 ],
                 plugins: ['@babel/plugin-external-helpers', '@babel/plugin-transform-runtime'],
             }),
+            replace({
+                'process.env.NODE_ENV': JSON.stringify('production'),
+            }),
             postcss({
                 plugins: [
                     autoprefixer(),
@@ -54,7 +57,7 @@ module.exports = ['background', 'content', 'injected', 'popup'].map(item => {
                     output: {
                         preamble:
                             '/*!\n' +
-                            ` * bilibili-live-downloader v${version}\n` +
+                            ` * bilibili-live-recorder v${version}\n` +
                             ` * Github: ${homepage}\n` +
                             ` * (c) 2018-${new Date().getFullYear()} Harvey Zack\n` +
                             ' * Released under the MIT License.\n' +

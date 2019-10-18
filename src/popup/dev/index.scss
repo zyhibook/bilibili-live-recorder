@@ -13,144 +13,93 @@ body {
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
     height: 400px;
     width: 300px;
+
+    .panels {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+
+        &.panel_basis {
+            .basis {
+                margin-top: 0;
+            }
+        }
+
+        &.panel_advanced {
+            .basis {
+                margin-top: -400px;
+            }
+        }
+    }
 }
 
-.header {
+.basis {
     display: flex;
-    border-bottom: 1px solid #ccc;
-    .item {
+    flex-direction: column;
+    height: 100%;
+    margin-top: 0;
+    transition: all 0.3s ease;
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 40px;
+        padding: 0 20px;
+        border-bottom: 1px solid #666;
+    }
+
+    .main {
         flex: 1;
-        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-bottom: 1px solid #666;
+
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+
+            &:hover {
+                opacity: 0.8;
+            }
+
+            &.recorder {
+                background: #ff1b1b;
+                border: 15px solid #ffa5a5;
+            }
+        }
+    }
+
+    .info {
+        height: 100px;
+        border-bottom: 1px solid #666;
+    }
+
+    .footer {
         height: 30px;
         line-height: 30px;
         text-align: center;
-        bottom: -1px;
         cursor: pointer;
-        color: #666;
-        border-bottom: 1px solid transparent;
-
-        &.active {
-            color: #f45a8d;
-            border-bottom: 1px solid #f45a8d;
-        }
-
-        .num {
-            padding: 0 3px;
-            border-radius: 3px;
-            font-size: 12px;
-            margin-left: 5px;
-            color: #fff;
-            background: red;
-        }
     }
 }
 
-.main {
-    flex: 1;
-    display: flex;
+.advanced {
+    height: 100%;
 
-    .panel {
-        flex: 1;
-        position: relative;
-        display: none;
-        padding: 10px;
-
-        &.active {
-            display: block;
-        }
-
-        .item {
-            margin-bottom: 10px;
-            .name {
-                font-size: 13px;
-                margin-bottom: 5px;
-            }
-            .value {
-                display: flex;
-                align-items: center;
-                input,
-                select {
-                    height: 25px;
-                    line-height: 25px;
-                    padding: 0 5px;
-                    width: 100%;
-                    font-size: 12px;
-                    outline: none;
-                    color: #444;
-                    border: 1px solid #ccc;
-                }
-            }
-            .save {
-                text-align: center;
-                height: 30px;
-                line-height: 30px;
-                cursor: pointer;
-                border-radius: 3px;
-                letter-spacing: 5px;
-                transition: all 0.3s ease;
-                color: #fff;
-                background: #f45a8d;
-
-                &:hover {
-                    background: #d62f66;
-                }
-            }
-            .tip {
-                font-size: 12px;
-                margin: 0 0 10px;
-                line-height: 1.5;
-                color: #888;
-            }
-
-            &.limit_size,
-            &.limit_duration {
-                display: none;
-                &.active {
-                    display: block;
-                }
-            }
-        }
-
-        .disabled {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            font-size: 16px;
-            color: #666;
-            background: #fff;
-
-            &.show {
-                display: flex;
-            }
-        }
-    }
-}
-
-.footer {
-    display: flex;
-    justify-content: space-between;
-    height: 30px;
-    line-height: 30px;
-    padding: 0 10px;
-    border-top: 1px solid #ccc;
-
-    a {
-        color: #666;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        &:hover {
-            color: #f45a8d;
-        }
+    .header {
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        cursor: pointer;
     }
 }

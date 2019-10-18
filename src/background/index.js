@@ -70,7 +70,7 @@
 
     console.log(this.constructor.name);
     chrome.browserAction.setBadgeText({
-      text: '5'
+      text: 'ON'
     });
     chrome.browserAction.setBadgeBackgroundColor({
       color: 'red'
