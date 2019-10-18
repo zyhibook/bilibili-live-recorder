@@ -18,12 +18,18 @@
                     <a href="#" class="feedback" @click="goGithub">反馈</a>
                 </header>
                 <section class="main">
-                    <div class="btn recorder" v-if="state === 'before_record'">
+                    <div class="btn startRecord" v-if="state === 'startRecord'" @click="startRecordFn">
                         开始录制
+                    </div>
+                    <div class="btn stopRecord" v-if="state === 'stopRecord'" @click="stopRecordFn">
+                        停止录制
+                    </div>
+                    <div class="btn download" v-if="state === 'download'" @click="downloadFn">
+                        下载视频
                     </div>
                 </section>
                 <section class="info">
-                    <div class="record_config" v-if="state === 'before_record'">
+                    <div class="record_config" v-if="state === 'startRecord'">
                         <div class="item">
                             <div class="name">录制文件：</div>
                             <div class="value">
@@ -39,12 +45,12 @@
                     </div>
                 </section>
                 <footer class="footer" @click="showPanel('panel_advanced')">
-                    高级设置
+                    ↓高级设置↓
                 </footer>
             </div>
             <div class="panel advanced">
                 <header class="header" @click="showPanel('panel_basis')">
-                    基础设置
+                    ↑基础设置↑
                 </header>
             </div>
         </div>

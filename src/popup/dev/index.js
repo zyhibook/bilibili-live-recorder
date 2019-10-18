@@ -8,7 +8,7 @@ export default new Vue({
     data: {
         manifest: chrome.runtime.getManifest(),
         panel: 'panel_basis',
-        state: 'before_record',
+        state: 'download',
         isBilibili: true,
         range: 10,
         name: '',
@@ -36,6 +36,15 @@ export default new Vue({
         },
         showPanel(panel) {
             this.panel = panel;
+        },
+        startRecordFn() {
+            console.log('startRecordFn');
+        },
+        stopRecordFn() {
+            console.log('stopRecordFn');
+        },
+        downloadFn() {
+            console.log('downloadFn');
         },
     },
 });

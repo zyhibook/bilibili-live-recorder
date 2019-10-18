@@ -11968,7 +11968,7 @@
     data: {
       manifest: chrome.runtime.getManifest(),
       panel: 'panel_basis',
-      state: 'before_record',
+      state: 'download',
       isBilibili: true,
       range: 10,
       name: ''
@@ -11999,6 +11999,15 @@
       },
       showPanel: function showPanel(panel) {
         this.panel = panel;
+      },
+      startRecordFn: function startRecordFn() {
+        console.log('startRecordFn');
+      },
+      stopRecordFn: function stopRecordFn() {
+        console.log('stopRecordFn');
+      },
+      downloadFn: function downloadFn() {
+        console.log('downloadFn');
       }
     }
   });

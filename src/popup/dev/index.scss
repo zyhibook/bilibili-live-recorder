@@ -82,9 +82,19 @@ body {
                 opacity: 0.8;
             }
 
-            &.recorder {
+            &.startRecord {
                 background: #ff1b1b;
                 border: 15px solid #ffa5a5;
+            }
+
+            &.stopRecord {
+                background: #1b5fff;
+                border: 15px solid #9bd1ff;
+            }
+
+            &.download {
+                background: #f45a8d;
+                border: 15px solid #ff9bbc;
             }
         }
     }
@@ -100,8 +110,9 @@ body {
                 margin-bottom: 15px;
 
                 .name {
-                    color: #666;
+                    font-size: 12px;
                     margin-bottom: 5px;
+                    color: #666;
                 }
 
                 .value {
