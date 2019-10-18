@@ -1,7 +1,7 @@
 import 'normalize.css';
 import './index.scss';
 import Vue from 'vue/dist/vue';
-import filenamify from 'filenamify';
+import slugify from '@sindresorhus/slugify';
 import { bilibili, github, webstore } from '../../constant';
 import { notify } from '../../share';
 
@@ -19,6 +19,7 @@ export default new Vue({
             format: 'flv',
             url: '',
             duration: 10,
+            chunk: 0,
             room: '',
         },
         file: {
@@ -64,7 +65,7 @@ export default new Vue({
         },
         startRecord() {
             if (this.isBilibili && this.config.room) {
-                this.config.name = filenamify(this.config.name);
+                this.config.name = slugify(this.config.name);
                 this.state = 'start_record';
                 notify('录制任务创建成功！', this.fileUrl);
             } else {

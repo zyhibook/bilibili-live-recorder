@@ -88,6 +88,12 @@
                         </div>
                     </div>
                     <div class="item">
+                        <div class="name">分段保存：{{config.chunk}}M</div>
+                        <div class="value">
+                            <input type="range" v-model="config.chunk" min="0" max="1000" step="100">
+                        </div>
+                    </div>
+                    <div class="item">
                         <div class="name">Debug日志：</div>
                         <div class="value">
                             <textarea cols="30" disabled v-model="file.debug"
