@@ -15,7 +15,7 @@ export function badge(text) {
     chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
 }
 
-export function isBilibiliRoom(url) {
+export function isLiveRoom(url) {
     const urlObj = new URL(url);
     const isBilibili = urlObj.origin === BILIBILI;
     const isRoom = /^\d+$/.test(urlObj.pathname.slice(1));

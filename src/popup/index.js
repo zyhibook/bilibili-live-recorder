@@ -11981,9 +11981,16 @@
   var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions';
   var BEFORE_RECORD = 'before_record';
   var START_RECORD = 'start_record';
+  var RECORDING = 'recording';
   var STOP_RECORD = 'stop_record';
+  var AFTER_RECORD = 'after_record';
   var START_DOWNLOAD = 'start_download';
+  var UPDATE_CONFIG = 'update_config';
   var TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
+  var OPEN_LIVE = '请先打开Bilibili直播间';
+  var RECORD_CREATED = '录制任务创建成功';
+  var RECORD_STOP = '录制任务已经停止';
+  var RECORD_DOWNLOAD = '录制文件开始下载！';
 
   function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {
@@ -11994,7 +12001,7 @@
       contextMessage: text
     });
   }
-  function isBilibiliRoom(url) {
+  function isLiveRoom(url) {
     var urlObj = new URL(url);
     var isBilibili = urlObj.origin === BILIBILI;
     var isRoom = /^\d+$/.test(urlObj.pathname.slice(1));
@@ -12007,7 +12014,10 @@
   var index = new Vue({
     el: '#app',
     data: {
-      bilibiliRoom: true,
+      RECORDING: RECORDING,
+      AFTER_RECORD: AFTER_RECORD,
+      BEFORE_RECORD: BEFORE_RECORD,
+      liveRoom: true,
       panel: 'panel_basis',
       manifest: chrome.runtime.getManifest(),
       logo: chrome.extension.getURL('icons/icon48.png'),
@@ -12038,10 +12048,10 @@
       }, function (tabs) {
         if (tabs && tabs[0]) {
           var tab = tabs[0];
-          var bilibiliRoom = isBilibiliRoom(tab.url);
-          _this.bilibiliRoom = bilibiliRoom;
+          var liveRoom = isLiveRoom(tab.url);
+          _this.liveRoom = liveRoom;
 
-          if (bilibiliRoom) {
+          if (liveRoom) {
             _this.config.url = tab.url;
             _this.config.name = tab.title.replace(TITLE_REPLACE, '');
           }
@@ -12052,7 +12062,7 @@
             data = request.data;
 
         switch (type) {
-          case 'config':
+          case UPDATE_CONFIG:
             _this.config = _objectSpread({}, _this.config, {}, data);
             break;
 
@@ -12083,35 +12093,33 @@
       startRecord: function startRecord() {
         var _this2 = this;
 
-        if (this.bilibiliRoom) {
+        if (this.liveRoom) {
           chrome.runtime.sendMessage({
             type: START_RECORD,
             data: _objectSpread({}, this.config)
           }, function () {
-            notify('录制任务创建成功！', _this2.fileUrl);
+            notify(RECORD_CREATED, _this2.fileUrl);
           });
         } else {
-          notify('请先打开Bilibili直播间');
+          notify(OPEN_LIVE);
         }
       },
       stopRecord: function stopRecord() {
         var _this3 = this;
 
         chrome.runtime.sendMessage({
-          type: STOP_RECORD,
-          data: _objectSpread({}, this.config)
+          type: STOP_RECORD
         }, function () {
-          notify('录制任务已经停止', _this3.fileUrl);
+          notify(RECORD_STOP, _this3.fileUrl);
         });
       },
       startDownload: function startDownload() {
         var _this4 = this;
 
         chrome.runtime.sendMessage({
-          type: START_DOWNLOAD,
-          data: _objectSpread({}, this.config)
+          type: START_DOWNLOAD
         }, function () {
-          notify('录制文件开始下载！', _this4.fileUrl);
+          notify(RECORD_DOWNLOAD, _this4.fileUrl);
         });
       }
     }

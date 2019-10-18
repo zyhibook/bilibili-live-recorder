@@ -16,4 +16,10 @@ export const AFTER_DOWNLOAD = 'after_download';
 export const MP4_BUFFER = 'mp4_buffer';
 export const FLV_BUFFER = 'flv_buffer';
 
+export const UPDATE_CONFIG = 'update_config';
+
 export const TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
+export const OPEN_LIVE = '请先打开Bilibili直播间';
+export const RECORD_CREATED = '录制任务创建成功';
+export const RECORD_STOP = '录制任务已经停止';
+export const RECORD_DOWNLOAD = '录制文件开始下载！';

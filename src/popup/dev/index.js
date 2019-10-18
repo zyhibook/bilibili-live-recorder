@@ -1,21 +1,31 @@
 import 'normalize.css';
 import './index.scss';
 import Vue from 'vue/dist/vue';
-import { notify, isBilibiliRoom } from '../../share';
+import { notify, isLiveRoom } from '../../share';
 import {
     GITHUB,
     WEBSTORE,
-    BEFORE_RECORD,
-    START_RECORD,
+    RECORDING,
     STOP_RECORD,
-    START_DOWNLOAD,
+    AFTER_RECORD,
+    START_RECORD,
+    BEFORE_RECORD,
     TITLE_REPLACE,
+    UPDATE_CONFIG,
+    START_DOWNLOAD,
+    OPEN_LIVE,
+    RECORD_CREATED,
+    RECORD_STOP,
+    RECORD_DOWNLOAD,
 } from '../../share/constant';
 
 export default new Vue({
     el: '#app',
     data: {
-        bilibiliRoom: true,
+        RECORDING,
+        AFTER_RECORD,
+        BEFORE_RECORD,
+        liveRoom: true,
         panel: 'panel_basis',
         manifest: chrome.runtime.getManifest(),
         logo: chrome.extension.getURL('icons/icon48.png'),
@@ -46,9 +56,9 @@ export default new Vue({
             tabs => {
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
-                    const bilibiliRoom = isBilibiliRoom(tab.url);
-                    this.bilibiliRoom = bilibiliRoom;
-                    if (bilibiliRoom) {
+                    const liveRoom = isLiveRoom(tab.url);
+                    this.liveRoom = liveRoom;
+                    if (liveRoom) {
                         this.config.url = tab.url;
                         this.config.name = tab.title.replace(TITLE_REPLACE, '');
                     }
@@ -59,7 +69,7 @@ export default new Vue({
         chrome.runtime.onMessage.addListener(request => {
             const { type, data } = request;
             switch (type) {
-                case 'config':
+                case UPDATE_CONFIG:
                     this.config = {
                         ...this.config,
                         ...data,
@@ -84,28 +94,27 @@ export default new Vue({
             this.panel = panel;
         },
         startRecord() {
-            if (this.bilibiliRoom) {
+            if (this.liveRoom) {
                 chrome.runtime.sendMessage(
                     {
                         type: START_RECORD,
                         data: { ...this.config },
                     },
                     () => {
-                        notify('录制任务创建成功！', this.fileUrl);
+                        notify(RECORD_CREATED, this.fileUrl);
                     },
                 );
             } else {
-                notify('请先打开Bilibili直播间');
+                notify(OPEN_LIVE);
             }
         },
         stopRecord() {
             chrome.runtime.sendMessage(
                 {
                     type: STOP_RECORD,
-                    data: { ...this.config },
                 },
                 () => {
-                    notify('录制任务已经停止', this.fileUrl);
+                    notify(RECORD_STOP, this.fileUrl);
                 },
             );
         },
@@ -113,10 +122,9 @@ export default new Vue({
             chrome.runtime.sendMessage(
                 {
                     type: START_DOWNLOAD,
-                    data: { ...this.config },
                 },
                 () => {
-                    notify('录制文件开始下载！', this.fileUrl);
+                    notify(RECORD_DOWNLOAD, this.fileUrl);
                 },
             );
         },

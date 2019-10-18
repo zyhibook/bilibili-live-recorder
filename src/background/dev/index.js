@@ -1,5 +1,12 @@
 import 'crx-hotreload';
-import { START_RECORD, STOP_RECORD, START_DOWNLOAD, MP4_BUFFER, FLV_BUFFER } from '../../share/constant';
+import {
+    START_RECORD,
+    STOP_RECORD,
+    RECORDING,
+    AFTER_RECORD,
+    START_DOWNLOAD,
+    BEFORE_RECORD,
+} from '../../share/constant';
 
 class Background {
     constructor() {
@@ -7,20 +14,20 @@ class Background {
             const { type, data } = request;
             switch (type) {
                 case START_RECORD:
-                    // console.log(data);
+                    this.config = data;
+                    this.updateConfig({
+                        state: RECORDING,
+                    });
                     break;
                 case STOP_RECORD:
-                    // console.log(data);
+                    this.updateConfig({
+                        state: AFTER_RECORD,
+                    });
                     break;
                 case START_DOWNLOAD:
-                    // console.log(data);
-                    break;
-                case MP4_BUFFER:
-                    // console.log(data);
-                    break;
-                case FLV_BUFFER:
-                    // console.log(data);
-                    break;
+                    this.updateConfig({
+                        state: BEFORE_RECORD,
+                    });
                 default:
                     break;
             }
@@ -30,6 +37,13 @@ class Background {
         chrome.notifications.onClicked.addListener(id => {
             chrome.notifications.clear(id);
         });
+    }
+
+    updateConfig(config) {
+        this.config = {
+            ...this.config,
+            ...config,
+        };
     }
 }
 
