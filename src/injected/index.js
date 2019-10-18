@@ -12,6 +12,9 @@
 
   var classCallCheck = _classCallCheck;
 
+  var MP4_BUFFER = 'mp4_buffer';
+  var FLV_BUFFER = 'flv_buffer';
+
   var Injected = function Injected() {
     classCallCheck(this, Injected);
 
@@ -19,8 +22,8 @@
 
     SourceBuffer.prototype.appendBuffer = function (buf) {
       window.postMessage({
-        type: 'MP4Buffer',
-        data: buf.slice()
+        type: MP4_BUFFER,
+        data: new Uint8Array(buf.slice())
       });
       return appendBuffer.call(this, buf);
     };
@@ -34,7 +37,7 @@
             value = _ref.value;
         if (done) return;
         window.postMessage({
-          type: 'FLVBuffer',
+          type: FLV_BUFFER,
           data: value.slice()
         });
       });

@@ -1,12 +1,13 @@
 import './index.scss';
+import { MP4_BUFFER, FLV_BUFFER } from '../../constant';
 
 class Injected {
     constructor() {
         const { appendBuffer } = SourceBuffer.prototype;
         SourceBuffer.prototype.appendBuffer = function(buf) {
             window.postMessage({
-                type: 'MP4Buffer',
-                data: buf.slice(),
+                type: MP4_BUFFER,
+                data: new Uint8Array(buf.slice()),
             });
             return appendBuffer.call(this, buf);
         };
@@ -17,7 +18,7 @@ class Injected {
             promiseResult.then(({ done, value }) => {
                 if (done) return;
                 window.postMessage({
-                    type: 'FLVBuffer',
+                    type: FLV_BUFFER,
                     data: value.slice(),
                 });
             });

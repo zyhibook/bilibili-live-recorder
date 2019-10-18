@@ -4,6 +4,23 @@
   (global = global || self, global.Popup = factory());
 }(this, function () { 'use strict';
 
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  var defineProperty = _defineProperty;
+
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
   function unwrapExports (x) {
@@ -11959,677 +11976,13 @@
 
   var Vue = unwrapExports(vue);
 
-  /**
-   * lodash (Custom Build) <https://lodash.com/>
-   * Build: `lodash modularize exports="npm" -o ./`
-   * Copyright jQuery Foundation and other contributors <https://jquery.org/>
-   * Released under MIT license <https://lodash.com/license>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   */
-
-  /** Used as references for various `Number` constants. */
-  var INFINITY = 1 / 0;
-
-  /** `Object#toString` result references. */
-  var symbolTag = '[object Symbol]';
-
-  /** Used to match Latin Unicode letters (excluding mathematical operators). */
-  var reLatin = /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g;
-
-  /** Used to compose unicode character classes. */
-  var rsComboMarksRange = '\\u0300-\\u036f\\ufe20-\\ufe23',
-      rsComboSymbolsRange = '\\u20d0-\\u20f0';
-
-  /** Used to compose unicode capture groups. */
-  var rsCombo = '[' + rsComboMarksRange + rsComboSymbolsRange + ']';
-
-  /**
-   * Used to match [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks) and
-   * [combining diacritical marks for symbols](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks_for_Symbols).
-   */
-  var reComboMark = RegExp(rsCombo, 'g');
-
-  /** Used to map Latin Unicode letters to basic Latin letters. */
-  var deburredLetters = {
-    // Latin-1 Supplement block.
-    '\xc0': 'A',  '\xc1': 'A', '\xc2': 'A', '\xc3': 'A', '\xc4': 'A', '\xc5': 'A',
-    '\xe0': 'a',  '\xe1': 'a', '\xe2': 'a', '\xe3': 'a', '\xe4': 'a', '\xe5': 'a',
-    '\xc7': 'C',  '\xe7': 'c',
-    '\xd0': 'D',  '\xf0': 'd',
-    '\xc8': 'E',  '\xc9': 'E', '\xca': 'E', '\xcb': 'E',
-    '\xe8': 'e',  '\xe9': 'e', '\xea': 'e', '\xeb': 'e',
-    '\xcc': 'I',  '\xcd': 'I', '\xce': 'I', '\xcf': 'I',
-    '\xec': 'i',  '\xed': 'i', '\xee': 'i', '\xef': 'i',
-    '\xd1': 'N',  '\xf1': 'n',
-    '\xd2': 'O',  '\xd3': 'O', '\xd4': 'O', '\xd5': 'O', '\xd6': 'O', '\xd8': 'O',
-    '\xf2': 'o',  '\xf3': 'o', '\xf4': 'o', '\xf5': 'o', '\xf6': 'o', '\xf8': 'o',
-    '\xd9': 'U',  '\xda': 'U', '\xdb': 'U', '\xdc': 'U',
-    '\xf9': 'u',  '\xfa': 'u', '\xfb': 'u', '\xfc': 'u',
-    '\xdd': 'Y',  '\xfd': 'y', '\xff': 'y',
-    '\xc6': 'Ae', '\xe6': 'ae',
-    '\xde': 'Th', '\xfe': 'th',
-    '\xdf': 'ss',
-    // Latin Extended-A block.
-    '\u0100': 'A',  '\u0102': 'A', '\u0104': 'A',
-    '\u0101': 'a',  '\u0103': 'a', '\u0105': 'a',
-    '\u0106': 'C',  '\u0108': 'C', '\u010a': 'C', '\u010c': 'C',
-    '\u0107': 'c',  '\u0109': 'c', '\u010b': 'c', '\u010d': 'c',
-    '\u010e': 'D',  '\u0110': 'D', '\u010f': 'd', '\u0111': 'd',
-    '\u0112': 'E',  '\u0114': 'E', '\u0116': 'E', '\u0118': 'E', '\u011a': 'E',
-    '\u0113': 'e',  '\u0115': 'e', '\u0117': 'e', '\u0119': 'e', '\u011b': 'e',
-    '\u011c': 'G',  '\u011e': 'G', '\u0120': 'G', '\u0122': 'G',
-    '\u011d': 'g',  '\u011f': 'g', '\u0121': 'g', '\u0123': 'g',
-    '\u0124': 'H',  '\u0126': 'H', '\u0125': 'h', '\u0127': 'h',
-    '\u0128': 'I',  '\u012a': 'I', '\u012c': 'I', '\u012e': 'I', '\u0130': 'I',
-    '\u0129': 'i',  '\u012b': 'i', '\u012d': 'i', '\u012f': 'i', '\u0131': 'i',
-    '\u0134': 'J',  '\u0135': 'j',
-    '\u0136': 'K',  '\u0137': 'k', '\u0138': 'k',
-    '\u0139': 'L',  '\u013b': 'L', '\u013d': 'L', '\u013f': 'L', '\u0141': 'L',
-    '\u013a': 'l',  '\u013c': 'l', '\u013e': 'l', '\u0140': 'l', '\u0142': 'l',
-    '\u0143': 'N',  '\u0145': 'N', '\u0147': 'N', '\u014a': 'N',
-    '\u0144': 'n',  '\u0146': 'n', '\u0148': 'n', '\u014b': 'n',
-    '\u014c': 'O',  '\u014e': 'O', '\u0150': 'O',
-    '\u014d': 'o',  '\u014f': 'o', '\u0151': 'o',
-    '\u0154': 'R',  '\u0156': 'R', '\u0158': 'R',
-    '\u0155': 'r',  '\u0157': 'r', '\u0159': 'r',
-    '\u015a': 'S',  '\u015c': 'S', '\u015e': 'S', '\u0160': 'S',
-    '\u015b': 's',  '\u015d': 's', '\u015f': 's', '\u0161': 's',
-    '\u0162': 'T',  '\u0164': 'T', '\u0166': 'T',
-    '\u0163': 't',  '\u0165': 't', '\u0167': 't',
-    '\u0168': 'U',  '\u016a': 'U', '\u016c': 'U', '\u016e': 'U', '\u0170': 'U', '\u0172': 'U',
-    '\u0169': 'u',  '\u016b': 'u', '\u016d': 'u', '\u016f': 'u', '\u0171': 'u', '\u0173': 'u',
-    '\u0174': 'W',  '\u0175': 'w',
-    '\u0176': 'Y',  '\u0177': 'y', '\u0178': 'Y',
-    '\u0179': 'Z',  '\u017b': 'Z', '\u017d': 'Z',
-    '\u017a': 'z',  '\u017c': 'z', '\u017e': 'z',
-    '\u0132': 'IJ', '\u0133': 'ij',
-    '\u0152': 'Oe', '\u0153': 'oe',
-    '\u0149': "'n", '\u017f': 'ss'
-  };
-
-  /** Detect free variable `global` from Node.js. */
-  var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
-
-  /** Detect free variable `self`. */
-  var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
-
-  /** Used as a reference to the global object. */
-  var root = freeGlobal || freeSelf || Function('return this')();
-
-  /**
-   * The base implementation of `_.propertyOf` without support for deep paths.
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @returns {Function} Returns the new accessor function.
-   */
-  function basePropertyOf(object) {
-    return function(key) {
-      return object == null ? undefined : object[key];
-    };
-  }
-
-  /**
-   * Used by `_.deburr` to convert Latin-1 Supplement and Latin Extended-A
-   * letters to basic Latin letters.
-   *
-   * @private
-   * @param {string} letter The matched letter to deburr.
-   * @returns {string} Returns the deburred letter.
-   */
-  var deburrLetter = basePropertyOf(deburredLetters);
-
-  /** Used for built-in method references. */
-  var objectProto = Object.prototype;
-
-  /**
-   * Used to resolve the
-   * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
-   * of values.
-   */
-  var objectToString = objectProto.toString;
-
-  /** Built-in value references. */
-  var Symbol$1 = root.Symbol;
-
-  /** Used to convert symbols to primitives and strings. */
-  var symbolProto = Symbol$1 ? Symbol$1.prototype : undefined,
-      symbolToString = symbolProto ? symbolProto.toString : undefined;
-
-  /**
-   * The base implementation of `_.toString` which doesn't convert nullish
-   * values to empty strings.
-   *
-   * @private
-   * @param {*} value The value to process.
-   * @returns {string} Returns the string.
-   */
-  function baseToString(value) {
-    // Exit early for strings to avoid a performance hit in some environments.
-    if (typeof value == 'string') {
-      return value;
-    }
-    if (isSymbol(value)) {
-      return symbolToString ? symbolToString.call(value) : '';
-    }
-    var result = (value + '');
-    return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
-  }
-
-  /**
-   * Checks if `value` is object-like. A value is object-like if it's not `null`
-   * and has a `typeof` result of "object".
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
-   * @example
-   *
-   * _.isObjectLike({});
-   * // => true
-   *
-   * _.isObjectLike([1, 2, 3]);
-   * // => true
-   *
-   * _.isObjectLike(_.noop);
-   * // => false
-   *
-   * _.isObjectLike(null);
-   * // => false
-   */
-  function isObjectLike(value) {
-    return !!value && typeof value == 'object';
-  }
-
-  /**
-   * Checks if `value` is classified as a `Symbol` primitive or object.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
-   * @example
-   *
-   * _.isSymbol(Symbol.iterator);
-   * // => true
-   *
-   * _.isSymbol('abc');
-   * // => false
-   */
-  function isSymbol(value) {
-    return typeof value == 'symbol' ||
-      (isObjectLike(value) && objectToString.call(value) == symbolTag);
-  }
-
-  /**
-   * Converts `value` to a string. An empty string is returned for `null`
-   * and `undefined` values. The sign of `-0` is preserved.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to process.
-   * @returns {string} Returns the string.
-   * @example
-   *
-   * _.toString(null);
-   * // => ''
-   *
-   * _.toString(-0);
-   * // => '-0'
-   *
-   * _.toString([1, 2, 3]);
-   * // => '1,2,3'
-   */
-  function toString(value) {
-    return value == null ? '' : baseToString(value);
-  }
-
-  /**
-   * Deburrs `string` by converting
-   * [Latin-1 Supplement](https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)#Character_table)
-   * and [Latin Extended-A](https://en.wikipedia.org/wiki/Latin_Extended-A)
-   * letters to basic Latin letters and removing
-   * [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks).
-   *
-   * @static
-   * @memberOf _
-   * @since 3.0.0
-   * @category String
-   * @param {string} [string=''] The string to deburr.
-   * @returns {string} Returns the deburred string.
-   * @example
-   *
-   * _.deburr('déjà vu');
-   * // => 'deja vu'
-   */
-  function deburr(string) {
-    string = toString(string);
-    return string && string.replace(reLatin, deburrLetter).replace(reComboMark, '');
-  }
-
-  var lodash_deburr = deburr;
-
-  var matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
-
-  var escapeStringRegexp = function (str) {
-  	if (typeof str !== 'string') {
-  		throw new TypeError('Expected a string');
-  	}
-
-  	return str.replace(matchOperatorsRe, '\\$&');
-  };
-
-  var replacements = [
-  	// German umlauts
-  	['ß', 'ss'],
-  	['ä', 'ae'],
-  	['Ä', 'Ae'],
-  	['ö', 'oe'],
-  	['Ö', 'Oe'],
-  	['ü', 'ue'],
-  	['Ü', 'Ue'],
-
-  	// Vietnamese
-  	['à', 'a'],
-  	['À', 'A'],
-  	['á', 'a'],
-  	['Á', 'A'],
-  	['â', 'a'],
-  	['Â', 'A'],
-  	['ã', 'a'],
-  	['Ã', 'A'],
-  	['è', 'e'],
-  	['È', 'E'],
-  	['é', 'e'],
-  	['É', 'E'],
-  	['ê', 'e'],
-  	['Ê', 'E'],
-  	['ì', 'i'],
-  	['Ì', 'I'],
-  	['í', 'i'],
-  	['Í', 'I'],
-  	['ò', 'o'],
-  	['Ò', 'O'],
-  	['ó', 'o'],
-  	['Ó', 'O'],
-  	['ô', 'o'],
-  	['Ô', 'O'],
-  	['õ', 'o'],
-  	['Õ', 'O'],
-  	['ù', 'u'],
-  	['Ù', 'U'],
-  	['ú', 'u'],
-  	['Ú', 'U'],
-  	['ý', 'y'],
-  	['Ý', 'Y'],
-  	['ă', 'a'],
-  	['Ă', 'A'],
-  	['Đ', 'D'],
-  	['đ', 'd'],
-  	['ĩ', 'i'],
-  	['Ĩ', 'I'],
-  	['ũ', 'u'],
-  	['Ũ', 'U'],
-  	['ơ', 'o'],
-  	['Ơ', 'O'],
-  	['ư', 'u'],
-  	['Ư', 'U'],
-  	['ạ', 'a'],
-  	['Ạ', 'A'],
-  	['ả', 'a'],
-  	['Ả', 'A'],
-  	['ấ', 'a'],
-  	['Ấ', 'A'],
-  	['ầ', 'a'],
-  	['Ầ', 'A'],
-  	['ẩ', 'a'],
-  	['Ẩ', 'A'],
-  	['ẫ', 'a'],
-  	['Ẫ', 'A'],
-  	['ậ', 'a'],
-  	['Ậ', 'A'],
-  	['ắ', 'a'],
-  	['Ắ', 'A'],
-  	['ằ', 'a'],
-  	['Ằ', 'A'],
-  	['ẳ', 'a'],
-  	['Ẳ', 'A'],
-  	['ẵ', 'a'],
-  	['Ẵ', 'A'],
-  	['ặ', 'a'],
-  	['Ặ', 'A'],
-  	['ẹ', 'e'],
-  	['Ẹ', 'E'],
-  	['ẻ', 'e'],
-  	['Ẻ', 'E'],
-  	['ẽ', 'e'],
-  	['Ẽ', 'E'],
-  	['ế', 'e'],
-  	['Ế', 'E'],
-  	['ề', 'e'],
-  	['Ề', 'E'],
-  	['ể', 'e'],
-  	['Ể', 'E'],
-  	['ễ', 'e'],
-  	['Ễ', 'E'],
-  	['ệ', 'e'],
-  	['Ệ', 'E'],
-  	['ỉ', 'i'],
-  	['Ỉ', 'I'],
-  	['ị', 'i'],
-  	['Ị', 'I'],
-  	['ọ', 'o'],
-  	['Ọ', 'O'],
-  	['ỏ', 'o'],
-  	['Ỏ', 'O'],
-  	['ố', 'o'],
-  	['Ố', 'O'],
-  	['ồ', 'o'],
-  	['Ồ', 'O'],
-  	['ổ', 'o'],
-  	['Ổ', 'O'],
-  	['ỗ', 'o'],
-  	['Ỗ', 'O'],
-  	['ộ', 'o'],
-  	['Ộ', 'O'],
-  	['ớ', 'o'],
-  	['Ớ', 'O'],
-  	['ờ', 'o'],
-  	['Ờ', 'O'],
-  	['ở', 'o'],
-  	['Ở', 'O'],
-  	['ỡ', 'o'],
-  	['Ỡ', 'O'],
-  	['ợ', 'o'],
-  	['Ợ', 'O'],
-  	['ụ', 'u'],
-  	['Ụ', 'U'],
-  	['ủ', 'u'],
-  	['Ủ', 'U'],
-  	['ứ', 'u'],
-  	['Ứ', 'U'],
-  	['ừ', 'u'],
-  	['Ừ', 'U'],
-  	['ử', 'u'],
-  	['Ử', 'U'],
-  	['ữ', 'u'],
-  	['Ữ', 'U'],
-  	['ự', 'u'],
-  	['Ự', 'U'],
-  	['ỳ', 'y'],
-  	['Ỳ', 'Y'],
-  	['ỵ', 'y'],
-  	['Ỵ', 'Y'],
-  	['ỷ', 'y'],
-  	['Ỷ', 'Y'],
-  	['ỹ', 'y'],
-  	['Ỹ', 'Y'],
-
-  	// Arabic
-  	['ء', 'e'],
-  	['آ', 'a'],
-  	['أ', 'a'],
-  	['ؤ', 'w'],
-  	['إ', 'i'],
-  	['ئ', 'y'],
-  	['ا', 'a'],
-  	['ب', 'b'],
-  	['ة', 't'],
-  	['ت', 't'],
-  	['ث', 'th'],
-  	['ج', 'j'],
-  	['ح', 'h'],
-  	['خ', 'kh'],
-  	['د', 'd'],
-  	['ذ', 'dh'],
-  	['ر', 'r'],
-  	['ز', 'z'],
-  	['س', 's'],
-  	['ش', 'sh'],
-  	['ص', 's'],
-  	['ض', 'd'],
-  	['ط', 't'],
-  	['ظ', 'z'],
-  	['ع', 'e'],
-  	['غ', 'gh'],
-  	['ـ', '_'],
-  	['ف', 'f'],
-  	['ق', 'q'],
-  	['ك', 'k'],
-  	['ل', 'l'],
-  	['م', 'm'],
-  	['ن', 'n'],
-  	['ه', 'h'],
-  	['و', 'w'],
-  	['ى', 'a'],
-  	['ي', 'y'],
-  	['َ‎', 'a'],
-  	['ُ', 'u'],
-  	['ِ‎', 'i'],
-  	['٠', '0'],
-  	['١', '1'],
-  	['٢', '2'],
-  	['٣', '3'],
-  	['٤', '4'],
-  	['٥', '5'],
-  	['٦', '6'],
-  	['٧', '7'],
-  	['٨', '8'],
-  	['٩', '9'],
-
-  	// Persian / Farsi
-  	['چ', 'ch'],
-  	['ک', 'k'],
-  	['گ', 'g'],
-  	['پ', 'p'],
-  	['ژ', 'zh'],
-  	['ی', 'y'],
-  	['۰', '0'],
-  	['۱', '1'],
-  	['۲', '2'],
-  	['۳', '3'],
-  	['۴', '4'],
-  	['۵', '5'],
-  	['۶', '6'],
-  	['۷', '7'],
-  	['۸', '8'],
-  	['۹', '9'],
-
-  	// Pashto
-  	['ټ', 'p'],
-  	['ځ', 'z'],
-  	['څ', 'c'],
-  	['ډ', 'd'],
-  	['ﺫ', 'd'],
-  	['ﺭ', 'r'],
-  	['ړ', 'r'],
-  	['ﺯ', 'z'],
-  	['ږ', 'g'],
-  	['ښ', 'x'],
-  	['ګ', 'g'],
-  	['ڼ', 'n'],
-  	['ۀ', 'e'],
-  	['ې', 'e'],
-  	['ۍ', 'ai'],
-
-  	// Urdu
-  	['ٹ', 't'],
-  	['ڈ', 'd'],
-  	['ڑ', 'r'],
-  	['ں', 'n'],
-  	['ہ', 'h'],
-  	['ھ', 'h'],
-  	['ے', 'e'],
-
-  	// Russian
-  	['А', 'A'],
-  	['а', 'a'],
-  	['Б', 'B'],
-  	['б', 'b'],
-  	['В', 'V'],
-  	['в', 'v'],
-  	['Г', 'G'],
-  	['г', 'g'],
-  	['Д', 'D'],
-  	['д', 'd'],
-  	['Е', 'E'],
-  	['е', 'e'],
-  	['Ж', 'Zh'],
-  	['ж', 'zh'],
-  	['З', 'Z'],
-  	['з', 'z'],
-  	['И', 'I'],
-  	['и', 'i'],
-  	['Й', 'J'],
-  	['й', 'j'],
-  	['К', 'K'],
-  	['к', 'k'],
-  	['Л', 'L'],
-  	['л', 'l'],
-  	['М', 'M'],
-  	['м', 'm'],
-  	['Н', 'N'],
-  	['н', 'n'],
-  	['О', 'O'],
-  	['о', 'o'],
-  	['П', 'P'],
-  	['п', 'p'],
-  	['Р', 'R'],
-  	['р', 'r'],
-  	['С', 'S'],
-  	['с', 's'],
-  	['Т', 'T'],
-  	['т', 't'],
-  	['У', 'U'],
-  	['у', 'u'],
-  	['Ф', 'F'],
-  	['ф', 'f'],
-  	['Х', 'H'],
-  	['х', 'h'],
-  	['Ц', 'Cz'],
-  	['ц', 'cz'],
-  	['Ч', 'Ch'],
-  	['ч', 'ch'],
-  	['Ш', 'Sh'],
-  	['ш', 'sh'],
-  	['Щ', 'Shh'],
-  	['щ', 'shh'],
-  	['Ъ', ''],
-  	['ъ', ''],
-  	['Ы', 'Y'],
-  	['ы', 'y'],
-  	['Ь', ''],
-  	['ь', ''],
-  	['Э', 'E'],
-  	['э', 'e'],
-  	['Ю', 'Yu'],
-  	['ю', 'yu'],
-  	['Я', 'Ya'],
-  	['я', 'ya'],
-  	['Ё', 'Yo'],
-  	['ё', 'yo'],
-
-  	// Romanian
-  	['ș', 's'],
-  	['Ș', 's'],
-  	['ț', 't'],
-  	['Ț', 't'],
-
-  	// Turkish
-  	['ş', 's'],
-  	['Ş', 's'],
-  	['ç', 'c'],
-  	['Ç', 'c'],
-  	['ğ', 'g'],
-  	['Ğ', 'g'],
-  	['ı', 'i'],
-  	['İ', 'i']
-  ];
-
-  var overridableReplacements = [
-  	['&', ' and '],
-  	['🦄', ' unicorn '],
-  	['♥', ' love ']
-  ];
-
-  const decamelize = string => {
-  	return string
-  		.replace(/([a-z\d])([A-Z])/g, '$1 $2')
-  		.replace(/([A-Z]+)([A-Z][a-z\d]+)/g, '$1 $2');
-  };
-
-  const doCustomReplacements = (string, replacements) => {
-  	for (const [key, value] of replacements) {
-  		string = string.replace(new RegExp(escapeStringRegexp(key), 'g'), value);
-  	}
-
-  	return string;
-  };
-
-  const removeMootSeparators = (string, separator) => {
-  	return string
-  		.replace(new RegExp(`${separator}{2,}`, 'g'), separator)
-  		.replace(new RegExp(`^${separator}|${separator}$`, 'g'), '');
-  };
-
-  const slugify = (string, options) => {
-  	if (typeof string !== 'string') {
-  		throw new TypeError(`Expected a string, got \`${typeof string}\``);
-  	}
-
-  	options = {
-  		separator: '-',
-  		lowercase: true,
-  		decamelize: true,
-  		customReplacements: [],
-  		...options
-  	};
-
-  	const separator = escapeStringRegexp(options.separator);
-  	const customReplacements = new Map([
-  		...overridableReplacements,
-  		...options.customReplacements,
-  		...replacements
-  	]);
-
-  	string = doCustomReplacements(string, customReplacements);
-  	string = lodash_deburr(string);
-  	string = string.normalize('NFKD');
-
-  	if (options.decamelize) {
-  		string = decamelize(string);
-  	}
-
-  	let patternSlug = /[^a-zA-Z\d]+/g;
-
-  	if (options.lowercase) {
-  		string = string.toLowerCase();
-  		patternSlug = /[^a-z\d]+/g;
-  	}
-
-  	string = string.replace(patternSlug, separator);
-  	string = string.replace(/\\/g, '');
-  	string = removeMootSeparators(string, separator);
-
-  	return string;
-  };
-
-  var slugify_1 = slugify;
-  // TODO: Remove this for the next major release
-  var default_1 = slugify;
-  slugify_1.default = default_1;
-
-  var bilibili = 'https://live.bilibili.com';
-  var github = 'https://github.com/zhw2590582/bilibili-live-recorder';
-  var webstore = 'https://chrome.google.com/webstore/category/extensions';
+  var BILIBILI = 'https://live.bilibili.com';
+  var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
+  var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions';
+  var BEFORE_RECORD = 'before_record';
+  var START_RECORD = 'start_record';
+  var STOP_RECORD = 'stop_record';
+  var START_DOWNLOAD = 'start_download';
 
   function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {
@@ -12640,28 +11993,35 @@
       contextMessage: text
     });
   }
+  function isBilibiliRoom(url) {
+    var urlObj = new URL(url);
+    var isBilibili = urlObj.origin === BILIBILI;
+    var isRoom = /^\d+$/.test(urlObj.pathname.slice(1));
+    return isBilibili && isRoom;
+  }
 
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
   var index = new Vue({
     el: '#app',
     data: {
+      bilibiliRoom: true,
+      panel: 'panel_basis',
       manifest: chrome.runtime.getManifest(),
       logo: chrome.extension.getURL('icons/icon48.png'),
       donate: chrome.extension.getURL('icons/donate.png'),
-      panel: 'panel_basis',
-      state: 'before_record',
-      isBilibili: true,
       config: {
-        name: '',
-        format: 'flv',
         url: '',
-        duration: 10,
+        name: '',
+        room: '',
         chunk: 0,
-        room: ''
-      },
-      file: {
-        duration: 0,
-        size: 0,
-        debug: ''
+        debug: '',
+        duration: 10,
+        format: 'flv',
+        currentSize: 0,
+        currentDuration: 0,
+        state: BEFORE_RECORD
       }
     },
     computed: {
@@ -12677,23 +12037,38 @@
       }, function (tabs) {
         if (tabs && tabs[0]) {
           var tab = tabs[0];
-          var url = new URL(tab.url);
-          _this.isBilibili = url.origin === bilibili;
-          _this.config.name = tab.title;
-          _this.config.url = url.origin + url.pathname;
-          _this.config.room = url.pathname.slice(1);
+          var bilibiliRoom = isBilibiliRoom(tab.url);
+          _this.bilibiliRoom = bilibiliRoom;
+
+          if (bilibiliRoom) {
+            _this.config.url = tab.url;
+            _this.config.name = tab.title;
+          }
+        }
+      });
+      chrome.runtime.onMessage.addListener(function (request) {
+        var type = request.type,
+            data = request.data;
+
+        switch (type) {
+          case 'config':
+            _this.config = data;
+            break;
+
+          default:
+            break;
         }
       });
     },
     methods: {
       goWebstore: function goWebstore() {
         chrome.tabs.create({
-          url: webstore
+          url: WEBSTORE
         });
       },
       goGithub: function goGithub() {
         chrome.tabs.create({
-          url: github
+          url: GITHUB
         });
       },
       goRoom: function goRoom() {
@@ -12705,21 +12080,38 @@
         this.panel = panel;
       },
       startRecord: function startRecord() {
-        if (this.isBilibili && this.config.room) {
-          this.config.name = slugify_1(this.config.name);
-          this.state = 'start_record';
-          notify('录制任务创建成功！', this.fileUrl);
+        var _this2 = this;
+
+        if (this.bilibiliRoom) {
+          chrome.runtime.sendMessage({
+            type: START_RECORD,
+            data: _objectSpread({}, this.config)
+          }, function () {
+            notify('录制任务创建成功！', _this2.fileUrl);
+          });
         } else {
           notify('请先打开Bilibili直播间');
         }
       },
       stopRecord: function stopRecord() {
-        this.state = 'after_record';
-        notify('录制任务已经停止，可以下载了', this.fileUrl);
+        var _this3 = this;
+
+        chrome.runtime.sendMessage({
+          type: STOP_RECORD,
+          data: _objectSpread({}, this.config)
+        }, function () {
+          notify('录制任务已经停止', _this3.fileUrl);
+        });
       },
       startDownload: function startDownload() {
-        this.state = 'before_record';
-        notify('录制文件开始下载！', this.fileUrl);
+        var _this4 = this;
+
+        chrome.runtime.sendMessage({
+          type: START_DOWNLOAD,
+          data: _objectSpread({}, this.config)
+        }, function () {
+          notify('录制文件开始下载！', _this4.fileUrl);
+        });
       }
     }
   });

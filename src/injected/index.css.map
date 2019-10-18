@@ -1,1 +1,1 @@
-{"version":3,"sources":["index.scss"],"names":[],"mappings":"AAAA,KACE,eAAkB","file":"index.css","sourcesContent":["body {\n  background: #fff; }\n"]}
+{"version":3,"sources":["index.scss"],"names":[],"mappings":"AAAA,wBACE,eAAkB","file":"index.css","sourcesContent":[".bilibili-live-recorder {\n  background: #fff; }\n"]}

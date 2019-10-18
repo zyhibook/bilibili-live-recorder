@@ -68,6 +68,12 @@
   var Background = function Background() {
     classCallCheck(this, Background);
 
+    chrome.runtime.onMessage.addListener(function (request, sender, callback) {
+      var type = request.type,
+          data = request.data;
+
+      callback();
+    });
     chrome.notifications.onClicked.addListener(function (id) {
       chrome.notifications.clear(id);
     });

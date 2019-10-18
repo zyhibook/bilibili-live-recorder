@@ -21,18 +21,18 @@
                     <a href="#" class="feedback" @click="goGithub">反馈</a>
                 </header>
                 <section class="main">
-                    <div class="btn startRecord" v-if="state === 'before_record'" @click="startRecord">
+                    <div class="btn startRecord" v-if="config.state === 'before_record'" @click="startRecord">
                         开始录制
                     </div>
-                    <div class="btn stopRecord" v-if="state === 'start_record'" @click="stopRecord">
+                    <div class="btn stopRecord" v-if="config.state === 'recording'" @click="stopRecord">
                         停止录制
                     </div>
-                    <div class="btn download" v-if="state === 'after_record'" @click="startDownload">
+                    <div class="btn download" v-if="config.state === 'after_record'" @click="startDownload">
                         下载视频
                     </div>
                 </section>
                 <section class="info">
-                    <div class="record_config" v-if="state === 'before_record'">
+                    <div class="record_config" v-if="config.state === 'before_record'">
                         <div class="item">
                             <div class="name">录制文件：</div>
                             <div class="value">
@@ -46,7 +46,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="record_info" v-if="state === 'start_record' || state === 'after_record'">
+                    <div class="record_info" v-if="config.state === 'recording' || config.state === 'after_record'">
                         <div class="item">
                             <div class="name">直播地址：</div>
                             <div class="value link" @click="goRoom" :title="config.url">{{config.url}}</div>
@@ -61,11 +61,11 @@
                         </div>
                         <div class="item">
                             <div class="name">当前时长：</div>
-                            <div class="value">{{file.duration}}分钟</div>
+                            <div class="value">{{config.currentDuration}}分钟</div>
                         </div>
                         <div class="item">
                             <div class="name">当前大小：</div>
-                            <div class="value">{{file.size}}M</div>
+                            <div class="value">{{config.currentSize}}M</div>
                         </div>
                     </div>
                 </section>
@@ -96,7 +96,7 @@
                     <div class="item">
                         <div class="name">Debug日志：</div>
                         <div class="value">
-                            <textarea cols="30" disabled v-model="file.debug"
+                            <textarea cols="30" disabled v-model="config.debug"
                                 placeholder="遇到疑难杂症时可以把Debug日志发给作者。"></textarea>
                         </div>
                     </div>

@@ -1,3 +1,5 @@
+import { BILIBILI } from '../constant';
+
 export function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {
         type: 'basic',
@@ -11,6 +13,13 @@ export function notify(text, name) {
 export function badge(text) {
     chrome.browserAction.setBadgeText({ text: text });
     chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
+}
+
+export function isBilibiliRoom(url) {
+    const urlObj = new URL(url);
+    const isBilibili = urlObj.origin === BILIBILI;
+    const isRoom = /^\d+$/.test(urlObj.pathname.slice(1));
+    return isBilibili && isRoom;
 }
 
 export function getNowTime() {
