@@ -34,6 +34,7 @@
         "rollup-plugin-terser": "^5.1.2"
     },
     "dependencies": {
+        "filenamify": "^4.1.0",
         "normalize.css": "^8.0.1",
         "vue": "^2.6.10"
     }

@@ -1,8 +1,10 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  (global = global || self, global.Popup = factory());
-}(this, function () { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('path')) :
+  typeof define === 'function' && define.amd ? define(['path'], factory) :
+  (global = global || self, global.Popup = factory(global.path));
+}(this, function (path) { 'use strict';
+
+  path = path && path.hasOwnProperty('default') ? path['default'] : path;
 
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -11959,19 +11961,118 @@
 
   var Vue = unwrapExports(vue);
 
+  var matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
+
+  var escapeStringRegexp = function (str) {
+  	if (typeof str !== 'string') {
+  		throw new TypeError('Expected a string');
+  	}
+
+  	return str.replace(matchOperatorsRe, '\\$&');
+  };
+
+  var trimRepeated = function (str, target) {
+  	if (typeof str !== 'string' || typeof target !== 'string') {
+  		throw new TypeError('Expected a string');
+  	}
+
+  	return str.replace(new RegExp('(?:' + escapeStringRegexp(target) + '){2,}', 'g'), target);
+  };
+
+  /* eslint-disable no-control-regex */
+  // TODO: remove parens when Node.js 6 is targeted. Node.js 4 barfs at it.
+  var filenameReservedRegex = () => (/[<>:"\/\\|?*\x00-\x1F]/g);
+  var windowsNames = () => (/^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i);
+  filenameReservedRegex.windowsNames = windowsNames;
+
+  var stripOuter = function (str, sub) {
+  	if (typeof str !== 'string' || typeof sub !== 'string') {
+  		throw new TypeError();
+  	}
+
+  	sub = escapeStringRegexp(sub);
+  	return str.replace(new RegExp('^' + sub + '|' + sub + '$', 'g'), '');
+  };
+
+  // Doesn't make sense to have longer filenames
+  const MAX_FILENAME_LENGTH = 100;
+
+  const reControlChars = /[\u0000-\u001f\u0080-\u009f]/g; // eslint-disable-line no-control-regex
+  const reRelativePath = /^\.+/;
+
+  const filenamify = (string, options = {}) => {
+  	if (typeof string !== 'string') {
+  		throw new TypeError('Expected a string');
+  	}
+
+  	const replacement = options.replacement === undefined ? '!' : options.replacement;
+
+  	if (filenameReservedRegex().test(replacement) && reControlChars.test(replacement)) {
+  		throw new Error('Replacement string cannot contain reserved filename characters');
+  	}
+
+  	string = string.replace(filenameReservedRegex(), replacement);
+  	string = string.replace(reControlChars, replacement);
+  	string = string.replace(reRelativePath, replacement);
+
+  	if (replacement.length > 0) {
+  		string = trimRepeated(string, replacement);
+  		string = string.length > 1 ? stripOuter(string, replacement) : string;
+  	}
+
+  	string = filenameReservedRegex.windowsNames().test(string) ? string + replacement : string;
+  	string = string.slice(0, typeof options.maxLength === 'number' ? options.maxLength : MAX_FILENAME_LENGTH);
+
+  	return string;
+  };
+
+  filenamify.path = (filePath, options) => {
+  	filePath = path.resolve(filePath);
+  	return path.join(path.dirname(filePath), filenamify(path.basename(filePath), options));
+  };
+
+  var filenamify_1 = filenamify;
+
   var bilibili = 'https://live.bilibili.com';
   var github = 'https://github.com/zhw2590582/bilibili-live-recorder';
   var webstore = 'https://chrome.google.com/webstore/category/extensions';
+
+  function notify(text, name) {
+    chrome.notifications.create(String(Math.random()), {
+      type: 'basic',
+      iconUrl: chrome.extension.getURL('icons/icon128.png'),
+      title: 'Bilibili 直播间录制器',
+      message: name || '',
+      contextMessage: text
+    });
+  }
 
   var index = new Vue({
     el: '#app',
     data: {
       manifest: chrome.runtime.getManifest(),
+      logo: chrome.extension.getURL('icons/icon48.png'),
+      donate: chrome.extension.getURL('icons/donate.png'),
       panel: 'panel_basis',
-      state: 'download',
+      state: 'before_record',
       isBilibili: true,
-      range: 10,
-      name: ''
+      config: {
+        name: '',
+        format: 'flv',
+        url: '',
+        duration: 10,
+        room: ''
+      },
+      file: {
+        duration: 0,
+        size: 0,
+        debug: ''
+      }
+    },
+    computed: {
+      fileUrl: function fileUrl() {
+        return this.config.name + '.' + this.config.format;
+      }
     },
     mounted: function mounted() {
       var _this = this;
@@ -11981,8 +12082,11 @@
       }, function (tabs) {
         if (tabs && tabs[0]) {
           var tab = tabs[0];
-          _this.isBilibili = tab.url.startsWith(bilibili);
-          _this.name = tab.title;
+          var url = new URL(tab.url);
+          _this.isBilibili = url.origin === bilibili;
+          _this.config.name = tab.title;
+          _this.config.url = url.origin + url.pathname;
+          _this.config.room = url.pathname.slice(1);
         }
       });
     },
@@ -11997,17 +12101,30 @@
           url: github
         });
       },
+      goRoom: function goRoom() {
+        chrome.tabs.create({
+          url: this.config.url
+        });
+      },
       showPanel: function showPanel(panel) {
         this.panel = panel;
       },
-      startRecordFn: function startRecordFn() {
-        console.log('startRecordFn');
+      startRecord: function startRecord() {
+        if (this.isBilibili && this.config.room) {
+          this.config.name = filenamify_1(this.config.name);
+          this.state = 'start_record';
+          notify('录制任务创建成功！', this.fileUrl);
+        } else {
+          notify('请先打开Bilibili直播间');
+        }
       },
-      stopRecordFn: function stopRecordFn() {
-        console.log('stopRecordFn');
+      stopRecord: function stopRecord() {
+        this.state = 'after_record';
+        notify('录制任务已经停止，可以下载了', this.fileUrl);
       },
-      downloadFn: function downloadFn() {
-        console.log('downloadFn');
+      startDownload: function startDownload() {
+        this.state = 'before_record';
+        notify('录制文件开始下载！', this.fileUrl);
       }
     }
   });

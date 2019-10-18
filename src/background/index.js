@@ -68,12 +68,8 @@
   var Background = function Background() {
     classCallCheck(this, Background);
 
-    console.log(this.constructor.name);
-    chrome.browserAction.setBadgeText({
-      text: 'ON'
-    });
-    chrome.browserAction.setBadgeBackgroundColor({
-      color: 'red'
+    chrome.notifications.onClicked.addListener(function (id) {
+      chrome.notifications.clear(id);
     });
   };
 

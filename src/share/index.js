@@ -1,3 +1,18 @@
+export function notify(text, name) {
+    chrome.notifications.create(String(Math.random()), {
+        type: 'basic',
+        iconUrl: chrome.extension.getURL('icons/icon128.png'),
+        title: 'Bilibili 直播间录制器',
+        message: name || '',
+        contextMessage: text,
+    });
+}
+
+export function badge(text) {
+    chrome.browserAction.setBadgeText({ text: text });
+    chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
+}
+
 export function getNowTime() {
     if (performance && typeof performance.now === 'function') {
         return performance.now();

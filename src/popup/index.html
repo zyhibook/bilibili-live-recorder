@@ -14,33 +14,58 @@
         <div :class="{panels: true, [panel]: true}">
             <div class="panel basis">
                 <header class="header">
-                    <a href="#" class="title" @click="goWebstore">Bilibili 直播间录制器 {{manifest.version}}</a>
+                    <a href="#" class="title" @click="goWebstore">
+                        <img :src="logo" width="20" height="20">
+                        Bilibili 直播间录制器 {{manifest.version}}
+                    </a>
                     <a href="#" class="feedback" @click="goGithub">反馈</a>
                 </header>
                 <section class="main">
-                    <div class="btn startRecord" v-if="state === 'startRecord'" @click="startRecordFn">
+                    <div class="btn startRecord" v-if="state === 'before_record'" @click="startRecord">
                         开始录制
                     </div>
-                    <div class="btn stopRecord" v-if="state === 'stopRecord'" @click="stopRecordFn">
+                    <div class="btn stopRecord" v-if="state === 'start_record'" @click="stopRecord">
                         停止录制
                     </div>
-                    <div class="btn download" v-if="state === 'download'" @click="downloadFn">
+                    <div class="btn download" v-if="state === 'after_record'" @click="startDownload">
                         下载视频
                     </div>
                 </section>
                 <section class="info">
-                    <div class="record_config" v-if="state === 'startRecord'">
+                    <div class="record_config" v-if="state === 'before_record'">
                         <div class="item">
                             <div class="name">录制文件：</div>
                             <div class="value">
-                                <input type="text" v-model="name" maxlength="50" placeholder="请输入文件名">
+                                <input type="text" v-model="config.name" maxlength="50" placeholder="请输入文件名">
                             </div>
                         </div>
                         <div class="item">
-                            <div class="name">录制时长：{{range}}分钟</div>
+                            <div class="name">录制时长：{{config.duration}}分钟</div>
                             <div class="value">
-                                <input type="range" v-model="range" min="5" max="60" step="5">
+                                <input type="range" v-model="config.duration" min="5" max="60" step="5">
                             </div>
+                        </div>
+                    </div>
+                    <div class="record_info" v-if="state === 'start_record' || state === 'after_record'">
+                        <div class="item">
+                            <div class="name">直播地址：</div>
+                            <div class="value link" @click="goRoom" :title="config.url">{{config.url}}</div>
+                        </div>
+                        <div class="item">
+                            <div class="name">文件名字：</div>
+                            <div class="value" :title="fileUrl">{{fileUrl}}</div>
+                        </div>
+                        <div class="item">
+                            <div class="name">最大时长：</div>
+                            <div class="value">{{config.duration}}分钟</div>
+                        </div>
+                        <div class="item">
+                            <div class="name">当前时长：</div>
+                            <div class="value">{{file.duration}}分钟</div>
+                        </div>
+                        <div class="item">
+                            <div class="name">当前大小：</div>
+                            <div class="value">{{file.size}}M</div>
                         </div>
                     </div>
                 </section>
@@ -52,6 +77,27 @@
                 <header class="header" @click="showPanel('panel_basis')">
                     ↑基础设置↑
                 </header>
+                <section class="main">
+                    <div class="item">
+                        <div class="name">文件类型：</div>
+                        <div class="value">
+                            <select v-model="config.format">
+                                <option value="flv" selected>FLV</option>
+                                <option value="mp4" disabled>MP4 - 即将发布</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="name">Debug日志：</div>
+                        <div class="value">
+                            <textarea cols="30" disabled v-model="file.debug"
+                                placeholder="遇到疑难杂症时可以把Debug日志发给作者。"></textarea>
+                        </div>
+                    </div>
+                </section>
+                <footer class="footer">
+                    <img :src="donate">
+                </footer>
             </div>
         </div>
     </div>

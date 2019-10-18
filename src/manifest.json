@@ -16,6 +16,7 @@
     "permissions": [
         "tabs",
         "webRequest",
+        "notifications",
         "*://*.bilibili.com/*"
     ],
     "browser_action": {
