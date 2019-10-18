@@ -6,9 +6,12 @@ import { bilibili, github, webstore } from '../../constant';
 export default new Vue({
     el: '#app',
     data: {
-        message: 'Hello Vue!',
+        manifest: chrome.runtime.getManifest(),
         panel: 'panel_basis',
         state: 'before_record',
+        isBilibili: true,
+        range: 10,
+        name: '',
     },
     mounted() {
         chrome.tabs.query(
@@ -18,20 +21,19 @@ export default new Vue({
             tabs => {
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
-                    console.log(tab);
-                    // const { version } = chrome.runtime.getManifest();
-                    // this.$version.textContent = version;
-                    // this.$version.addEventListener('click', () => {
-                    //     chrome.tabs.create({ url: webstore });
-                    // });
-                    // this.$feedback.addEventListener('click', () => {
-                    //     chrome.tabs.create({ url: github });
-                    // });
+                    this.isBilibili = tab.url.startsWith(bilibili);
+                    this.name = tab.title;
                 }
             },
         );
     },
     methods: {
+        goWebstore() {
+            chrome.tabs.create({ url: webstore });
+        },
+        goGithub() {
+            chrome.tabs.create({ url: github });
+        },
         showPanel(panel) {
             this.panel = panel;
         },

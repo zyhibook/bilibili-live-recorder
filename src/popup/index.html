@@ -14,7 +14,8 @@
         <div :class="{panels: true, [panel]: true}">
             <div class="panel basis">
                 <header class="header">
-                    {{ message }}
+                    <a href="#" class="title" @click="goWebstore">Bilibili 直播间录制器 {{manifest.version}}</a>
+                    <a href="#" class="feedback" @click="goGithub">反馈</a>
                 </header>
                 <section class="main">
                     <div class="btn recorder" v-if="state === 'before_record'">
@@ -22,7 +23,20 @@
                     </div>
                 </section>
                 <section class="info">
-                    info
+                    <div class="record_config" v-if="state === 'before_record'">
+                        <div class="item">
+                            <div class="name">录制文件：</div>
+                            <div class="value">
+                                <input type="text" v-model="name" maxlength="50" placeholder="请输入文件名">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="name">录制时长：{{range}}分钟</div>
+                            <div class="value">
+                                <input type="range" v-model="range" min="5" max="60" step="5">
+                            </div>
+                        </div>
+                    </div>
                 </section>
                 <footer class="footer" @click="showPanel('panel_advanced')">
                     高级设置

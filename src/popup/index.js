@@ -11959,31 +11959,44 @@
 
   var Vue = unwrapExports(vue);
 
+  var bilibili = 'https://live.bilibili.com';
+  var github = 'https://github.com/zhw2590582/bilibili-live-recorder';
+  var webstore = 'https://chrome.google.com/webstore/category/extensions';
+
   var index = new Vue({
     el: '#app',
     data: {
-      message: 'Hello Vue!',
+      manifest: chrome.runtime.getManifest(),
       panel: 'panel_basis',
-      state: 'before_record'
+      state: 'before_record',
+      isBilibili: true,
+      range: 10,
+      name: ''
     },
     mounted: function mounted() {
+      var _this = this;
+
       chrome.tabs.query({
         active: true
       }, function (tabs) {
         if (tabs && tabs[0]) {
           var tab = tabs[0];
-          console.log(tab); // const { version } = chrome.runtime.getManifest();
-          // this.$version.textContent = version;
-          // this.$version.addEventListener('click', () => {
-          //     chrome.tabs.create({ url: webstore });
-          // });
-          // this.$feedback.addEventListener('click', () => {
-          //     chrome.tabs.create({ url: github });
-          // });
+          _this.isBilibili = tab.url.startsWith(bilibili);
+          _this.name = tab.title;
         }
       });
     },
     methods: {
+      goWebstore: function goWebstore() {
+        chrome.tabs.create({
+          url: webstore
+        });
+      },
+      goGithub: function goGithub() {
+        chrome.tabs.create({
+          url: github
+        });
+      },
       showPanel: function showPanel(panel) {
         this.panel = panel;
       }
