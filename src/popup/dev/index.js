@@ -73,6 +73,7 @@ export default new Vue({
                             data: tab,
                         },
                         config => {
+                            console.log(config);
                             if (config) {
                                 this.config = config;
                             }

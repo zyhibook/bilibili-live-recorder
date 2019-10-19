@@ -4,6 +4,23 @@
   (global = global || self, global.Content = factory());
 }(this, function () { 'use strict';
 
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  var defineProperty = _defineProperty;
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -49,6 +66,8 @@
   // 常用
   var LIVE = 'https://live.bilibili.com';
 
+  var BEFORE_RECORD = 'before_record';
+
   var TAB_INFO = 'tab_info';
   var START_RECORD = 'start_record';
   var STOP_RECORD = 'stop_record';
@@ -57,6 +76,10 @@
   var MP4_BUFFER = 'mp4_buffer';
   var FLV_BUFFER = 'flv_buffer';
   var NOTIFY = 'notify';
+
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
   var Content =
   /*#__PURE__*/
@@ -79,23 +102,18 @@
 
         switch (type) {
           case NOTIFY:
-            chrome.runtime.sendMessage({
-              type: NOTIFY,
-              data: data
-            });
+            _this.notify(data);
+
             break;
 
           case UPDATE_CONFIG:
-            chrome.runtime.sendMessage({
-              type: UPDATE_CONFIG,
-              data: data
-            });
+            _this.updateConfig(data);
+
             break;
 
           case START_DOWNLOAD:
-            var url = URL.createObjectURL(new Blob([data]));
-            var name = _this.config.name + '.' + _this.config.format;
-            download(url, name);
+            _this.download(data);
+
             break;
 
           default:
@@ -115,12 +133,24 @@
 
           case START_RECORD:
             _this.config = data;
+            sleep(1000).then(function () {
+              var $video = document.querySelector('video');
 
-            _this.worker.postMessage({
-              type: START_RECORD,
-              data: data
+              if ($video) {
+                _this.worker.postMessage({
+                  type: START_RECORD,
+                  data: data
+                });
+              } else {
+                _this.notify({
+                  message: '未找到视频播放器'
+                });
+
+                _this.updateConfig({
+                  state: BEFORE_RECORD
+                });
+              }
             });
-
             break;
 
           case START_DOWNLOAD:
@@ -175,6 +205,31 @@
     }
 
     createClass(Content, [{
+      key: "download",
+      value: function download$1(data) {
+        var url = URL.createObjectURL(new Blob([data]));
+        var name = this.config.name + '.' + this.config.format;
+
+        download(url, name);
+      }
+    }, {
+      key: "notify",
+      value: function notify(data) {
+        chrome.runtime.sendMessage({
+          type: NOTIFY,
+          data: data
+        });
+      }
+    }, {
+      key: "updateConfig",
+      value: function updateConfig(data) {
+        this.config = _objectSpread({}, this.config, {}, data);
+        chrome.runtime.sendMessage({
+          type: UPDATE_CONFIG,
+          data: this.config
+        });
+      }
+    }, {
       key: "injectScript",
       value: function injectScript() {
         var $script = document.createElement('script');

@@ -12049,6 +12049,8 @@
             type: TAB_INFO,
             data: tab
           }, function (config) {
+            console.log(config);
+
             if (config) {
               _this.config = config;
             }

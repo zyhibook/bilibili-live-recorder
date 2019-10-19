@@ -6,6 +6,7 @@ import {
     MP4_BUFFER,
     FLV_BUFFER,
     START_RECORD,
+    BEFORE_RECORD,
     STOP_RECORD,
     UPDATE_CONFIG,
     START_DOWNLOAD,
@@ -25,21 +26,13 @@ class Content {
             const { type, data } = event.data;
             switch (type) {
                 case NOTIFY:
-                    chrome.runtime.sendMessage({
-                        type: NOTIFY,
-                        data,
-                    });
+                    this.notify(data);
                     break;
                 case UPDATE_CONFIG:
-                    chrome.runtime.sendMessage({
-                        type: UPDATE_CONFIG,
-                        data,
-                    });
+                    this.updateConfig(data);
                     break;
                 case START_DOWNLOAD:
-                    const url = URL.createObjectURL(new Blob([data]));
-                    const name = this.config.name + '.' + this.config.format;
-                    download(url, name);
+                    this.download(data);
                     break;
                 default:
                     break;
@@ -55,9 +48,21 @@ class Content {
                     break;
                 case START_RECORD:
                     this.config = data;
-                    this.worker.postMessage({
-                        type: START_RECORD,
-                        data,
+                    sleep(1000).then(() => {
+                        const $video = document.querySelector('video');
+                        if ($video) {
+                            this.worker.postMessage({
+                                type: START_RECORD,
+                                data,
+                            });
+                        } else {
+                            this.notify({
+                                message: '未找到视频播放器',
+                            });
+                            this.updateConfig({
+                                state: BEFORE_RECORD,
+                            });
+                        }
                     });
                     break;
                 case START_DOWNLOAD:
@@ -96,6 +101,30 @@ class Content {
                 default:
                     break;
             }
+        });
+    }
+
+    download(data) {
+        const url = URL.createObjectURL(new Blob([data]));
+        const name = this.config.name + '.' + this.config.format;
+        download(url, name);
+    }
+
+    notify(data) {
+        chrome.runtime.sendMessage({
+            type: NOTIFY,
+            data,
+        });
+    }
+
+    updateConfig(data) {
+        this.config = {
+            ...this.config,
+            ...data,
+        };
+        chrome.runtime.sendMessage({
+            type: UPDATE_CONFIG,
+            data: this.config,
         });
     }
 
