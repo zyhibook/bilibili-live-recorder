@@ -1,6 +1,7 @@
 import { sleep, isLiveRoom } from '../../share';
 import Storage from '../../share/storage';
 import throttle from 'lodash/throttle';
+import FlvRemuxer from './FlvRemuxer';
 import {
     BILIBILI,
     MP4_BUFFER,
@@ -10,8 +11,8 @@ import {
     START_DOWNLOAD,
     RECORDING,
     AFTER_RECORD,
+    BEFORE_RECORD,
 } from '../../share/constant';
-import FlvRemuxer from './FlvRemuxer';
 
 class Content {
     constructor() {
@@ -35,12 +36,21 @@ class Content {
                 switch (this.config.action) {
                     case START_DOWNLOAD:
                         this.flv.download();
+                        this.updateConfig({
+                            state: BEFORE_RECORD,
+                        });
                         break;
                     case START_RECORD:
                         this.flv.record();
+                        this.updateConfig({
+                            state: RECORDING,
+                        });
                         break;
                     case STOP_RECORD:
                         this.flv.stop();
+                        this.updateConfig({
+                            state: AFTER_RECORD,
+                        });
                         break;
                     default:
                         break;

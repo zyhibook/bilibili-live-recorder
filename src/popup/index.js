@@ -12151,7 +12151,7 @@
             storage.onChanged(roomId, function (config) {
               _this.config = config;
 
-              switch (_this.config.state) {
+              switch (config.state) {
                 case RECORDING:
                   _this.setBadgeText('ON', '#fb7299');
 
@@ -12203,13 +12203,15 @@
           color: background || 'red'
         });
       },
+      updateConfig: function updateConfig(config) {
+        storage.set(this.config.id, _objectSpread({}, this.config, {}, config));
+      },
       startRecord: function startRecord() {
         if (this.liveRoom) {
           if (this.config.name.trim()) {
-            storage.set(this.config.id, _objectSpread({}, this.config, {
-              state: RECORDING,
+            this.updateConfig({
               action: START_RECORD
-            }));
+            });
           } else {
             notify(FILE_NAME);
           }
@@ -12218,16 +12220,14 @@
         }
       },
       stopRecord: function stopRecord() {
-        storage.set(this.config.id, _objectSpread({}, this.config, {
-          state: AFTER_RECORD,
+        this.updateConfig({
           action: STOP_RECORD
-        }));
+        });
       },
       startDownload: function startDownload() {
-        storage.set(this.config.id, _objectSpread({}, this.config, {
-          state: BEFORE_RECORD,
+        this.updateConfig({
           action: START_DOWNLOAD
-        }));
+        });
       }
     }
   });

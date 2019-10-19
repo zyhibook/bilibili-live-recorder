@@ -50,6 +50,10 @@
   // 常用地址
   var BILIBILI = 'https://live.bilibili.com';
 
+  var BEFORE_RECORD = 'before_record';
+  var RECORDING = 'recording';
+  var AFTER_RECORD = 'after_record';
+
   var START_RECORD = 'start_record';
   var STOP_RECORD = 'stop_record';
   var START_DOWNLOAD = 'start_download';
@@ -68,19 +72,6 @@
     return new Promise(function (resolve) {
       return setTimeout(resolve, ms);
     });
-  }
-  function mergeBuffer() {
-    for (var _len = arguments.length, buffers = new Array(_len), _key = 0; _key < _len; _key++) {
-      buffers[_key] = arguments[_key];
-    }
-
-    var Cons = buffers[0].constructor;
-    return buffers.reduce(function (pre, val) {
-      var merge = new Cons((pre.byteLength | 0) + (val.byteLength | 0));
-      merge.set(pre, 0);
-      merge.set(val, pre.byteLength | 0);
-      return merge;
-    }, new Cons());
   }
 
   var Storage =
@@ -693,8 +684,7 @@
 
     createClass(FlvRemuxer, [{
       key: "load",
-      value: function load(buf) {
-        this.data = mergeBuffer(this.data, buf);
+      value: function load(buf) {// this.data = mergeBuffer(this.data, buf);
       }
     }, {
       key: "record",
@@ -749,15 +739,27 @@
             case START_DOWNLOAD:
               _this.flv.download();
 
+              _this.updateConfig({
+                state: BEFORE_RECORD
+              });
+
               break;
 
             case START_RECORD:
               _this.flv.record();
 
+              _this.updateConfig({
+                state: RECORDING
+              });
+
               break;
 
             case STOP_RECORD:
               _this.flv.stop();
+
+              _this.updateConfig({
+                state: AFTER_RECORD
+              });
 
               break;
 

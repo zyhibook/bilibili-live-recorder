@@ -73,7 +73,7 @@ export default new Vue({
                         });
                         storage.onChanged(roomId, config => {
                             this.config = config;
-                            switch (this.config.state) {
+                            switch (config.state) {
                                 case RECORDING:
                                     this.setBadgeText('ON', '#fb7299');
                                     break;
@@ -109,12 +109,16 @@ export default new Vue({
             chrome.browserAction.setBadgeText({ text: text, tabId: this.tab.id });
             chrome.browserAction.setBadgeBackgroundColor({ color: background || 'red' });
         },
+        updateConfig(config) {
+            storage.set(this.config.id, {
+                ...this.config,
+                ...config,
+            });
+        },
         startRecord() {
             if (this.liveRoom) {
                 if (this.config.name.trim()) {
-                    storage.set(this.config.id, {
-                        ...this.config,
-                        state: RECORDING,
+                    this.updateConfig({
                         action: START_RECORD,
                     });
                 } else {
@@ -125,16 +129,12 @@ export default new Vue({
             }
         },
         stopRecord() {
-            storage.set(this.config.id, {
-                ...this.config,
-                state: AFTER_RECORD,
+            this.updateConfig({
                 action: STOP_RECORD,
             });
         },
         startDownload() {
-            storage.set(this.config.id, {
-                ...this.config,
-                state: BEFORE_RECORD,
+            this.updateConfig({
                 action: START_DOWNLOAD,
             });
         },

@@ -8,7 +8,7 @@ export default class FlvRemuxer {
     }
 
     load(buf) {
-        this.data = mergeBuffer(this.data, buf);
+        // this.data = mergeBuffer(this.data, buf);
     }
 
     record() {
