@@ -11986,7 +11986,7 @@
     });
   }
 
-  // 常用地址
+  // 常用
   var LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com\/\d+/;
   var TITLE_PATTERN = /(\s-\s哔哩哔哩直播，二次元弹幕直播平台)|\s*/g;
   var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';

@@ -30,7 +30,7 @@
 
   var createClass = _createClass;
 
-  // 常用地址
+  // 常用
   var MP4_BUFFER = 'mp4_buffer';
   var FLV_BUFFER = 'flv_buffer'; // 语言
 

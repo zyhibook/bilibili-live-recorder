@@ -1,4 +1,4 @@
-// 常用地址
+// 常用
 export const LIVE = 'https://live.bilibili.com';
 export const LIVE_PATTERN = '*://*.bilibili.com/*';
 export const LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com\/\d+/;

@@ -83,7 +83,7 @@
       }
   });
 
-  // 常用地址
+  // 常用
   var LIVE_PATTERN = '*://*.bilibili.com/*';
 
   var Background =

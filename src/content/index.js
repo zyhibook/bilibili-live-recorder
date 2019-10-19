@@ -37,7 +37,7 @@
     });
   }
 
-  // 常用地址
+  // 常用
   var LIVE = 'https://live.bilibili.com';
 
   var TAB_INFO = 'tab_info';
