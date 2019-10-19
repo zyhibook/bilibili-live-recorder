@@ -11,7 +11,7 @@
 
 <body>
     <div class="container" id="app">
-        <div :class="{panels: true, [panel]: true}">
+        <div v-if="isLiveRoom" :class="{panels: true, [panel]: true}">
             <div class="panel basis">
                 <header class="header">
                     <a href="#" class="title" @click="goWebstore">
@@ -30,6 +30,7 @@
                     <div class="btn download" v-if="config.state === AFTER_RECORD" @click="startDownload">
                         下载视频
                     </div>
+                    <div class="tip">录制开始后不要切换画质、线路和播放器</div>
                 </section>
                 <section class="info">
                     <div class="record_config" v-if="config.state === BEFORE_RECORD">
@@ -48,20 +49,38 @@
                     </div>
                     <div class="record_info" v-if="config.state === RECORDING || config.state === AFTER_RECORD">
                         <div class="item">
-                            <div class="name">文件名字：</div>
+                            <div class="name">录制文件：</div>
                             <div class="value" :title="fileUrl">{{fileUrl}}</div>
                         </div>
                         <div class="item">
-                            <div class="name">最大时长：</div>
-                            <div class="value">{{config.maxDuration}}分钟</div>
+                            <div class="sub_item">
+                                <div class="name">录制时长：</div>
+                                <div class="value">{{config.maxDuration}}分钟</div>
+                            </div>
+                            <div class="sub_item">
+                                <div class="name">当前时长：</div>
+                                <div class="value">{{config.currentDuration}}分钟</div>
+                            </div>
                         </div>
                         <div class="item">
-                            <div class="name">当前时长：</div>
-                            <div class="value">{{config.currentDuration}}分钟</div>
+                            <div class="sub_item">
+                                <div class="name">当前大小：</div>
+                                <div class="value">{{config.currentSize}}M</div>
+                            </div>
+                            <div class="sub_item">
+                                <div class="name">分段大小：</div>
+                                <div class="value">{{config.chunk}}M</div>
+                            </div>
                         </div>
                         <div class="item">
-                            <div class="name">当前大小：</div>
-                            <div class="value">{{config.currentSize}}M</div>
+                            <div class="sub_item">
+                                <div class="name">下载速率：</div>
+                                <div class="value">{{config.downloadRate}}M/S</div>
+                            </div>
+                            <div class="sub_item">
+                                <div class="name">写入速率：</div>
+                                <div class="value">{{config.writeRate}}M/S</div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -77,7 +96,7 @@
                     <div class="item">
                         <div class="name">文件类型：</div>
                         <div class="value">
-                            <select v-model="config.format">
+                            <select v-model="config.format" :disabled="config.state !== BEFORE_RECORD">
                                 <option value="flv" selected>FLV</option>
                                 <option value="mp4" disabled>MP4 - 即将发布</option>
                             </select>
@@ -86,11 +105,12 @@
                     <div class="item">
                         <div class="name">分段保存：{{config.chunk}}M</div>
                         <div class="value">
-                            <input type="range" v-model="config.chunk" min="0" max="1000" step="100">
+                            <input type="range" v-model="config.chunk" min="0" max="1000" step="100"
+                                :disabled="config.state !== BEFORE_RECORD">
                         </div>
                     </div>
                     <div class="item">
-                        <div class="name">Debug日志：</div>
+                        <div class="name">Debug日志：<a href="#" class="openDebug" @click="openDebug">打开</a></div>
                         <div class="value">
                             <textarea cols="30" disabled v-model="config.debug"
                                 placeholder="遇到疑难杂症时可以把Debug日志发给作者。"></textarea>
@@ -101,6 +121,9 @@
                     <img :src="donate">
                 </footer>
             </div>
+        </div>
+        <div v-else class="not_live" @click="goLive">
+            <img :src="logo" width="20" height="20">点击前往 Bilibili 直播间
         </div>
     </div>
     <script src="./index.js"></script>
