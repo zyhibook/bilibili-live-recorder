@@ -49,7 +49,6 @@
 
   // 常用地址
   var BILIBILI = 'https://live.bilibili.com';
-  var RECORDING = 'recording';
 
   var START_RECORD = 'start_record';
   var STOP_RECORD = 'stop_record';
@@ -696,13 +695,6 @@
       key: "load",
       value: function load(buf) {
         this.data = mergeBuffer(this.data, buf);
-
-        if (this.content.config.state === RECORDING) {
-          var size = (this.data.byteLength / 1024 / 1024).toFixed(3);
-          this.content.updateConfig({
-            currentSize: size
-          });
-        }
       }
     }, {
       key: "record",

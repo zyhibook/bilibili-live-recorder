@@ -40,9 +40,9 @@
                             </div>
                         </div>
                         <div class="item">
-                            <div class="name">录制时长：{{config.duration}}分钟</div>
+                            <div class="name">录制时长：{{config.maxDuration}}分钟</div>
                             <div class="value">
-                                <input type="range" v-model="config.duration" min="5" max="60" step="5">
+                                <input type="range" v-model="config.maxDuration" min="5" max="60" step="5">
                             </div>
                         </div>
                     </div>
@@ -53,7 +53,7 @@
                         </div>
                         <div class="item">
                             <div class="name">最大时长：</div>
-                            <div class="value">{{config.duration}}分钟</div>
+                            <div class="value">{{config.maxDuration}}分钟</div>
                         </div>
                         <div class="item">
                             <div class="name">当前时长：</div>

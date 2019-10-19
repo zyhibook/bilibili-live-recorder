@@ -1,7 +1,16 @@
 import { sleep, isLiveRoom } from '../../share';
 import Storage from '../../share/storage';
 import throttle from 'lodash/throttle';
-import { BILIBILI, MP4_BUFFER, FLV_BUFFER, START_RECORD, STOP_RECORD, START_DOWNLOAD } from '../../share/constant';
+import {
+    BILIBILI,
+    MP4_BUFFER,
+    FLV_BUFFER,
+    START_RECORD,
+    STOP_RECORD,
+    START_DOWNLOAD,
+    RECORDING,
+    AFTER_RECORD,
+} from '../../share/constant';
 import FlvRemuxer from './FlvRemuxer';
 
 class Content {

@@ -12113,9 +12113,9 @@
         name: '',
         chunk: 0,
         debug: '',
-        duration: 10,
         format: 'flv',
         currentSize: 0,
+        maxDuration: 10,
         currentDuration: 0,
         state: BEFORE_RECORD,
         action: BEFORE_DOWNLOAD

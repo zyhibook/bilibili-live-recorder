@@ -1,5 +1,4 @@
 import { mergeBuffer } from '../../share';
-import { RECORDING } from '../../share/constant';
 
 export default class FlvRemuxer {
     constructor(content) {
@@ -10,12 +9,6 @@ export default class FlvRemuxer {
 
     load(buf) {
         this.data = mergeBuffer(this.data, buf);
-        if (this.content.config.state === RECORDING) {
-            const size = (this.data.byteLength / 1024 / 1024).toFixed(3);
-            this.content.updateConfig({
-                currentSize: size,
-            });
-        }
     }
 
     record() {
