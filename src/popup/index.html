@@ -11,7 +11,7 @@
 
 <body>
     <div class="container" id="app">
-        <div :class="{panels: true, [panel]: true}">
+        <div v-if="isLiveRoom" :class="{panels: true, [panel]: true}">
             <div class="panel basis">
                 <header class="header">
                     <a href="#" class="title" @click="goWebstore">
@@ -120,6 +120,9 @@
                     <img :src="donate">
                 </footer>
             </div>
+        </div>
+        <div v-else class="not_live" @click="goLive">
+            <img :src="logo" width="20" height="20">点击前往 Bilibili 直播间
         </div>
     </div>
     <script src="./index.js"></script>

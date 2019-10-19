@@ -11976,18 +11976,9 @@
 
   var Vue = unwrapExports(vue);
 
-  function notify(text, name) {
-    chrome.notifications.create(String(Math.random()), {
-      type: 'basic',
-      iconUrl: chrome.extension.getURL('icons/icon128.png'),
-      title: chrome.runtime.getManifest().name,
-      message: name || '',
-      contextMessage: text
-    });
-  }
-
   // 常用
-  var LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com\/\d+/;
+  var LIVE = 'https://live.bilibili.com';
+  var LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com/i;
   var TITLE_PATTERN = /(\s-\s哔哩哔哩直播，二次元弹幕直播平台)|\s*/g;
   var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
   var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions'; // 状态
@@ -12001,9 +11992,6 @@
   var STOP_RECORD = 'stop_record';
   var START_DOWNLOAD = 'start_download';
   var UPDATE_CONFIG = 'update_config';
-
-  var OPEN_LIVE = '请先打开Bilibili直播间';
-  var FILE_NAME = '请输入文件名称';
 
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -12092,6 +12080,11 @@
           url: GITHUB
         });
       },
+      goLive: function goLive() {
+        chrome.tabs.create({
+          url: LIVE
+        });
+      },
       showPanel: function showPanel(panel) {
         this.panel = panel;
       },
@@ -12120,26 +12113,19 @@
       startRecord: function startRecord() {
         var _this2 = this;
 
-        if (this.isLiveRoom) {
-          if (this.config.name.trim()) {
-            var config = _objectSpread({}, this.config, {
-              state: RECORDING
-            });
+        var config = _objectSpread({}, this.config, {
+          name: this.config.name.trim() ? this.config.name.trim() : Date.now(),
+          state: RECORDING
+        });
 
-            this.sendMessage({
-              type: START_RECORD,
-              data: config
-            }, function () {
-              _this2.config = config;
+        this.sendMessage({
+          type: START_RECORD,
+          data: config
+        }, function () {
+          _this2.config = config;
 
-              _this2.setBadgeText('ON', '#fb7299');
-            });
-          } else {
-            notify(FILE_NAME);
-          }
-        } else {
-          notify(OPEN_LIVE);
-        }
+          _this2.setBadgeText('ON', '#fb7299');
+        });
       },
       stopRecord: function stopRecord() {
         var _this3 = this;

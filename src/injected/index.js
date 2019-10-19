@@ -32,7 +32,7 @@
 
   // 常用
   var MP4_BUFFER = 'mp4_buffer';
-  var FLV_BUFFER = 'flv_buffer'; // 语言
+  var FLV_BUFFER = 'flv_buffer';
 
   var Injected =
   /*#__PURE__*/

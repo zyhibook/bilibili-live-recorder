@@ -55,7 +55,7 @@
   var START_DOWNLOAD = 'start_download';
   var UPDATE_CONFIG = 'update_config';
   var MP4_BUFFER = 'mp4_buffer';
-  var FLV_BUFFER = 'flv_buffer'; // 语言
+  var FLV_BUFFER = 'flv_buffer';
 
   var Content =
   /*#__PURE__*/

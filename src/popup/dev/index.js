@@ -1,8 +1,8 @@
 import 'normalize.css';
 import './index.scss';
 import Vue from 'vue/dist/vue';
-import { notify } from '../../share';
 import {
+    LIVE,
     GITHUB,
     TAB_INFO,
     WEBSTORE,
@@ -10,11 +10,9 @@ import {
     AFTER_RECORD,
     BEFORE_RECORD,
     TITLE_PATTERN,
-    OPEN_LIVE,
     START_RECORD,
     STOP_RECORD,
     START_DOWNLOAD,
-    FILE_NAME,
     UPDATE_CONFIG,
     LIVE_ROOM_PATTERN,
 } from '../../share/constant';
@@ -104,6 +102,9 @@ export default new Vue({
         goGithub() {
             chrome.tabs.create({ url: GITHUB });
         },
+        goLive() {
+            chrome.tabs.create({ url: LIVE });
+        },
         showPanel(panel) {
             this.panel = panel;
         },
@@ -120,28 +121,21 @@ export default new Vue({
             chrome.tabs.sendMessage(this.tab.id, data, callback);
         },
         startRecord() {
-            if (this.isLiveRoom) {
-                if (this.config.name.trim()) {
-                    const config = {
-                        ...this.config,
-                        state: RECORDING,
-                    };
-                    this.sendMessage(
-                        {
-                            type: START_RECORD,
-                            data: config,
-                        },
-                        () => {
-                            this.config = config;
-                            this.setBadgeText('ON', '#fb7299');
-                        },
-                    );
-                } else {
-                    notify(FILE_NAME);
-                }
-            } else {
-                notify(OPEN_LIVE);
-            }
+            const config = {
+                ...this.config,
+                name: this.config.name.trim() ? this.config.name.trim() : Date.now(),
+                state: RECORDING,
+            };
+            this.sendMessage(
+                {
+                    type: START_RECORD,
+                    data: config,
+                },
+                () => {
+                    this.config = config;
+                    this.setBadgeText('ON', '#fb7299');
+                },
+            );
         },
         stopRecord() {
             const config = {
