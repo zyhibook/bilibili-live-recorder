@@ -48,11 +48,11 @@
                     </div>
                     <div class="record_info" v-if="config.state === RECORDING || config.state === AFTER_RECORD">
                         <div class="item">
-                            <div class="name">文件名字：</div>
+                            <div class="name">录制文件：</div>
                             <div class="value" :title="fileUrl">{{fileUrl}}</div>
                         </div>
                         <div class="item">
-                            <div class="name">最大时长：</div>
+                            <div class="name">录制时长：</div>
                             <div class="value">{{config.maxDuration}}分钟</div>
                         </div>
                         <div class="item">
