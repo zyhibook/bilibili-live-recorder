@@ -44,6 +44,7 @@
   var START_RECORD = 'start_record';
   var STOP_RECORD = 'stop_record';
   var START_DOWNLOAD = 'start_download';
+  var UPDATE_CONFIG = 'update_config';
   var MP4_BUFFER = 'mp4_buffer';
   var FLV_BUFFER = 'flv_buffer'; // 语言
 
@@ -139,6 +140,14 @@
     }
 
     createClass(Content, [{
+      key: "updateConfig",
+      value: function updateConfig(config) {
+        chrome.runtime.sendMessage({
+          type: UPDATE_CONFIG,
+          data: config
+        });
+      }
+    }, {
       key: "injectScript",
       value: function injectScript() {
         var $script = document.createElement('script');

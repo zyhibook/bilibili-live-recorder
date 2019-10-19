@@ -12000,6 +12000,7 @@
   var START_RECORD = 'start_record';
   var STOP_RECORD = 'stop_record';
   var START_DOWNLOAD = 'start_download';
+  var UPDATE_CONFIG = 'update_config';
 
   var OPEN_LIVE = '请先打开Bilibili直播间';
   var FILE_NAME = '请输入文件名称';
@@ -12050,7 +12051,7 @@
           _this.isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
           _this.config.id = tab.id;
           _this.config.url = tab.url;
-          _this.config.name = tab.title.replace(TITLE_PATTERN, '');
+          _this.config.name = tab.title.replace(TITLE_PATTERN, ''); // 发到 content
 
           _this.sendMessage({
             type: TAB_INFO,
@@ -12058,6 +12059,21 @@
           }, function (config) {
             if (config) {
               _this.config = config;
+            }
+          }); // 来自 content
+
+
+          chrome.runtime.onMessage.addListener(function (request) {
+            var type = request.type,
+                data = request.data;
+
+            switch (type) {
+              case UPDATE_CONFIG:
+                _this.config = _objectSpread({}, _this.config, {}, data);
+                break;
+
+              default:
+                break;
             }
           });
         }

@@ -15,6 +15,7 @@ import {
     STOP_RECORD,
     START_DOWNLOAD,
     FILE_NAME,
+    UPDATE_CONFIG,
     LIVE_ROOM_PATTERN,
 } from '../../share/constant';
 
@@ -63,6 +64,7 @@ export default new Vue({
                     this.config.url = tab.url;
                     this.config.name = tab.title.replace(TITLE_PATTERN, '');
 
+                    // 发到 content
                     this.sendMessage(
                         {
                             type: TAB_INFO,
@@ -74,6 +76,21 @@ export default new Vue({
                             }
                         },
                     );
+
+                    // 来自 content
+                    chrome.runtime.onMessage.addListener(request => {
+                        const { type, data } = request;
+                        switch (type) {
+                            case UPDATE_CONFIG:
+                                this.config = {
+                                    ...this.config,
+                                    ...data,
+                                };
+                                break;
+                            default:
+                                break;
+                        }
+                    });
                 }
             },
         );

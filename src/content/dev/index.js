@@ -6,6 +6,7 @@ import {
     FLV_BUFFER,
     START_RECORD,
     STOP_RECORD,
+    UPDATE_CONFIG,
     START_DOWNLOAD,
 } from '../../share/constant';
 
@@ -73,6 +74,13 @@ class Content {
                 default:
                     break;
             }
+        });
+    }
+
+    updateConfig(config) {
+        chrome.runtime.sendMessage({
+            type: UPDATE_CONFIG,
+            data: config,
         });
     }
 
