@@ -48,6 +48,7 @@ body {
         align-items: center;
         height: 40px;
         padding: 0 10px;
+        background: #f1f1f1;
 
         .title {
             display: flex;
@@ -62,7 +63,7 @@ body {
 
         .feedback {
             text-decoration: none;
-            color: #666;
+            color: #888;
         }
     }
 
@@ -110,19 +111,16 @@ body {
     }
 
     .info {
-        height: 110px;
-        padding: 10px 10px 0;
         font-size: 12px;
-        border-top: 1px solid #e6e6e6;
-        background: #f7f7f7;
+        color: #666;
 
         .record_config {
             .item {
-                margin-bottom: 10px;
+                padding: 10px;
+                border-top: 1px solid #e6e6e6;
 
                 .name {
-                    margin-bottom: 5px;
-                    color: #666;
+                    margin-bottom: 10px;
                 }
 
                 .value {
@@ -134,8 +132,8 @@ body {
                         padding: 0 5px;
                         height: 25px;
                         line-height: 25px;
-                        color: #666;
                         border: 1px solid #ccc;
+                        background: #f7f7f7;
                     }
                 }
             }
@@ -144,23 +142,14 @@ body {
         .record_info {
             .item {
                 display: flex;
-                margin-bottom: 10px;
-
-                .name {
-                    color: #666;
-                }
+                padding: 10px;
+                border-top: 1px solid #e6e6e6;
 
                 .value {
                     flex: 1;
                     text-overflow: ellipsis;
                     white-space: nowrap;
                     overflow: hidden;
-                    color: #777;
-
-                    &.link {
-                        cursor: pointer;
-                        color: #3399ea;
-                    }
                 }
             }
         }
@@ -175,6 +164,7 @@ body {
         transition: all 0.3s ease;
         color: rgba(0, 0, 0, 0.5);
         border-top: 1px solid #e6e6e6;
+        background: #f1f1f1;
 
         &:hover {
             color: rgba(0, 0, 0, 0.8);
@@ -195,6 +185,8 @@ body {
         letter-spacing: 2px;
         transition: all 0.3s ease;
         color: rgba(0, 0, 0, 0.5);
+        border-bottom: 1px solid #e6e6e6;
+        background: #f1f1f1;
 
         &:hover {
             color: rgba(0, 0, 0, 0.8);
@@ -203,16 +195,20 @@ body {
 
     .main {
         flex: 1;
-        padding: 10px;
-        border-top: 1px solid #e6e6e6;
+        color: #666;
 
         .item {
-            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #e6e6e6;
 
             .name {
                 font-size: 12px;
-                margin-bottom: 5px;
-                color: #666;
+                margin-bottom: 10px;
+
+                .openDebug {
+                    text-decoration: none;
+                    color: #23ade5;
+                }
             }
 
             .value {
@@ -228,7 +224,6 @@ body {
                     font-size: 12px;
                     height: 25px;
                     line-height: 25px;
-                    color: #666;
                     border: 1px solid #ccc;
                 }
 
@@ -244,8 +239,6 @@ body {
     }
 
     .footer {
-        border-top: 1px solid #e6e6e6;
-
         img {
             max-height: 100%;
             max-width: 100%;

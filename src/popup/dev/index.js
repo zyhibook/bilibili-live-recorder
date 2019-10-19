@@ -9,7 +9,7 @@ import {
     RECORDING,
     AFTER_RECORD,
     BEFORE_RECORD,
-    TITLE_REPLACE,
+    TITLE_PATTERN,
     OPEN_LIVE,
     START_RECORD,
     STOP_RECORD,
@@ -58,14 +58,10 @@ export default new Vue({
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
                     this.tab = tab;
-
-                    const isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
-                    this.isLiveRoom = isLiveRoom;
-                    if (!isLiveRoom) return;
-
+                    this.isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
                     this.config.id = tab.id;
                     this.config.url = tab.url;
-                    this.config.name = tab.title.replace(TITLE_REPLACE, '');
+                    this.config.name = tab.title.replace(TITLE_PATTERN, '');
 
                     this.sendMessage(
                         {
@@ -92,6 +88,10 @@ export default new Vue({
         showPanel(panel) {
             this.panel = panel;
         },
+        openDebug() {
+            const debug = URL.createObjectURL(new Blob([this.config.debug]));
+            chrome.tabs.create({ url: debug });
+        },
         setBadgeText(text, background) {
             chrome.browserAction.setBadgeText({ text: text, tabId: this.tab.id });
             chrome.browserAction.setBadgeBackgroundColor({ color: background || 'red' });
@@ -102,19 +102,18 @@ export default new Vue({
         startRecord() {
             if (this.isLiveRoom) {
                 if (this.config.name.trim()) {
+                    const config = {
+                        ...this.config,
+                        state: RECORDING,
+                    };
                     this.sendMessage(
                         {
                             type: START_RECORD,
-                            data: {
-                                ...this.config,
-                                state: RECORDING,
-                            },
+                            data: config,
                         },
-                        config => {
-                            if (config) {
-                                this.config = config;
-                                this.setBadgeText('ON', '#fb7299');
-                            }
+                        () => {
+                            this.config = config;
+                            this.setBadgeText('ON', '#fb7299');
                         },
                     );
                 } else {
@@ -125,36 +124,34 @@ export default new Vue({
             }
         },
         stopRecord() {
+            const config = {
+                ...this.config,
+                state: AFTER_RECORD,
+            };
             this.sendMessage(
                 {
                     type: STOP_RECORD,
-                    data: {
-                        ...this.config,
-                        state: AFTER_RECORD,
-                    },
+                    data: config,
                 },
-                config => {
-                    if (config) {
-                        this.config = config;
-                        this.setBadgeText('OK', '#23ade5');
-                    }
+                () => {
+                    this.config = config;
+                    this.setBadgeText('OK', '#23ade5');
                 },
             );
         },
         startDownload() {
+            const config = {
+                ...this.config,
+                state: BEFORE_RECORD,
+            };
             this.sendMessage(
                 {
                     type: START_DOWNLOAD,
-                    data: {
-                        ...this.config,
-                        state: BEFORE_RECORD,
-                    },
+                    data: config,
                 },
-                config => {
-                    if (config) {
-                        this.config = config;
-                        this.setBadgeText('');
-                    }
+                () => {
+                    this.config = config;
+                    this.setBadgeText('');
                 },
             );
         },

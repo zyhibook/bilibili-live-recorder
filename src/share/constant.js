@@ -2,6 +2,7 @@
 export const LIVE = 'https://live.bilibili.com';
 export const LIVE_PATTERN = '*://*.bilibili.com/*';
 export const LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com\/\d+/;
+export const TITLE_PATTERN = /\s-\s哔哩哔哩直播，二次元弹幕直播平台/;
 export const GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
 export const WEBSTORE = 'https://chrome.google.com/webstore/category/extensions';
 
@@ -23,7 +24,6 @@ export const MP4_BUFFER = 'mp4_buffer';
 export const FLV_BUFFER = 'flv_buffer';
 
 // 语言
-export const TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
 export const OPEN_LIVE = '请先打开Bilibili直播间';
 export const RECORD_CREATED = '录制任务创建成功';
 export const RECORD_STOP = '录制任务已经停止';

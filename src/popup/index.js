@@ -11988,6 +11988,7 @@
 
   // 常用地址
   var LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com\/\d+/;
+  var TITLE_PATTERN = /\s-\s哔哩哔哩直播，二次元弹幕直播平台/;
   var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
   var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions'; // 状态
 
@@ -12000,7 +12001,6 @@
   var STOP_RECORD = 'stop_record';
   var START_DOWNLOAD = 'start_download';
 
-  var TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
   var OPEN_LIVE = '请先打开Bilibili直播间';
   var FILE_NAME = '请输入文件名称';
 
@@ -12047,12 +12047,10 @@
         if (tabs && tabs[0]) {
           var tab = tabs[0];
           _this.tab = tab;
-          var isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
-          _this.isLiveRoom = isLiveRoom;
-          if (!isLiveRoom) return;
+          _this.isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
           _this.config.id = tab.id;
           _this.config.url = tab.url;
-          _this.config.name = tab.title.replace(TITLE_REPLACE, '');
+          _this.config.name = tab.title.replace(TITLE_PATTERN, '');
 
           _this.sendMessage({
             type: TAB_INFO,
@@ -12079,6 +12077,12 @@
       showPanel: function showPanel(panel) {
         this.panel = panel;
       },
+      openDebug: function openDebug() {
+        var debug = URL.createObjectURL(new Blob([this.config.debug]));
+        chrome.tabs.create({
+          url: debug
+        });
+      },
       setBadgeText: function setBadgeText(text, background) {
         chrome.browserAction.setBadgeText({
           text: text,
@@ -12099,17 +12103,17 @@
 
         if (this.isLiveRoom) {
           if (this.config.name.trim()) {
+            var config = _objectSpread({}, this.config, {
+              state: RECORDING
+            });
+
             this.sendMessage({
               type: START_RECORD,
-              data: _objectSpread({}, this.config, {
-                state: RECORDING
-              })
-            }, function (config) {
-              if (config) {
-                _this2.config = config;
+              data: config
+            }, function () {
+              _this2.config = config;
 
-                _this2.setBadgeText('ON', '#fb7299');
-              }
+              _this2.setBadgeText('ON', '#fb7299');
             });
           } else {
             notify(FILE_NAME);
@@ -12121,33 +12125,33 @@
       stopRecord: function stopRecord() {
         var _this3 = this;
 
+        var config = _objectSpread({}, this.config, {
+          state: AFTER_RECORD
+        });
+
         this.sendMessage({
           type: STOP_RECORD,
-          data: _objectSpread({}, this.config, {
-            state: AFTER_RECORD
-          })
-        }, function (config) {
-          if (config) {
-            _this3.config = config;
+          data: config
+        }, function () {
+          _this3.config = config;
 
-            _this3.setBadgeText('OK', '#23ade5');
-          }
+          _this3.setBadgeText('OK', '#23ade5');
         });
       },
       startDownload: function startDownload() {
         var _this4 = this;
 
+        var config = _objectSpread({}, this.config, {
+          state: BEFORE_RECORD
+        });
+
         this.sendMessage({
           type: START_DOWNLOAD,
-          data: _objectSpread({}, this.config, {
-            state: BEFORE_RECORD
-          })
-        }, function (config) {
-          if (config) {
-            _this4.config = config;
+          data: config
+        }, function () {
+          _this4.config = config;
 
-            _this4.setBadgeText('');
-          }
+          _this4.setBadgeText('');
         });
       }
     }
