@@ -36,6 +36,15 @@
       return setTimeout(resolve, ms);
     });
   }
+  function download(url, name) {
+    var elink = document.createElement('a');
+    elink.style.display = 'none';
+    elink.href = url;
+    elink.download = name;
+    document.body.appendChild(elink);
+    elink.click();
+    document.body.removeChild(elink);
+  }
 
   // 常用
   var LIVE = 'https://live.bilibili.com';
@@ -60,12 +69,28 @@
       this.injectStyle();
       this.tab = null;
       this.config = null;
-      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";var FLV_BUFFER=\"flv_buffer\",START_RECORD=\"start_record\",START_DOWNLOAD=\"start_download\",STOP_RECORD=\"stop_record\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case FLV_BUFFER:break;case START_DOWNLOAD:break;case START_RECORD:break;case STOP_RECORD:break;default:}};"]))); // 来自 worker
+      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";var FLV_BUFFER=\"flv_buffer\",START_RECORD=\"start_record\",START_DOWNLOAD=\"start_download\",STOP_RECORD=\"stop_record\",UPDATE_CONFIG=\"update_config\",config=null,recording=!1,videoDate=new Uint8Array(1048576),debugStr=\"\";function debugLog(){for(var a=new Date,b=\"\".concat(a.getHours(),\":\").concat(a.getMinutes(),\":\").concat(a.getSeconds()),c=arguments.length,d=Array(c),e=0;e<c;e++)d[e]=arguments[e];debugStr=\"\".concat(debugStr,\"\\n\\n\").concat(b,\" -> \").concat(d.map(function(a){return JSON.stringify(a)}).join(\"|\")).trim(),postMessage({type:UPDATE_CONFIG,data:{debug:debugStr}})}onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case FLV_BUFFER:break;case START_RECORD:recording=!0,config=d,config.debug=\"\",debugLog(START_RECORD,config);break;case STOP_RECORD:{recording=!1,debugLog(STOP_RECORD);break}case START_DOWNLOAD:debugLog(START_DOWNLOAD),postMessage({type:START_DOWNLOAD,data:videoDate});break;default:}};"]))); // 来自 worker
 
       this.worker.onmessage = function (event) {
         var _event$data = event.data,
             type = _event$data.type,
             data = _event$data.data;
+
+        switch (type) {
+          case UPDATE_CONFIG:
+            _this.updateConfig(data);
+
+            break;
+
+          case START_DOWNLOAD:
+            var url = URL.createObjectURL(new Blob([data]));
+            var name = _this.config.name + '.' + _this.config.format;
+            download(url, name);
+            break;
+
+          default:
+            break;
+        }
       }; // 来自 popup
 
 

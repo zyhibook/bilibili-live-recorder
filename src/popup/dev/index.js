@@ -108,7 +108,8 @@ export default new Vue({
             this.panel = panel;
         },
         openDebug() {
-            const debug = URL.createObjectURL(new Blob([this.config.debug]));
+            const base64 = btoa(unescape(encodeURIComponent(this.config.debug)));
+            const debug = 'data:text/plain;charset=UTF-8;base64,' + base64;
             chrome.tabs.create({ url: debug });
         },
         setBadgeText(text, background) {

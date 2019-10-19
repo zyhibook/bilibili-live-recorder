@@ -12096,7 +12096,8 @@
         this.panel = panel;
       },
       openDebug: function openDebug() {
-        var debug = URL.createObjectURL(new Blob([this.config.debug]));
+        var base64 = btoa(unescape(encodeURIComponent(this.config.debug)));
+        var debug = 'data:text/plain;charset=UTF-8;base64,' + base64;
         chrome.tabs.create({
           url: debug
         });

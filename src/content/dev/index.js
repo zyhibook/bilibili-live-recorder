@@ -1,4 +1,4 @@
-import { sleep } from '../../share';
+import { sleep, download } from '../../share';
 import {
     TAB_INFO,
     LIVE,
@@ -20,8 +20,20 @@ class Content {
         this.worker = new Worker('./flv-remuxer.js');
 
         // 来自 worker
-        this.worker.onmessage = function(event) {
+        this.worker.onmessage = event => {
             const { type, data } = event.data;
+            switch (type) {
+                case UPDATE_CONFIG:
+                    this.updateConfig(data);
+                    break;
+                case START_DOWNLOAD:
+                    const url = URL.createObjectURL(new Blob([data]));
+                    const name = this.config.name + '.' + this.config.format;
+                    download(url, name);
+                    break;
+                default:
+                    break;
+            }
         };
 
         // 来自 popup
