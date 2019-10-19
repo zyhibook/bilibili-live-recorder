@@ -1,16 +1,12 @@
-import { sleep, isLiveRoom } from '../../share';
-import Storage from '../../share/storage';
-import throttle from 'lodash/throttle';
+import { sleep } from '../../share';
 import {
+    TAB_INFO,
     BILIBILI,
     MP4_BUFFER,
     FLV_BUFFER,
     START_RECORD,
     STOP_RECORD,
     START_DOWNLOAD,
-    RECORDING,
-    AFTER_RECORD,
-    BEFORE_RECORD,
 } from '../../share/constant';
 
 class Content {
@@ -18,54 +14,46 @@ class Content {
         this.injectScript();
         this.injectStyle();
 
-        this.config = {};
-        this.storage = new Storage();
-        this.roomId = isLiveRoom(location.href);
+        this.tab = null;
+        this.config = null;
         this.worker = new Worker('./flv-remuxer.js');
-        this.updateConfig = throttle(this.updateConfig, 1000);
 
         this.worker.onmessage = function(event) {
             const { type, data } = event.data;
         };
 
-        if (this.roomId) {
-            this.storage.get(this.roomId).then(config => {
-                if (config) {
-                    this.storage.remove(this.roomId);
-                }
-            });
-            this.storage.onChanged(this.roomId, config => {
-                this.config = config;
-                switch (this.config.action) {
-                    case START_DOWNLOAD:
-                        this.worker.postMessage({
-                            type: 'download',
-                        });
-                        this.updateConfig({
-                            state: BEFORE_RECORD,
-                        });
-                        break;
-                    case START_RECORD:
-                        this.worker.postMessage({
-                            type: 'record',
-                        });
-                        this.updateConfig({
-                            state: RECORDING,
-                        });
-                        break;
-                    case STOP_RECORD:
-                        this.worker.postMessage({
-                            type: 'stop',
-                        });
-                        this.updateConfig({
-                            state: AFTER_RECORD,
-                        });
-                        break;
-                    default:
-                        break;
-                }
-            });
-        }
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            const { type, data } = request;
+            switch (type) {
+                case TAB_INFO:
+                    this.tab = data;
+                    break;
+                case START_RECORD:
+                    this.config = data;
+                    this.worker.postMessage({
+                        type: START_RECORD,
+                        data,
+                    });
+                    break;
+                case START_DOWNLOAD:
+                    this.config = data;
+                    this.worker.postMessage({
+                        type: START_DOWNLOAD,
+                        data,
+                    });
+                    break;
+                case STOP_RECORD:
+                    this.config = data;
+                    this.worker.postMessage({
+                        type: STOP_RECORD,
+                        data,
+                    });
+                    break;
+                default:
+                    break;
+            }
+            sendResponse(this.config);
+        });
 
         window.addEventListener('message', event => {
             if (event.origin !== BILIBILI) return;
@@ -75,7 +63,7 @@ class Content {
                     break;
                 case FLV_BUFFER:
                     this.worker.postMessage({
-                        type: 'load',
+                        type: FLV_BUFFER,
                         data,
                     });
                     break;
@@ -83,13 +71,6 @@ class Content {
                     break;
             }
         });
-    }
-
-    updateConfig(config) {
-        // this.storage.set(this.roomId, {
-        //     ...this.config,
-        //     ...config,
-        // });
     }
 
     injectScript() {

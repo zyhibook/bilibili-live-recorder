@@ -11984,8 +11984,8 @@
   var BEFORE_RECORD = 'before_record';
   var RECORDING = 'recording';
   var AFTER_RECORD = 'after_record';
-  var BEFORE_DOWNLOAD = 'before_download';
 
+  var TAB_INFO = 'tab_info';
   var START_RECORD = 'start_record';
   var STOP_RECORD = 'stop_record';
   var START_DOWNLOAD = 'start_download';
@@ -12011,90 +12011,9 @@
     return isBilibili && isRoom ? roomId : false;
   }
 
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var classCallCheck = _classCallCheck;
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  var createClass = _createClass;
-
-  var Storage =
-  /*#__PURE__*/
-  function () {
-    function Storage() {
-      classCallCheck(this, Storage);
-    }
-
-    createClass(Storage, [{
-      key: "get",
-      value: function get(key, defaultValue) {
-        var _this = this;
-
-        return new Promise(function (resolve) {
-          chrome.storage.local.get([String(key)], function (result) {
-            if (result[key]) {
-              resolve(result[key]);
-            } else if (defaultValue) {
-              _this.set(key, defaultValue).then(function (value) {
-                resolve(value);
-              });
-            } else {
-              resolve();
-            }
-          });
-        });
-      }
-    }, {
-      key: "set",
-      value: function set(key, value) {
-        return new Promise(function (resolve) {
-          chrome.storage.local.set(defineProperty({}, key, value), function () {
-            resolve(value);
-          });
-        });
-      }
-    }, {
-      key: "remove",
-      value: function remove(key) {
-        chrome.storage.local.remove(String(key));
-      }
-    }, {
-      key: "onChanged",
-      value: function onChanged(key, callback) {
-        chrome.storage.onChanged.addListener(function (changes) {
-          if (changes[key] && changes[key].newValue) {
-            callback(changes[key].newValue);
-          }
-        });
-      }
-    }]);
-
-    return Storage;
-  }();
-
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-  var storage = new Storage();
   var index = new Vue({
     el: '#app',
     data: {
@@ -12117,8 +12036,7 @@
         currentSize: 0,
         maxDuration: 10,
         currentDuration: 0,
-        state: BEFORE_RECORD,
-        action: BEFORE_DOWNLOAD
+        state: BEFORE_RECORD
       }
     },
     computed: {
@@ -12136,42 +12054,21 @@
         if (tabs && tabs[0]) {
           var tab = tabs[0];
           _this.tab = tab;
-          var roomId = isLiveRoom(tab.url);
-          _this.liveRoom = !!roomId;
+          var liveRoom = isLiveRoom(tab.url);
+          if (!liveRoom) return;
+          _this.liveRoom = liveRoom;
+          _this.config.id = tab.id;
+          _this.config.url = tab.url;
+          _this.config.name = tab.title.replace(TITLE_REPLACE, '');
 
-          if (roomId) {
-            _this.config.id = roomId;
-            _this.config.url = tab.url;
-            _this.config.name = tab.title.replace(TITLE_REPLACE, '');
-            storage.get(roomId).then(function (config) {
-              if (config) {
-                _this.config = config;
-              }
-            });
-            storage.onChanged(roomId, function (config) {
+          _this.sendMessage({
+            type: TAB_INFO,
+            data: tab
+          }, function (config) {
+            if (config) {
               _this.config = config;
-
-              switch (config.state) {
-                case RECORDING:
-                  _this.setBadgeText('ON', '#fb7299');
-
-                  break;
-
-                case AFTER_RECORD:
-                  _this.setBadgeText('OK', '#23ade5');
-
-                  break;
-
-                case BEFORE_RECORD:
-                  _this.setBadgeText('');
-
-                  break;
-
-                default:
-                  break;
-              }
-            });
-          }
+            }
+          });
         }
       });
     },
@@ -12186,11 +12083,6 @@
           url: GITHUB
         });
       },
-      goRoom: function goRoom() {
-        chrome.tabs.create({
-          url: this.config.url
-        });
-      },
       showPanel: function showPanel(panel) {
         this.panel = panel;
       },
@@ -12203,14 +12095,26 @@
           color: background || 'red'
         });
       },
-      updateConfig: function updateConfig(config) {
-        storage.set(this.config.id, _objectSpread({}, this.config, {}, config));
+      sendMessage: function sendMessage(data) {
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
+          return null;
+        };
+        chrome.tabs.sendMessage(this.tab.id, data, callback);
       },
       startRecord: function startRecord() {
+        var _this2 = this;
+
         if (this.liveRoom) {
           if (this.config.name.trim()) {
-            this.updateConfig({
-              action: START_RECORD
+            this.sendMessage({
+              type: START_RECORD,
+              data: _objectSpread({}, this.config, {
+                state: RECORDING
+              })
+            }, function (config) {
+              _this2.config = config;
+
+              _this2.setBadgeText('ON', '#fb7299');
             });
           } else {
             notify(FILE_NAME);
@@ -12220,13 +12124,31 @@
         }
       },
       stopRecord: function stopRecord() {
-        this.updateConfig({
-          action: STOP_RECORD
+        var _this3 = this;
+
+        this.sendMessage({
+          type: STOP_RECORD,
+          data: _objectSpread({}, this.config, {
+            state: AFTER_RECORD
+          })
+        }, function (config) {
+          _this3.config = config;
+
+          _this3.setBadgeText('OK', '#23ade5');
         });
       },
       startDownload: function startDownload() {
-        this.updateConfig({
-          action: START_DOWNLOAD
+        var _this4 = this;
+
+        this.sendMessage({
+          type: START_DOWNLOAD,
+          data: _objectSpread({}, this.config, {
+            state: BEFORE_RECORD
+          })
+        }, function (config) {
+          _this4.config = config;
+
+          _this4.setBadgeText('');
         });
       }
     }

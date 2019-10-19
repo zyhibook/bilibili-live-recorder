@@ -13,6 +13,7 @@ export const DOWNLOADING = 'downloading';
 export const AFTER_DOWNLOAD = 'after_download';
 
 // 动作
+export const TAB_INFO = 'tab_info';
 export const START_RECORD = 'start_record';
 export const STOP_RECORD = 'stop_record';
 export const START_DOWNLOAD = 'start_download';

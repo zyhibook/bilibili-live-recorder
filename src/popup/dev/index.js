@@ -2,23 +2,21 @@ import 'normalize.css';
 import './index.scss';
 import Vue from 'vue/dist/vue';
 import { notify, isLiveRoom } from '../../share';
-import Storage from '../../share/storage';
 import {
     GITHUB,
+    TAB_INFO,
     WEBSTORE,
     RECORDING,
     AFTER_RECORD,
     BEFORE_RECORD,
     TITLE_REPLACE,
     OPEN_LIVE,
-    BEFORE_DOWNLOAD,
     START_RECORD,
     STOP_RECORD,
     START_DOWNLOAD,
     FILE_NAME,
 } from '../../share/constant';
 
-const storage = new Storage();
 export default new Vue({
     el: '#app',
     data: {
@@ -42,7 +40,6 @@ export default new Vue({
             maxDuration: 10,
             currentDuration: 0,
             state: BEFORE_RECORD,
-            action: BEFORE_DOWNLOAD,
         },
     },
     computed: {
@@ -60,34 +57,25 @@ export default new Vue({
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
                     this.tab = tab;
-                    const roomId = isLiveRoom(tab.url);
-                    this.liveRoom = !!roomId;
-                    if (roomId) {
-                        this.config.id = roomId;
-                        this.config.url = tab.url;
-                        this.config.name = tab.title.replace(TITLE_REPLACE, '');
-                        storage.get(roomId).then(config => {
+                    const liveRoom = isLiveRoom(tab.url);
+                    if (!liveRoom) return;
+
+                    this.liveRoom = liveRoom;
+                    this.config.id = tab.id;
+                    this.config.url = tab.url;
+                    this.config.name = tab.title.replace(TITLE_REPLACE, '');
+
+                    this.sendMessage(
+                        {
+                            type: TAB_INFO,
+                            data: tab,
+                        },
+                        config => {
                             if (config) {
                                 this.config = config;
                             }
-                        });
-                        storage.onChanged(roomId, config => {
-                            this.config = config;
-                            switch (config.state) {
-                                case RECORDING:
-                                    this.setBadgeText('ON', '#fb7299');
-                                    break;
-                                case AFTER_RECORD:
-                                    this.setBadgeText('OK', '#23ade5');
-                                    break;
-                                case BEFORE_RECORD:
-                                    this.setBadgeText('');
-                                    break;
-                                default:
-                                    break;
-                            }
-                        });
-                    }
+                        },
+                    );
                 }
             },
         );
@@ -99,9 +87,6 @@ export default new Vue({
         goGithub() {
             chrome.tabs.create({ url: GITHUB });
         },
-        goRoom() {
-            chrome.tabs.create({ url: this.config.url });
-        },
         showPanel(panel) {
             this.panel = panel;
         },
@@ -109,18 +94,25 @@ export default new Vue({
             chrome.browserAction.setBadgeText({ text: text, tabId: this.tab.id });
             chrome.browserAction.setBadgeBackgroundColor({ color: background || 'red' });
         },
-        updateConfig(config) {
-            storage.set(this.config.id, {
-                ...this.config,
-                ...config,
-            });
+        sendMessage(data, callback = () => null) {
+            chrome.tabs.sendMessage(this.tab.id, data, callback);
         },
         startRecord() {
             if (this.liveRoom) {
                 if (this.config.name.trim()) {
-                    this.updateConfig({
-                        action: START_RECORD,
-                    });
+                    this.sendMessage(
+                        {
+                            type: START_RECORD,
+                            data: {
+                                ...this.config,
+                                state: RECORDING,
+                            },
+                        },
+                        config => {
+                            this.config = config;
+                            this.setBadgeText('ON', '#fb7299');
+                        },
+                    );
                 } else {
                     notify(FILE_NAME);
                 }
@@ -129,14 +121,34 @@ export default new Vue({
             }
         },
         stopRecord() {
-            this.updateConfig({
-                action: STOP_RECORD,
-            });
+            this.sendMessage(
+                {
+                    type: STOP_RECORD,
+                    data: {
+                        ...this.config,
+                        state: AFTER_RECORD,
+                    },
+                },
+                config => {
+                    this.config = config;
+                    this.setBadgeText('OK', '#23ade5');
+                },
+            );
         },
         startDownload() {
-            this.updateConfig({
-                action: START_DOWNLOAD,
-            });
+            this.sendMessage(
+                {
+                    type: START_DOWNLOAD,
+                    data: {
+                        ...this.config,
+                        state: BEFORE_RECORD,
+                    },
+                },
+                config => {
+                    this.config = config;
+                    this.setBadgeText('');
+                },
+            );
         },
     },
 });
