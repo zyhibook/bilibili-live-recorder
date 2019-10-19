@@ -34,6 +34,7 @@
         "rollup-plugin-terser": "^5.1.2"
     },
     "dependencies": {
+        "lodash": "^4.17.15",
         "normalize.css": "^8.0.1",
         "vue": "^2.6.10"
     }

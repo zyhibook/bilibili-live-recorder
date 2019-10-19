@@ -70,7 +70,7 @@
 
     chrome.notifications.onClicked.addListener(function (id) {
       chrome.notifications.clear(id);
-    }); // chrome.extension.getBackgroundPage()
+    });
   };
 
   var index = new Background();

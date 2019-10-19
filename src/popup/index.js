@@ -11976,23 +11976,29 @@
 
   var Vue = unwrapExports(vue);
 
+  // 常用地址
   var BILIBILI = 'https://live.bilibili.com';
   var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
-  var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions';
+  var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions'; // 状态
+
   var BEFORE_RECORD = 'before_record';
   var RECORDING = 'recording';
   var AFTER_RECORD = 'after_record';
+  var BEFORE_DOWNLOAD = 'before_download';
+
+  var START_RECORD = 'start_record';
+  var STOP_RECORD = 'stop_record';
+  var START_DOWNLOAD = 'start_download';
+
   var TITLE_REPLACE = ' - 哔哩哔哩直播，二次元弹幕直播平台';
   var OPEN_LIVE = '请先打开Bilibili直播间';
-  var RECORD_CREATED = '录制任务创建成功';
-  var RECORD_STOP = '录制任务已经停止';
-  var RECORD_DOWNLOAD = '录制文件开始下载！';
+  var FILE_NAME = '请输入文件名称';
 
   function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {
       type: 'basic',
       iconUrl: chrome.extension.getURL('icons/icon128.png'),
-      title: 'Bilibili 直播间录制器',
+      title: chrome.runtime.getManifest().name,
       message: name || '',
       contextMessage: text
     });
@@ -12092,6 +12098,7 @@
   var index = new Vue({
     el: '#app',
     data: {
+      tab: {},
       RECORDING: RECORDING,
       AFTER_RECORD: AFTER_RECORD,
       BEFORE_RECORD: BEFORE_RECORD,
@@ -12110,7 +12117,8 @@
         format: 'flv',
         currentSize: 0,
         currentDuration: 0,
-        state: BEFORE_RECORD
+        state: BEFORE_RECORD,
+        action: BEFORE_DOWNLOAD
       }
     },
     computed: {
@@ -12127,6 +12135,7 @@
       }, function (tabs) {
         if (tabs && tabs[0]) {
           var tab = tabs[0];
+          _this.tab = tab;
           var roomId = isLiveRoom(tab.url);
           _this.liveRoom = !!roomId;
 
@@ -12141,6 +12150,26 @@
             });
             storage.onChanged(roomId, function (config) {
               _this.config = config;
+
+              switch (_this.config.state) {
+                case RECORDING:
+                  _this.setBadgeText('ON', '#fb7299');
+
+                  break;
+
+                case AFTER_RECORD:
+                  _this.setBadgeText('OK', '#23ade5');
+
+                  break;
+
+                case BEFORE_RECORD:
+                  _this.setBadgeText('');
+
+                  break;
+
+                default:
+                  break;
+              }
             });
           }
         }
@@ -12165,36 +12194,40 @@
       showPanel: function showPanel(panel) {
         this.panel = panel;
       },
+      setBadgeText: function setBadgeText(text, background) {
+        chrome.browserAction.setBadgeText({
+          text: text,
+          tabId: this.tab.id
+        });
+        chrome.browserAction.setBadgeBackgroundColor({
+          color: background || 'red'
+        });
+      },
       startRecord: function startRecord() {
-        var _this2 = this;
-
         if (this.liveRoom) {
-          storage.set(this.config.id, _objectSpread({}, this.config, {
-            state: RECORDING
-          })).then(function () {
-            notify(RECORD_CREATED, _this2.fileUrl);
-          });
+          if (this.config.name.trim()) {
+            storage.set(this.config.id, _objectSpread({}, this.config, {
+              state: RECORDING,
+              action: START_RECORD
+            }));
+          } else {
+            notify(FILE_NAME);
+          }
         } else {
           notify(OPEN_LIVE);
         }
       },
       stopRecord: function stopRecord() {
-        var _this3 = this;
-
         storage.set(this.config.id, _objectSpread({}, this.config, {
-          state: AFTER_RECORD
-        })).then(function () {
-          notify(RECORD_STOP, _this3.fileUrl);
-        });
+          state: AFTER_RECORD,
+          action: STOP_RECORD
+        }));
       },
       startDownload: function startDownload() {
-        var _this4 = this;
-
         storage.set(this.config.id, _objectSpread({}, this.config, {
-          state: BEFORE_RECORD
-        })).then(function () {
-          notify(RECORD_DOWNLOAD, _this4.fileUrl);
-        });
+          state: BEFORE_RECORD,
+          action: START_DOWNLOAD
+        }));
       }
     }
   });

@@ -4,15 +4,10 @@ export function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {
         type: 'basic',
         iconUrl: chrome.extension.getURL('icons/icon128.png'),
-        title: 'Bilibili 直播间录制器',
+        title: chrome.runtime.getManifest().name,
         message: name || '',
         contextMessage: text,
     });
-}
-
-export function badge(text) {
-    chrome.browserAction.setBadgeText({ text: text });
-    chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
 }
 
 export function isLiveRoom(url) {

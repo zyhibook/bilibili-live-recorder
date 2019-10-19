@@ -1,7 +1,7 @@
 {
-    "name": "bilibili-live-recorder",
+    "name": "Bilibili 直播间录制器",
     "version": "1.0.0",
-    "description": "Chrome 扩展 - Bilibili 直播间录制器",
+    "description": "Bilibili 直播间录制器",
     "manifest_version": 2,
     "background": {
         "scripts": [
@@ -16,7 +16,6 @@
     "permissions": [
         "tabs",
         "storage",
-        "downloads",
         "webRequest",
         "notifications",
         "*://*.bilibili.com/*"

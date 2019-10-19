@@ -11,15 +11,18 @@ import {
     BEFORE_RECORD,
     TITLE_REPLACE,
     OPEN_LIVE,
-    RECORD_CREATED,
-    RECORD_STOP,
-    RECORD_DOWNLOAD,
+    BEFORE_DOWNLOAD,
+    START_RECORD,
+    STOP_RECORD,
+    START_DOWNLOAD,
+    FILE_NAME,
 } from '../../share/constant';
 
 const storage = new Storage();
 export default new Vue({
     el: '#app',
     data: {
+        tab: {},
         RECORDING,
         AFTER_RECORD,
         BEFORE_RECORD,
@@ -39,6 +42,7 @@ export default new Vue({
             currentSize: 0,
             currentDuration: 0,
             state: BEFORE_RECORD,
+            action: BEFORE_DOWNLOAD,
         },
     },
     computed: {
@@ -55,6 +59,7 @@ export default new Vue({
             tabs => {
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
+                    this.tab = tab;
                     const roomId = isLiveRoom(tab.url);
                     this.liveRoom = !!roomId;
                     if (roomId) {
@@ -68,6 +73,19 @@ export default new Vue({
                         });
                         storage.onChanged(roomId, config => {
                             this.config = config;
+                            switch (this.config.state) {
+                                case RECORDING:
+                                    this.setBadgeText('ON', '#fb7299');
+                                    break;
+                                case AFTER_RECORD:
+                                    this.setBadgeText('OK', '#23ade5');
+                                    break;
+                                case BEFORE_RECORD:
+                                    this.setBadgeText('');
+                                    break;
+                                default:
+                                    break;
+                            }
                         });
                     }
                 }
@@ -87,39 +105,38 @@ export default new Vue({
         showPanel(panel) {
             this.panel = panel;
         },
+        setBadgeText(text, background) {
+            chrome.browserAction.setBadgeText({ text: text, tabId: this.tab.id });
+            chrome.browserAction.setBadgeBackgroundColor({ color: background || 'red' });
+        },
         startRecord() {
             if (this.liveRoom) {
-                storage
-                    .set(this.config.id, {
+                if (this.config.name.trim()) {
+                    storage.set(this.config.id, {
                         ...this.config,
                         state: RECORDING,
-                    })
-                    .then(() => {
-                        notify(RECORD_CREATED, this.fileUrl);
+                        action: START_RECORD,
                     });
+                } else {
+                    notify(FILE_NAME);
+                }
             } else {
                 notify(OPEN_LIVE);
             }
         },
         stopRecord() {
-            storage
-                .set(this.config.id, {
-                    ...this.config,
-                    state: AFTER_RECORD,
-                })
-                .then(() => {
-                    notify(RECORD_STOP, this.fileUrl);
-                });
+            storage.set(this.config.id, {
+                ...this.config,
+                state: AFTER_RECORD,
+                action: STOP_RECORD,
+            });
         },
         startDownload() {
-            storage
-                .set(this.config.id, {
-                    ...this.config,
-                    state: BEFORE_RECORD,
-                })
-                .then(() => {
-                    notify(RECORD_DOWNLOAD, this.fileUrl);
-                });
+            storage.set(this.config.id, {
+                ...this.config,
+                state: BEFORE_RECORD,
+                action: START_DOWNLOAD,
+            });
         },
     },
 });

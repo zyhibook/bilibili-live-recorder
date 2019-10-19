@@ -98,30 +98,29 @@ body {
             }
 
             &.stopRecord {
-                background: #1b5fff;
-                border-color: #9bd1ff;
+                background: #fb7299;
+                border-color: #ffd1de;
             }
 
             &.download {
-                background: #f45a8d;
-                border-color: #ff9bbc;
+                background: #23ade5;
+                border-color: #b5eaff;
             }
         }
     }
 
     .info {
-        height: 100px;
-        padding: 10px;
+        height: 110px;
+        padding: 10px 10px 0;
+        font-size: 12px;
         border-top: 1px solid #e6e6e6;
         background: #f7f7f7;
 
         .record_config {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
             .item {
+                margin-bottom: 10px;
+
                 .name {
-                    font-size: 12px;
                     margin-bottom: 5px;
                     color: #666;
                 }
@@ -133,7 +132,6 @@ body {
                         width: 100%;
                         outline: none;
                         padding: 0 5px;
-                        font-size: 12px;
                         height: 25px;
                         line-height: 25px;
                         color: #666;
@@ -146,7 +144,6 @@ body {
         .record_info {
             .item {
                 display: flex;
-                font-size: 12px;
                 margin-bottom: 10px;
 
                 .name {
@@ -240,6 +237,7 @@ body {
                     padding: 5px;
                     line-height: 1.2;
                     resize: none;
+                    background: #f7f7f7;
                 }
             }
         }

@@ -1,6 +1,7 @@
 import { sleep, isLiveRoom } from '../../share';
 import Storage from '../../share/storage';
-import { BILIBILI, MP4_BUFFER, FLV_BUFFER } from '../../share/constant';
+import throttle from 'lodash/throttle';
+import { BILIBILI, MP4_BUFFER, FLV_BUFFER, START_RECORD, STOP_RECORD, START_DOWNLOAD } from '../../share/constant';
 import FlvRemuxer from './FlvRemuxer';
 
 class Content {
@@ -12,6 +13,7 @@ class Content {
         this.storage = new Storage();
         this.flv = new FlvRemuxer(this);
         this.roomId = isLiveRoom(location.href);
+        this.updateConfig = throttle(this.updateConfig, 1000);
 
         if (this.roomId) {
             this.storage.get(this.roomId).then(config => {
@@ -21,6 +23,19 @@ class Content {
             });
             this.storage.onChanged(this.roomId, config => {
                 this.config = config;
+                switch (this.config.action) {
+                    case START_DOWNLOAD:
+                        this.flv.download();
+                        break;
+                    case START_RECORD:
+                        this.flv.record();
+                        break;
+                    case STOP_RECORD:
+                        this.flv.stop();
+                        break;
+                    default:
+                        break;
+                }
             });
         }
 
@@ -31,11 +46,18 @@ class Content {
                 case MP4_BUFFER:
                     break;
                 case FLV_BUFFER:
-                    // this.flv.load(data);
+                    this.flv.load(data);
                     break;
                 default:
                     break;
             }
+        });
+    }
+
+    updateConfig(config) {
+        this.storage.set(this.roomId, {
+            ...this.config,
+            ...config,
         });
     }
 
