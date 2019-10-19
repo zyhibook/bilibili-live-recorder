@@ -24,7 +24,7 @@ export default new Vue({
         RECORDING,
         AFTER_RECORD,
         BEFORE_RECORD,
-        isLiveRoom: true,
+        isLiveRoom: false,
         panel: 'panel_basis',
         manifest: chrome.runtime.getManifest(),
         logo: chrome.extension.getURL('icons/icon48.png'),
@@ -59,10 +59,12 @@ export default new Vue({
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
                     this.tab = tab;
-                    this.isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
                     this.config.id = tab.id;
                     this.config.url = tab.url;
+                    const isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
+                    this.isLiveRoom = isLiveRoom;
                     this.config.name = tab.title.replace(TITLE_PATTERN, '');
+                    if (!isLiveRoom) return;
 
                     // 发到 content
                     this.sendMessage(

@@ -12003,7 +12003,7 @@
       RECORDING: RECORDING,
       AFTER_RECORD: AFTER_RECORD,
       BEFORE_RECORD: BEFORE_RECORD,
-      isLiveRoom: true,
+      isLiveRoom: false,
       panel: 'panel_basis',
       manifest: chrome.runtime.getManifest(),
       logo: chrome.extension.getURL('icons/icon48.png'),
@@ -12038,10 +12038,12 @@
         if (tabs && tabs[0]) {
           var tab = tabs[0];
           _this.tab = tab;
-          _this.isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
           _this.config.id = tab.id;
           _this.config.url = tab.url;
-          _this.config.name = tab.title.replace(TITLE_PATTERN, ''); // 发到 content
+          var isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
+          _this.isLiveRoom = isLiveRoom;
+          _this.config.name = tab.title.replace(TITLE_PATTERN, '');
+          if (!isLiveRoom) return; // 发到 content
 
           _this.sendMessage({
             type: TAB_INFO,
