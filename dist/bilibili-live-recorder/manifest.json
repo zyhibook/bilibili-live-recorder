@@ -1,42 +1,28 @@
 {
-    "name": "bilibili-live-recorder",
+    "name": "Bilibili 直播间录制器",
     "version": "1.0.0",
-    "description": "Chrome 扩展 - Bilibili 直播间录制器",
+    "description": "Bilibili 直播间录制器",
     "manifest_version": 2,
     "background": {
-        "scripts": [
-            "./background/index.js"
-        ]
+        "scripts": ["background/index.js"]
     },
     "icons": {
-        "16": "./icons/icon16.png",
-        "48": "./icons/icon48.png",
-        "128": "./icons/icon128.png"
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
     },
-    "permissions": [
-        "tabs",
-        "webRequest",
-        "notifications",
-        "*://*.bilibili.com/*"
-    ],
+    "permissions": ["tabs", "webRequest", "webRequestBlocking", "notifications", "*://*.bilibili.com/*"],
     "browser_action": {
-        "default_popup": "./popup/index.html"
+        "default_popup": "popup/index.html"
     },
     "content_scripts": [
         {
-            "matches": [
-                "*://*.bilibili.com/*"
-            ],
-            "js": [
-                "./content/index.js"
-            ],
+            "matches": ["*://*.bilibili.com/*"],
+            "js": ["content/index.js"],
             "run_at": "document_start",
             "all_frames": true
         }
     ],
-    "web_accessible_resources": [
-        "injected/index.js",
-        "injected/index.css"
-    ],
+    "web_accessible_resources": ["injected/index.js", "injected/index.css"],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
