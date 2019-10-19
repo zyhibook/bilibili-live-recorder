@@ -29,6 +29,7 @@ onmessage = event => {
         case START_RECORD:
             recording = true;
             config = data;
+            debugStr = '';
             config.debug = '';
             debugLog(START_RECORD, config);
             break;
