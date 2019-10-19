@@ -1,8 +1,9 @@
+const NOTIFY = 'notify';
 const FLV_BUFFER = 'flv_buffer';
-const START_RECORD = 'start_record';
-const START_DOWNLOAD = 'start_download';
 const STOP_RECORD = 'stop_record';
+const START_RECORD = 'start_record';
 const UPDATE_CONFIG = 'update_config';
+const START_DOWNLOAD = 'start_download';
 
 let config = null;
 let recording = false;
@@ -21,6 +22,16 @@ function debugLog(...args) {
     });
 }
 
+function notify(message) {
+    postMessage({
+        type: NOTIFY,
+        data: {
+            title: config.name || '',
+            message,
+        },
+    });
+}
+
 onmessage = event => {
     const { type, data } = event.data;
     switch (type) {
@@ -31,6 +42,7 @@ onmessage = event => {
             config = data;
             debugStr = '';
             config.debug = '';
+            notify(START_RECORD);
             debugLog(START_RECORD, config);
             break;
         case STOP_RECORD: {

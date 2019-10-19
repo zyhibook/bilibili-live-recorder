@@ -56,6 +56,7 @@
   var UPDATE_CONFIG = 'update_config';
   var MP4_BUFFER = 'mp4_buffer';
   var FLV_BUFFER = 'flv_buffer';
+  var NOTIFY = 'notify';
 
   var Content =
   /*#__PURE__*/
@@ -69,7 +70,7 @@
       this.injectStyle();
       this.tab = null;
       this.config = null;
-      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";var FLV_BUFFER=\"flv_buffer\",START_RECORD=\"start_record\",START_DOWNLOAD=\"start_download\",STOP_RECORD=\"stop_record\",UPDATE_CONFIG=\"update_config\",config=null,recording=!1,videoDate=new Uint8Array(1048576),debugStr=\"\";function debugLog(){for(var a=new Date,b=\"\".concat(a.getHours(),\":\").concat(a.getMinutes(),\":\").concat(a.getSeconds()),c=arguments.length,d=Array(c),e=0;e<c;e++)d[e]=arguments[e];debugStr=\"\".concat(debugStr,\"\\n\\n\").concat(b,\" -> \").concat(d.map(function(a){return JSON.stringify(a)}).join(\"|\")).trim(),postMessage({type:UPDATE_CONFIG,data:{debug:debugStr}})}onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case FLV_BUFFER:break;case START_RECORD:recording=!0,config=d,debugStr=\"\",config.debug=\"\",debugLog(START_RECORD,config);break;case STOP_RECORD:{recording=!1,debugLog(STOP_RECORD);break}case START_DOWNLOAD:debugLog(START_DOWNLOAD),postMessage({type:START_DOWNLOAD,data:videoDate});break;default:}};"]))); // 来自 worker
+      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";var NOTIFY=\"notify\",FLV_BUFFER=\"flv_buffer\",STOP_RECORD=\"stop_record\",START_RECORD=\"start_record\",UPDATE_CONFIG=\"update_config\",START_DOWNLOAD=\"start_download\",config=null,recording=!1,videoDate=new Uint8Array(1048576),debugStr=\"\";function debugLog(){for(var a=new Date,b=\"\".concat(a.getHours(),\":\").concat(a.getMinutes(),\":\").concat(a.getSeconds()),c=arguments.length,d=Array(c),e=0;e<c;e++)d[e]=arguments[e];debugStr=\"\".concat(debugStr,\"\\n\\n\").concat(b,\" -> \").concat(d.map(function(a){return JSON.stringify(a)}).join(\"|\")).trim(),postMessage({type:UPDATE_CONFIG,data:{debug:debugStr}})}function notify(a){postMessage({type:NOTIFY,data:{title:config.name||\"\",message:a}})}onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case FLV_BUFFER:break;case START_RECORD:recording=!0,config=d,debugStr=\"\",config.debug=\"\",notify(START_RECORD),debugLog(START_RECORD,config);break;case STOP_RECORD:{recording=!1,debugLog(STOP_RECORD);break}case START_DOWNLOAD:debugLog(START_DOWNLOAD),postMessage({type:START_DOWNLOAD,data:videoDate});break;default:}};"]))); // 来自 worker
 
       this.worker.onmessage = function (event) {
         var _event$data = event.data,
@@ -77,9 +78,18 @@
             data = _event$data.data;
 
         switch (type) {
-          case UPDATE_CONFIG:
-            _this.updateConfig(data);
+          case NOTIFY:
+            chrome.runtime.sendMessage({
+              type: NOTIFY,
+              data: data
+            });
+            break;
 
+          case UPDATE_CONFIG:
+            chrome.runtime.sendMessage({
+              type: UPDATE_CONFIG,
+              data: data
+            });
             break;
 
           case START_DOWNLOAD:
@@ -91,8 +101,11 @@
           default:
             break;
         }
-      }; // 来自 popup
+      };
 
+      setTimeout(function () {
+        _this.notify('hi');
+      }, 1000); // 来自 popup
 
       chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         var type = request.type,
@@ -165,14 +178,6 @@
     }
 
     createClass(Content, [{
-      key: "updateConfig",
-      value: function updateConfig(config) {
-        chrome.runtime.sendMessage({
-          type: UPDATE_CONFIG,
-          data: config
-        });
-      }
-    }, {
       key: "injectScript",
       value: function injectScript() {
         var $script = document.createElement('script');

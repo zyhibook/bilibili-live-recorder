@@ -1,7 +1,8 @@
 import { sleep, download } from '../../share';
 import {
-    TAB_INFO,
     LIVE,
+    NOTIFY,
+    TAB_INFO,
     MP4_BUFFER,
     FLV_BUFFER,
     START_RECORD,
@@ -23,8 +24,17 @@ class Content {
         this.worker.onmessage = event => {
             const { type, data } = event.data;
             switch (type) {
+                case NOTIFY:
+                    chrome.runtime.sendMessage({
+                        type: NOTIFY,
+                        data,
+                    });
+                    break;
                 case UPDATE_CONFIG:
-                    this.updateConfig(data);
+                    chrome.runtime.sendMessage({
+                        type: UPDATE_CONFIG,
+                        data,
+                    });
                     break;
                 case START_DOWNLOAD:
                     const url = URL.createObjectURL(new Blob([data]));
@@ -35,6 +45,10 @@ class Content {
                     break;
             }
         };
+
+        setTimeout(() => {
+            this.notify('hi');
+        }, 1000);
 
         // 来自 popup
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -86,13 +100,6 @@ class Content {
                 default:
                     break;
             }
-        });
-    }
-
-    updateConfig(config) {
-        chrome.runtime.sendMessage({
-            type: UPDATE_CONFIG,
-            data: config,
         });
     }
 

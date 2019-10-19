@@ -1,13 +1,3 @@
-export function notify(text, name) {
-    chrome.notifications.create(String(Math.random()), {
-        type: 'basic',
-        iconUrl: chrome.extension.getURL('icons/icon128.png'),
-        title: chrome.runtime.getManifest().name,
-        message: name || '',
-        contextMessage: text,
-    });
-}
-
 export function getNowTime() {
     if (performance && typeof performance.now === 'function') {
         return performance.now();

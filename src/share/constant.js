@@ -22,3 +22,4 @@ export const START_DOWNLOAD = 'start_download';
 export const UPDATE_CONFIG = 'update_config';
 export const MP4_BUFFER = 'mp4_buffer';
 export const FLV_BUFFER = 'flv_buffer';
+export const NOTIFY = 'notify';

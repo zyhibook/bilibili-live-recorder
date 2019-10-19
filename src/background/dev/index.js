@@ -1,9 +1,28 @@
 import 'crx-hotreload';
-import { LIVE_PATTERN } from '../../share/constant';
+import { LIVE_PATTERN, NOTIFY } from '../../share/constant';
 
 class Background {
     constructor() {
         this.changeCSP();
+
+        // 来自 content
+        chrome.runtime.onMessage.addListener(request => {
+            const { type, data } = request;
+            switch (type) {
+                case NOTIFY:
+                    chrome.notifications.create(String(Math.random()), {
+                        type: 'basic',
+                        message: data.message,
+                        contextMessage: data.title || '',
+                        title: chrome.runtime.getManifest().name,
+                        iconUrl: chrome.extension.getURL('icons/icon128.png'),
+                    });
+                    break;
+                default:
+                    break;
+            }
+        });
+
         chrome.notifications.onClicked.addListener(id => {
             chrome.notifications.clear(id);
         });

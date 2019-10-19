@@ -85,6 +85,7 @@
 
   // 常用
   var LIVE_PATTERN = '*://*.bilibili.com/*';
+  var NOTIFY = 'notify';
 
   var Background =
   /*#__PURE__*/
@@ -92,7 +93,27 @@
     function Background() {
       classCallCheck(this, Background);
 
-      this.changeCSP();
+      this.changeCSP(); // 来自 content
+
+      chrome.runtime.onMessage.addListener(function (request) {
+        var type = request.type,
+            data = request.data;
+
+        switch (type) {
+          case NOTIFY:
+            chrome.notifications.create(String(Math.random()), {
+              type: 'basic',
+              message: data.message,
+              contextMessage: data.title || '',
+              title: chrome.runtime.getManifest().name,
+              iconUrl: chrome.extension.getURL('icons/icon128.png')
+            });
+            break;
+
+          default:
+            break;
+        }
+      });
       chrome.notifications.onClicked.addListener(function (id) {
         chrome.notifications.clear(id);
       });
