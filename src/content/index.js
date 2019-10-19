@@ -671,41 +671,6 @@
 
   var throttle_1 = throttle;
 
-  var FlvRemuxer =
-  /*#__PURE__*/
-  function () {
-    function FlvRemuxer(content) {
-      classCallCheck(this, FlvRemuxer);
-
-      this.content = content;
-      this.recording = false;
-      this.data = new Uint8Array();
-    }
-
-    createClass(FlvRemuxer, [{
-      key: "load",
-      value: function load(buf) {// this.data = mergeBuffer(this.data, buf);
-      }
-    }, {
-      key: "record",
-      value: function record() {
-        this.recording = true;
-      }
-    }, {
-      key: "stop",
-      value: function stop() {
-        this.recording = false;
-      }
-    }, {
-      key: "download",
-      value: function download() {
-        console.log('download');
-      }
-    }]);
-
-    return FlvRemuxer;
-  }();
-
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -722,9 +687,15 @@
       this.injectStyle();
       this.config = {};
       this.storage = new Storage();
-      this.flv = new FlvRemuxer(this);
       this.roomId = isLiveRoom(location.href);
+      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case\"load\":break;case\"download\":console.log(c);break;case\"record\":console.log(c),postMessage(\"hi\");break;case\"stop\":console.log(c);break;default:}};"])));
       this.updateConfig = throttle_1(this.updateConfig, 1000);
+
+      this.worker.onmessage = function (event) {
+        var _event$data = event.data,
+            type = _event$data.type,
+            data = _event$data.data;
+      };
 
       if (this.roomId) {
         this.storage.get(this.roomId).then(function (config) {
@@ -737,7 +708,9 @@
 
           switch (_this.config.action) {
             case START_DOWNLOAD:
-              _this.flv.download();
+              _this.worker.postMessage({
+                type: 'download'
+              });
 
               _this.updateConfig({
                 state: BEFORE_RECORD
@@ -746,7 +719,9 @@
               break;
 
             case START_RECORD:
-              _this.flv.record();
+              _this.worker.postMessage({
+                type: 'record'
+              });
 
               _this.updateConfig({
                 state: RECORDING
@@ -755,7 +730,9 @@
               break;
 
             case STOP_RECORD:
-              _this.flv.stop();
+              _this.worker.postMessage({
+                type: 'stop'
+              });
 
               _this.updateConfig({
                 state: AFTER_RECORD
@@ -771,16 +748,19 @@
 
       window.addEventListener('message', function (event) {
         if (event.origin !== BILIBILI) return;
-        var _event$data = event.data,
-            type = _event$data.type,
-            data = _event$data.data;
+        var _event$data2 = event.data,
+            type = _event$data2.type,
+            data = _event$data2.data;
 
         switch (type) {
           case MP4_BUFFER:
             break;
 
           case FLV_BUFFER:
-            _this.flv.load(data);
+            _this.worker.postMessage({
+              type: 'load',
+              data: data
+            });
 
             break;
 

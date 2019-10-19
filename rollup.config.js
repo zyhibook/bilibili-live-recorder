@@ -6,6 +6,7 @@ const { terser } = require('rollup-plugin-terser');
 const replace = require('rollup-plugin-replace');
 const copy = require('rollup-plugin-copy');
 const postcss = require('rollup-plugin-postcss');
+const worker = require('rollup-plugin-worker-inline');
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
 const { name, version, homepage } = require('./package.json');
@@ -26,6 +27,7 @@ module.exports = ['background', 'content', 'injected', 'popup'].map(item => {
             }),
             nodeResolve(),
             commonjs(),
+            worker(),
             babel({
                 runtimeHelpers: true,
                 exclude: 'node_modules/**',

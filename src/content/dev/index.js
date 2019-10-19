@@ -1,7 +1,6 @@
 import { sleep, isLiveRoom } from '../../share';
 import Storage from '../../share/storage';
 import throttle from 'lodash/throttle';
-import FlvRemuxer from './FlvRemuxer';
 import {
     BILIBILI,
     MP4_BUFFER,
@@ -21,9 +20,13 @@ class Content {
 
         this.config = {};
         this.storage = new Storage();
-        this.flv = new FlvRemuxer(this);
         this.roomId = isLiveRoom(location.href);
+        this.worker = new Worker('./flv-remuxer.js');
         this.updateConfig = throttle(this.updateConfig, 1000);
+
+        this.worker.onmessage = function(event) {
+            const { type, data } = event.data;
+        };
 
         if (this.roomId) {
             this.storage.get(this.roomId).then(config => {
@@ -35,19 +38,25 @@ class Content {
                 this.config = config;
                 switch (this.config.action) {
                     case START_DOWNLOAD:
-                        this.flv.download();
+                        this.worker.postMessage({
+                            type: 'download',
+                        });
                         this.updateConfig({
                             state: BEFORE_RECORD,
                         });
                         break;
                     case START_RECORD:
-                        this.flv.record();
+                        this.worker.postMessage({
+                            type: 'record',
+                        });
                         this.updateConfig({
                             state: RECORDING,
                         });
                         break;
                     case STOP_RECORD:
-                        this.flv.stop();
+                        this.worker.postMessage({
+                            type: 'stop',
+                        });
                         this.updateConfig({
                             state: AFTER_RECORD,
                         });
@@ -65,7 +74,10 @@ class Content {
                 case MP4_BUFFER:
                     break;
                 case FLV_BUFFER:
-                    this.flv.load(data);
+                    this.worker.postMessage({
+                        type: 'load',
+                        data,
+                    });
                     break;
                 default:
                     break;

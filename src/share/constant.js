@@ -1,5 +1,6 @@
 // 常用地址
 export const BILIBILI = 'https://live.bilibili.com';
+export const BILIBILI_PATTERN = '*://*.bilibili.com/*';
 export const GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
 export const WEBSTORE = 'https://chrome.google.com/webstore/category/extensions';
 

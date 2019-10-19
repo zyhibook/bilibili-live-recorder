@@ -12,6 +12,24 @@
 
   var classCallCheck = _classCallCheck;
 
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  var createClass = _createClass;
+
   const filesInDirectory = dir => new Promise (resolve =>
 
       dir.createReader ().readEntries (entries =>
@@ -65,13 +83,44 @@
       }
   });
 
-  var Background = function Background() {
-    classCallCheck(this, Background);
+  // 常用地址
+  var BILIBILI_PATTERN = '*://*.bilibili.com/*';
 
-    chrome.notifications.onClicked.addListener(function (id) {
-      chrome.notifications.clear(id);
-    });
-  };
+  var Background =
+  /*#__PURE__*/
+  function () {
+    function Background() {
+      classCallCheck(this, Background);
+
+      this.changeCSP();
+      chrome.notifications.onClicked.addListener(function (id) {
+        chrome.notifications.clear(id);
+      });
+    }
+
+    createClass(Background, [{
+      key: "changeCSP",
+      value: function changeCSP() {
+        chrome.webRequest.onHeadersReceived.addListener(function (details) {
+          var header = details.responseHeaders.find(function (e) {
+            return e.name.toLowerCase() === 'content-security-policy-report-only';
+          });
+
+          if (header && header.value) {
+            header.value = 'worker-src blob: ; ' + header.value;
+          }
+
+          return {
+            responseHeaders: details.responseHeaders
+          };
+        }, {
+          urls: [BILIBILI_PATTERN]
+        }, ['blocking', 'responseHeaders']);
+      }
+    }]);
+
+    return Background;
+  }();
 
   var index = new Background();
 
