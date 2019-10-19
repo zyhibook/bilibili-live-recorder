@@ -2,7 +2,7 @@
 export const LIVE = 'https://live.bilibili.com';
 export const LIVE_PATTERN = '*://*.bilibili.com/*';
 export const LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com\/\d+/;
-export const TITLE_PATTERN = /\s-\s哔哩哔哩直播，二次元弹幕直播平台/;
+export const TITLE_PATTERN = /(\s-\s哔哩哔哩直播，二次元弹幕直播平台)|\s*/g;
 export const GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
 export const WEBSTORE = 'https://chrome.google.com/webstore/category/extensions';
 
