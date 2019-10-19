@@ -52,16 +52,34 @@
                             <div class="value" :title="fileUrl">{{fileUrl}}</div>
                         </div>
                         <div class="item">
-                            <div class="name">录制时长：</div>
-                            <div class="value">{{config.maxDuration}}分钟</div>
+                            <div class="sub_item">
+                                <div class="name">录制时长：</div>
+                                <div class="value">{{config.maxDuration}}分钟</div>
+                            </div>
+                            <div class="sub_item">
+                                <div class="name">当前时长：</div>
+                                <div class="value">{{config.currentDuration}}分钟</div>
+                            </div>
                         </div>
                         <div class="item">
-                            <div class="name">当前时长：</div>
-                            <div class="value">{{config.currentDuration}}分钟</div>
+                            <div class="sub_item">
+                                <div class="name">当前大小：</div>
+                                <div class="value">{{config.currentSize}}M</div>
+                            </div>
+                            <div class="sub_item">
+                                <div class="name">分段大小：</div>
+                                <div class="value">{{config.chunk}}M</div>
+                            </div>
                         </div>
                         <div class="item">
-                            <div class="name">当前大小：</div>
-                            <div class="value">{{config.currentSize}}M</div>
+                            <div class="sub_item">
+                                <div class="name">下载速率：</div>
+                                <div class="value">{{config.downloadRate}}M/S</div>
+                            </div>
+                            <div class="sub_item">
+                                <div class="name">写入速率：</div>
+                                <div class="value">{{config.writeRate}}M/S</div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -77,7 +95,7 @@
                     <div class="item">
                         <div class="name">文件类型：</div>
                         <div class="value">
-                            <select v-model="config.format">
+                            <select v-model="config.format" :disabled="config.state !== BEFORE_RECORD">
                                 <option value="flv" selected>FLV</option>
                                 <option value="mp4" disabled>MP4 - 即将发布</option>
                             </select>
@@ -86,7 +104,8 @@
                     <div class="item">
                         <div class="name">分段保存：{{config.chunk}}M</div>
                         <div class="value">
-                            <input type="range" v-model="config.chunk" min="0" max="1000" step="100">
+                            <input type="range" v-model="config.chunk" min="0" max="1000" step="100"
+                                :disabled="config.state !== BEFORE_RECORD">
                         </div>
                     </div>
                     <div class="item">

@@ -41,6 +41,8 @@ export default new Vue({
             currentSize: 0,
             maxDuration: 10,
             currentDuration: 0,
+            downloadRate: 0,
+            writeRate: 0,
             state: BEFORE_RECORD,
         },
     },
