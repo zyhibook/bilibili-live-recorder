@@ -1,13 +1,18 @@
+const FLV_BUFFER = 'flv_buffer';
+const START_RECORD = 'start_record';
+const START_DOWNLOAD = 'start_download';
+const STOP_RECORD = 'stop_record';
+
 onmessage = event => {
     const { type, data } = event.data;
     switch (type) {
-        case 'load':
+        case FLV_BUFFER:
             break;
-        case 'download':
+        case START_DOWNLOAD:
             break;
-        case 'record':
+        case START_RECORD:
             break;
-        case 'stop':
+        case STOP_RECORD:
             break;
         default:
             break;

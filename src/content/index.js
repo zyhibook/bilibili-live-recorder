@@ -59,7 +59,7 @@
       this.injectStyle();
       this.tab = null;
       this.config = null;
-      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case\"load\":break;case\"download\":break;case\"record\":break;case\"stop\":break;default:}};"])));
+      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";var FLV_BUFFER=\"flv_buffer\",START_RECORD=\"start_record\",START_DOWNLOAD=\"start_download\",STOP_RECORD=\"stop_record\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case FLV_BUFFER:break;case START_DOWNLOAD:break;case START_RECORD:break;case STOP_RECORD:break;default:}};"])));
 
       this.worker.onmessage = function (event) {
         var _event$data = event.data,
