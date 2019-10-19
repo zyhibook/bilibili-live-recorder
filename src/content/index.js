@@ -101,11 +101,8 @@
           default:
             break;
         }
-      };
+      }; // 来自 popup
 
-      setTimeout(function () {
-        _this.notify('hi');
-      }, 1000); // 来自 popup
 
       chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         var type = request.type,

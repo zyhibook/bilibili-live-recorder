@@ -46,10 +46,6 @@ class Content {
             }
         };
 
-        setTimeout(() => {
-            this.notify('hi');
-        }, 1000);
-
         // 来自 popup
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             const { type, data } = request;
