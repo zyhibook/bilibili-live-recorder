@@ -86,10 +86,10 @@ class Content {
     }
 
     updateConfig(config) {
-        this.storage.set(this.roomId, {
-            ...this.config,
-            ...config,
-        });
+        // this.storage.set(this.roomId, {
+        //     ...this.config,
+        //     ...config,
+        // });
     }
 
     injectScript() {

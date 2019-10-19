@@ -4,23 +4,6 @@
   (global = global || self, global.Content = factory());
 }(this, function () { 'use strict';
 
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  }
-
-  var defineProperty = _defineProperty;
-
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -73,6 +56,23 @@
       return setTimeout(resolve, ms);
     });
   }
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  var defineProperty = _defineProperty;
 
   var Storage =
   /*#__PURE__*/
@@ -671,10 +671,6 @@
 
   var throttle_1 = throttle;
 
-  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
   var Content =
   /*#__PURE__*/
   function () {
@@ -688,7 +684,7 @@
       this.config = {};
       this.storage = new Storage();
       this.roomId = isLiveRoom(location.href);
-      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case\"load\":break;case\"download\":console.log(c);break;case\"record\":console.log(c),postMessage(\"hi\");break;case\"stop\":console.log(c);break;default:}};"])));
+      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case\"load\":break;case\"download\":break;case\"record\":break;case\"stop\":break;default:}};"])));
       this.updateConfig = throttle_1(this.updateConfig, 1000);
 
       this.worker.onmessage = function (event) {
@@ -772,8 +768,10 @@
 
     createClass(Content, [{
       key: "updateConfig",
-      value: function updateConfig(config) {
-        this.storage.set(this.roomId, _objectSpread({}, this.config, {}, config));
+      value: function updateConfig(config) {// this.storage.set(this.roomId, {
+        //     ...this.config,
+        //     ...config,
+        // });
       }
     }, {
       key: "injectScript",
