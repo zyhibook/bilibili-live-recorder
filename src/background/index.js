@@ -84,7 +84,7 @@
   });
 
   // 常用地址
-  var BILIBILI_PATTERN = '*://*.bilibili.com/*';
+  var LIVE_PATTERN = '*://*.bilibili.com/*';
 
   var Background =
   /*#__PURE__*/
@@ -114,7 +114,7 @@
             responseHeaders: details.responseHeaders
           };
         }, {
-          urls: [BILIBILI_PATTERN]
+          urls: [LIVE_PATTERN]
         }, ['blocking', 'responseHeaders']);
       }
     }]);

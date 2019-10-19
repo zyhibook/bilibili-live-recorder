@@ -1,5 +1,3 @@
-import { BILIBILI } from './constant';
-
 export function notify(text, name) {
     chrome.notifications.create(String(Math.random()), {
         type: 'basic',
@@ -8,14 +6,6 @@ export function notify(text, name) {
         message: name || '',
         contextMessage: text,
     });
-}
-
-export function isLiveRoom(url) {
-    const urlObj = new URL(url);
-    const isBilibili = urlObj.origin === BILIBILI;
-    const roomId = urlObj.pathname.slice(1);
-    const isRoom = /^\d+$/.test(roomId);
-    return isBilibili && isRoom ? roomId : false;
 }
 
 export function getNowTime() {

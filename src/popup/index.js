@@ -11976,8 +11976,18 @@
 
   var Vue = unwrapExports(vue);
 
+  function notify(text, name) {
+    chrome.notifications.create(String(Math.random()), {
+      type: 'basic',
+      iconUrl: chrome.extension.getURL('icons/icon128.png'),
+      title: chrome.runtime.getManifest().name,
+      message: name || '',
+      contextMessage: text
+    });
+  }
+
   // 常用地址
-  var BILIBILI = 'https://live.bilibili.com';
+  var LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com\/\d+/;
   var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
   var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions'; // 状态
 
@@ -11994,23 +12004,6 @@
   var OPEN_LIVE = '请先打开Bilibili直播间';
   var FILE_NAME = '请输入文件名称';
 
-  function notify(text, name) {
-    chrome.notifications.create(String(Math.random()), {
-      type: 'basic',
-      iconUrl: chrome.extension.getURL('icons/icon128.png'),
-      title: chrome.runtime.getManifest().name,
-      message: name || '',
-      contextMessage: text
-    });
-  }
-  function isLiveRoom(url) {
-    var urlObj = new URL(url);
-    var isBilibili = urlObj.origin === BILIBILI;
-    var roomId = urlObj.pathname.slice(1);
-    var isRoom = /^\d+$/.test(roomId);
-    return isBilibili && isRoom ? roomId : false;
-  }
-
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -12021,7 +12014,7 @@
       RECORDING: RECORDING,
       AFTER_RECORD: AFTER_RECORD,
       BEFORE_RECORD: BEFORE_RECORD,
-      liveRoom: true,
+      isLiveRoom: true,
       panel: 'panel_basis',
       manifest: chrome.runtime.getManifest(),
       logo: chrome.extension.getURL('icons/icon48.png'),
@@ -12054,9 +12047,9 @@
         if (tabs && tabs[0]) {
           var tab = tabs[0];
           _this.tab = tab;
-          var liveRoom = isLiveRoom(tab.url);
-          if (!liveRoom) return;
-          _this.liveRoom = liveRoom;
+          var isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
+          _this.isLiveRoom = isLiveRoom;
+          if (!isLiveRoom) return;
           _this.config.id = tab.id;
           _this.config.url = tab.url;
           _this.config.name = tab.title.replace(TITLE_REPLACE, '');
@@ -12104,7 +12097,7 @@
       startRecord: function startRecord() {
         var _this2 = this;
 
-        if (this.liveRoom) {
+        if (this.isLiveRoom) {
           if (this.config.name.trim()) {
             this.sendMessage({
               type: START_RECORD,
@@ -12112,9 +12105,11 @@
                 state: RECORDING
               })
             }, function (config) {
-              _this2.config = config;
+              if (config) {
+                _this2.config = config;
 
-              _this2.setBadgeText('ON', '#fb7299');
+                _this2.setBadgeText('ON', '#fb7299');
+              }
             });
           } else {
             notify(FILE_NAME);
@@ -12132,9 +12127,11 @@
             state: AFTER_RECORD
           })
         }, function (config) {
-          _this3.config = config;
+          if (config) {
+            _this3.config = config;
 
-          _this3.setBadgeText('OK', '#23ade5');
+            _this3.setBadgeText('OK', '#23ade5');
+          }
         });
       },
       startDownload: function startDownload() {
@@ -12146,9 +12143,11 @@
             state: BEFORE_RECORD
           })
         }, function (config) {
-          _this4.config = config;
+          if (config) {
+            _this4.config = config;
 
-          _this4.setBadgeText('');
+            _this4.setBadgeText('');
+          }
         });
       }
     }

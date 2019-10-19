@@ -1,7 +1,7 @@
 import 'normalize.css';
 import './index.scss';
 import Vue from 'vue/dist/vue';
-import { notify, isLiveRoom } from '../../share';
+import { notify } from '../../share';
 import {
     GITHUB,
     TAB_INFO,
@@ -15,6 +15,7 @@ import {
     STOP_RECORD,
     START_DOWNLOAD,
     FILE_NAME,
+    LIVE_ROOM_PATTERN,
 } from '../../share/constant';
 
 export default new Vue({
@@ -24,7 +25,7 @@ export default new Vue({
         RECORDING,
         AFTER_RECORD,
         BEFORE_RECORD,
-        liveRoom: true,
+        isLiveRoom: true,
         panel: 'panel_basis',
         manifest: chrome.runtime.getManifest(),
         logo: chrome.extension.getURL('icons/icon48.png'),
@@ -57,10 +58,11 @@ export default new Vue({
                 if (tabs && tabs[0]) {
                     const tab = tabs[0];
                     this.tab = tab;
-                    const liveRoom = isLiveRoom(tab.url);
-                    if (!liveRoom) return;
 
-                    this.liveRoom = liveRoom;
+                    const isLiveRoom = LIVE_ROOM_PATTERN.test(tab.url);
+                    this.isLiveRoom = isLiveRoom;
+                    if (!isLiveRoom) return;
+
                     this.config.id = tab.id;
                     this.config.url = tab.url;
                     this.config.name = tab.title.replace(TITLE_REPLACE, '');
@@ -98,7 +100,7 @@ export default new Vue({
             chrome.tabs.sendMessage(this.tab.id, data, callback);
         },
         startRecord() {
-            if (this.liveRoom) {
+            if (this.isLiveRoom) {
                 if (this.config.name.trim()) {
                     this.sendMessage(
                         {
@@ -109,8 +111,10 @@ export default new Vue({
                             },
                         },
                         config => {
-                            this.config = config;
-                            this.setBadgeText('ON', '#fb7299');
+                            if (config) {
+                                this.config = config;
+                                this.setBadgeText('ON', '#fb7299');
+                            }
                         },
                     );
                 } else {
@@ -130,8 +134,10 @@ export default new Vue({
                     },
                 },
                 config => {
-                    this.config = config;
-                    this.setBadgeText('OK', '#23ade5');
+                    if (config) {
+                        this.config = config;
+                        this.setBadgeText('OK', '#23ade5');
+                    }
                 },
             );
         },
@@ -145,8 +151,10 @@ export default new Vue({
                     },
                 },
                 config => {
-                    this.config = config;
-                    this.setBadgeText('');
+                    if (config) {
+                        this.config = config;
+                        this.setBadgeText('');
+                    }
                 },
             );
         },

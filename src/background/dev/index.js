@@ -1,5 +1,5 @@
 import 'crx-hotreload';
-import { BILIBILI_PATTERN } from '../../share/constant';
+import { LIVE_PATTERN } from '../../share/constant';
 
 class Background {
     constructor() {
@@ -20,7 +20,7 @@ class Background {
                 }
                 return { responseHeaders: details.responseHeaders };
             },
-            { urls: [BILIBILI_PATTERN] },
+            { urls: [LIVE_PATTERN] },
             ['blocking', 'responseHeaders'],
         );
     }

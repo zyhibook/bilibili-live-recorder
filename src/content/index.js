@@ -30,8 +30,15 @@
 
   var createClass = _createClass;
 
+  function sleep() {
+    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+    return new Promise(function (resolve) {
+      return setTimeout(resolve, ms);
+    });
+  }
+
   // 常用地址
-  var BILIBILI = 'https://live.bilibili.com';
+  var LIVE = 'https://live.bilibili.com';
 
   var TAB_INFO = 'tab_info';
   var START_RECORD = 'start_record';
@@ -39,13 +46,6 @@
   var START_DOWNLOAD = 'start_download';
   var MP4_BUFFER = 'mp4_buffer';
   var FLV_BUFFER = 'flv_buffer'; // 语言
-
-  function sleep() {
-    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-    return new Promise(function (resolve) {
-      return setTimeout(resolve, ms);
-    });
-  }
 
   var Content =
   /*#__PURE__*/
@@ -59,13 +59,14 @@
       this.injectStyle();
       this.tab = null;
       this.config = null;
-      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";var FLV_BUFFER=\"flv_buffer\",START_RECORD=\"start_record\",START_DOWNLOAD=\"start_download\",STOP_RECORD=\"stop_record\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case FLV_BUFFER:break;case START_DOWNLOAD:break;case START_RECORD:break;case STOP_RECORD:break;default:}};"])));
+      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";var FLV_BUFFER=\"flv_buffer\",START_RECORD=\"start_record\",START_DOWNLOAD=\"start_download\",STOP_RECORD=\"stop_record\";onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case FLV_BUFFER:break;case START_DOWNLOAD:break;case START_RECORD:break;case STOP_RECORD:break;default:}};"]))); // 来自 worker
 
       this.worker.onmessage = function (event) {
         var _event$data = event.data,
             type = _event$data.type,
             data = _event$data.data;
-      };
+      }; // 来自 popup
+
 
       chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         var type = request.type,
@@ -111,9 +112,10 @@
         }
 
         sendResponse(_this.config);
-      });
+      }); // 来自 injected
+
       window.addEventListener('message', function (event) {
-        if (event.origin !== BILIBILI) return;
+        if (event.origin !== LIVE) return;
         var _event$data2 = event.data,
             type = _event$data2.type,
             data = _event$data2.data;

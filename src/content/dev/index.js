@@ -1,7 +1,7 @@
 import { sleep } from '../../share';
 import {
     TAB_INFO,
-    BILIBILI,
+    LIVE,
     MP4_BUFFER,
     FLV_BUFFER,
     START_RECORD,
@@ -18,10 +18,12 @@ class Content {
         this.config = null;
         this.worker = new Worker('./flv-remuxer.js');
 
+        // 来自 worker
         this.worker.onmessage = function(event) {
             const { type, data } = event.data;
         };
 
+        // 来自 popup
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             const { type, data } = request;
             switch (type) {
@@ -55,8 +57,9 @@ class Content {
             sendResponse(this.config);
         });
 
+        // 来自 injected
         window.addEventListener('message', event => {
-            if (event.origin !== BILIBILI) return;
+            if (event.origin !== LIVE) return;
             const { type, data } = event.data;
             switch (type) {
                 case MP4_BUFFER:
