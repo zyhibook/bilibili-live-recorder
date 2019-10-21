@@ -58,7 +58,7 @@ class FLVParser {
         this.data = new Uint8Array();
         this.header = new Uint8Array();
         this.scripTag = new Uint8Array();
-        this.videoAndAudioTags = new Uint8Array();
+        this.videoAndAudioTags = [];
         this.tagStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
@@ -110,7 +110,18 @@ class FLVParser {
     }
 
     get resultData() {
-        return FLVParser.mergeBuffer(this.header, this.scripTag, this.videoAndAudioTags);
+        return FLVParser.mergeBuffer(this.header, this.scripTag, ...this.videoAndAudioTags);
+    }
+
+    get resultSize() {
+        return (
+            this.header.byteLength +
+            this.scripTag.byteLength +
+            this.videoAndAudioTags.reduce((result, item) => {
+                result += item.byteLength;
+                return result;
+            }, 0)
+        );
     }
 
     getTagTime(tag) {
@@ -193,7 +204,7 @@ class FLVParser {
         this.data = new Uint8Array();
         this.header = new Uint8Array();
         this.scripTag = new Uint8Array();
-        this.videoAndAudioTags = new Uint8Array();
+        this.videoAndAudioTags = [];
         this.tagStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
@@ -242,24 +253,23 @@ class FLVParser {
             if (tagType === 18) {
                 this.scripTag = tagData;
             } else {
-                // if (!this.tagStartTime) {
-                //     this.tagStartTime = this.getTagTime(tagData);
-                // }
-                // this.resultDuration = this.getTagTime(tagData) - this.tagStartTime;
-                // tagData.set(this.setTagTime(this.resultDuration), 4);
-                this.videoAndAudioTags = FLVParser.mergeBuffer(this.videoAndAudioTags, tagData);
-
-                if (this.resultData.byteLength > 5 * 1024 * 1024 && !this.test) {
+                if (!this.tagStartTime) {
+                    this.tagStartTime = this.getTagTime(tagData);
+                }
+                this.resultDuration = this.getTagTime(tagData) - this.tagStartTime;
+                tagData.set(this.setTagTime(this.resultDuration), 4);
+                this.videoAndAudioTags.push(tagData);
+                if (this.resultSize > 5 * 1024 * 1024 && !this.test) {
                     this.test = true;
                     postMessage({
                         type: START_DOWNLOAD,
-                        data: FLVParser.mergeBuffer(this.header, this.scripTag, this.videoAndAudioTags),
+                        data: this.resultData,
                     });
                 }
             }
 
             this.writeRate(tagData.byteLength);
-            this.sizeRate(this.resultData.byteLength);
+            // this.sizeRate(this.resultData.byteLength);
             // this.durationRate(this.resultDuration);
             this.data = this.data.subarray(this.index);
             this.index = 0;
