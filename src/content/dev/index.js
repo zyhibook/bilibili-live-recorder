@@ -106,8 +106,8 @@ class Content {
 
     download(data) {
         const url = URL.createObjectURL(new Blob([data]));
-        const name = this.config.name + '.' + this.config.format;
-        download(url, name);
+        // const name = this.config.name + '.' + this.config.format;
+        download(url, 'test.flv');
     }
 
     notify(data) {

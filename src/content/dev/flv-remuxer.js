@@ -23,6 +23,10 @@ class FLVParser {
         );
     }
 
+    static numToFloat64Arr(num) {
+        return [...new Uint8Array(new Float64Array([num]).buffer)].reverse();
+    }
+
     static readBufferString(array) {
         return String.fromCharCode.call(String, ...array);
     }
@@ -60,6 +64,7 @@ class FLVParser {
         this.debugStr = '';
         this.config = {};
         this.index = 0;
+        this.test = false;
 
         this.downloadRate = FLVParser.createRate(rate => {
             if (!this.recording) return;
@@ -178,6 +183,15 @@ class FLVParser {
         return uint8;
     }
 
+    rebuildScripTag() {
+        const durationSecond = Number((this.resultDuration / 1000 / 60).toFixed(3));
+        const durationHeader = Uint8Array.from([0x00, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x00]);
+        const durationBody = Uint8Array.from(FLVParser.numToFloat64Arr(durationSecond));
+        const filesizeHeader = Uint8Array.from([0x00, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x69, 0x7a, 0x65, 0x00]);
+        const filesizeBody = Uint8Array.from(FLVParser.numToFloat64Arr(this.resultSize));
+        return FLVParser.mergeBuffer(this.scripTag, durationHeader, durationBody, filesizeHeader, filesizeBody);
+    }
+
     [FLV_BUFFER](uint8) {
         this.downloadRate(uint8.byteLength);
         this.data = FLVParser.mergeBuffer(this.data, uint8);
@@ -214,8 +228,15 @@ class FLVParser {
 
             if (tagType === 18) {
                 this.scripTag = tagData;
-            } else if (this.recording) {
+            } else {
                 this.videoAndAudioTag.push(tagData);
+                if (this.resultSize > 5 * 1024 * 1024 && !this.test) {
+                    this.test = true;
+                    postMessage({
+                        type: START_DOWNLOAD,
+                        data: FLVParser.mergeBuffer(this.header, this.rebuildScripTag(), ...this.videoAndAudioTag),
+                    });
+                }
             }
 
             this.writeRate(tagData.byteLength);
@@ -238,7 +259,7 @@ class FLVParser {
     [STOP_RECORD]() {
         this.recording = false;
         this.recordDuration = FLVParser.getNowTime() - this.recordStartTime;
-        this.debug(STOP_RECORD, 'duration', this.recordDuration);
+        this.debug(STOP_RECORD, 'duration', this.resultDuration);
     }
 
     [START_DOWNLOAD]() {
@@ -251,10 +272,20 @@ class FLVParser {
 }
 
 const flv = new FLVParser();
+let test = new Uint8Array();
+let ok = false;
 onmessage = event => {
     const { type, data } = event.data;
     switch (type) {
         case FLV_BUFFER:
+            test = FLVParser.mergeBuffer(test, data);
+            if (test.byteLength > 5 * 1024 * 1024 && !ok) {
+                ok = true;
+                postMessage({
+                    type: START_DOWNLOAD,
+                    data: test,
+                });
+            }
             flv[FLV_BUFFER](data);
             break;
         case START_RECORD:
