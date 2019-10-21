@@ -12063,6 +12063,7 @@
 
             switch (type) {
               case UPDATE_CONFIG:
+                if (_this.config.state !== RECORDING) return;
                 _this.config = _objectSpread({}, _this.config, {}, data);
                 break;
 

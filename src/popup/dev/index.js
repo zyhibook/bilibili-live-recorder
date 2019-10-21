@@ -85,6 +85,7 @@ export default new Vue({
                         const { type, data } = request;
                         switch (type) {
                             case UPDATE_CONFIG:
+                                if (this.config.state !== RECORDING) return;
                                 this.config = {
                                     ...this.config,
                                     ...data,

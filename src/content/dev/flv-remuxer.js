@@ -1,6 +1,7 @@
 const NOTIFY = 'notify';
 const FLV_BUFFER = 'flv_buffer';
 const STOP_RECORD = 'stop_record';
+const RESET_RECORD = 'reset_record';
 const START_RECORD = 'start_record';
 const UPDATE_CONFIG = 'update_config';
 const START_DOWNLOAD = 'start_download';
@@ -57,13 +58,14 @@ class FLVParser {
         this.data = new Uint8Array();
         this.header = new Uint8Array();
         this.scripTag = new Uint8Array();
-        this.result = new Uint8Array();
-        this.videoAndAudioTag = [];
-        this.recordStartTime = 0;
+        this.videoAndAudioTags = new Uint8Array();
+        this.tagStartTime = 0;
+        this.resultDuration = 0;
         this.recording = false;
         this.debugStr = '';
         this.config = {};
         this.index = 0;
+
         this.test = false;
 
         this.downloadRate = FLVParser.createRate(rate => {
@@ -107,22 +109,8 @@ class FLVParser {
         }, false);
     }
 
-    get resultSize() {
-        return (
-            this.header.byteLength +
-            this.scripTag.byteLength +
-            this.videoAndAudioTag.reduce((result, item) => {
-                result += item.byteLength;
-                return result;
-            }, 0)
-        );
-    }
-
-    get resultDuration() {
-        if (this.videoAndAudioTag.length < 2) return 0;
-        const startTag = this.videoAndAudioTag[0];
-        const endTag = this.videoAndAudioTag[this.videoAndAudioTag.length - 1];
-        return this.getTagTime(endTag) - this.getTagTime(startTag);
+    get resultData() {
+        return FLVParser.mergeBuffer(this.header, this.scripTag, this.videoAndAudioTags);
     }
 
     getTagTime(tag) {
@@ -133,17 +121,14 @@ class FLVParser {
         return ts0 | (ts1 << 8) | (ts2 << 16) | (ts3 << 24);
     }
 
-    reset() {
-        this.data = new Uint8Array();
-        this.header = new Uint8Array();
-        this.scripTag = new Uint8Array();
-        this.result = new Uint8Array();
-        this.videoAndAudioTag = [];
-        this.recordStartTime = 0;
-        this.recording = false;
-        this.debugStr = '';
-        this.config = {};
-        this.index = 0;
+    setTagTime(time) {
+        const uint = new Uint8Array(4);
+        const size = new Uint8Array(new Uint32Array([time]).buffer);
+        uint[0] = size[2];
+        uint[1] = size[1];
+        uint[2] = size[0];
+        uint[3] = size[3];
+        return uint;
     }
 
     debug(...args) {
@@ -188,7 +173,7 @@ class FLVParser {
         const durationHeader = Uint8Array.from([0x00, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x00]);
         const durationBody = Uint8Array.from(FLVParser.numToFloat64Arr(durationSecond));
         const filesizeHeader = Uint8Array.from([0x00, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x69, 0x7a, 0x65, 0x00]);
-        const filesizeBody = Uint8Array.from(FLVParser.numToFloat64Arr(this.resultSize));
+        const filesizeBody = Uint8Array.from(FLVParser.numToFloat64Arr(this.resultData.byteLength));
         const scripTag = FLVParser.mergeBuffer(
             this.scripTag,
             durationHeader,
@@ -196,13 +181,25 @@ class FLVParser {
             filesizeHeader,
             filesizeBody,
         );
-
         const tagSize = FLVParser.readBufferSum(scripTag.subarray(1, 4)) + 38;
         const size = new Uint8Array(new Uint32Array([tagSize]).buffer);
         scripTag[1] = size[2];
         scripTag[2] = size[1];
         scripTag[3] = size[0];
         return scripTag;
+    }
+
+    [RESET_RECORD]() {
+        this.data = new Uint8Array();
+        this.header = new Uint8Array();
+        this.scripTag = new Uint8Array();
+        this.videoAndAudioTags = new Uint8Array();
+        this.tagStartTime = 0;
+        this.resultDuration = 0;
+        this.recording = false;
+        this.debugStr = '';
+        this.config = {};
+        this.index = 0;
     }
 
     [FLV_BUFFER](uint8) {
@@ -233,8 +230,9 @@ class FLVParser {
                 tagData = FLVParser.mergeBuffer(tagData, prevTag);
                 const prevTagSize = FLVParser.readBufferSum(prevTag);
                 if (prevTagSize !== tagSize + 11) {
-                    this.debug(this.constructor.name, `Prev tag size does not match in tag type: ${tagType}`);
-                    return;
+                    const msg = `Prev tag size does not match in tag type: ${tagType}`;
+                    this.debug(msg);
+                    throw new Error(msg);
                 }
             } else {
                 this.index = restIndex;
@@ -244,19 +242,25 @@ class FLVParser {
             if (tagType === 18) {
                 this.scripTag = tagData;
             } else {
-                this.videoAndAudioTag.push(tagData);
-                if (this.resultSize > 10 * 1024 * 1024 && !this.test) {
+                // if (!this.tagStartTime) {
+                //     this.tagStartTime = this.getTagTime(tagData);
+                // }
+                // this.resultDuration = this.getTagTime(tagData) - this.tagStartTime;
+                // tagData.set(this.setTagTime(this.resultDuration), 4);
+                this.videoAndAudioTags = FLVParser.mergeBuffer(this.videoAndAudioTags, tagData);
+
+                if (this.resultData.byteLength > 5 * 1024 * 1024 && !this.test) {
                     this.test = true;
                     postMessage({
                         type: START_DOWNLOAD,
-                        data: FLVParser.mergeBuffer(this.header, this.rebuildScripTag(), ...this.videoAndAudioTag),
+                        data: FLVParser.mergeBuffer(this.header, this.scripTag, this.videoAndAudioTags),
                     });
                 }
             }
 
             this.writeRate(tagData.byteLength);
-            this.sizeRate(this.resultSize);
-            this.durationRate(this.resultDuration);
+            this.sizeRate(this.resultData.byteLength);
+            // this.durationRate(this.resultDuration);
             this.data = this.data.subarray(this.index);
             this.index = 0;
         }
@@ -268,29 +272,39 @@ class FLVParser {
         this.debugStr = '';
         this.config.debug = '';
         this.debug(START_RECORD, 'config', this.config);
-        this.recordStartTime = FLVParser.getNowTime();
     }
 
     [STOP_RECORD]() {
         this.recording = false;
-        this.recordDuration = FLVParser.getNowTime() - this.recordStartTime;
         this.debug(STOP_RECORD, 'duration', this.resultDuration);
     }
 
     [START_DOWNLOAD]() {
-        this.debug(START_DOWNLOAD, 'byteLength', this.result.byteLength);
         postMessage({
             type: START_DOWNLOAD,
-            data: this.result,
+            data: this.resultData,
         });
+        this.debug(START_DOWNLOAD, 'byteLength', this.resultData.byteLength);
     }
 }
 
 const flv = new FLVParser();
+
+let test1 = new Uint8Array();
+let test2 = false;
+
 onmessage = event => {
     const { type, data } = event.data;
     switch (type) {
         case FLV_BUFFER:
+            test1 = FLVParser.mergeBuffer(test1, data);
+            if (test1.byteLength > 5 * 1024 * 1024 && !test2) {
+                test2 = true;
+                postMessage({
+                    type: START_DOWNLOAD,
+                    data: test1,
+                });
+            }
             flv[FLV_BUFFER](data);
             break;
         case START_RECORD:
@@ -301,6 +315,9 @@ onmessage = event => {
             break;
         case START_DOWNLOAD:
             flv[START_DOWNLOAD](data);
+            break;
+        case RESET_RECORD:
+            flv[RESET_RECORD](data);
             break;
         default:
             break;
