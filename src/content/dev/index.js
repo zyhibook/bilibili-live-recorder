@@ -21,6 +21,10 @@ class Content {
         this.config = null;
         this.worker = new Worker('./flv-remuxer.js');
 
+        this.localKey = 'bilibili-live-recorder';
+        this.record = localStorage.getItem(this.localKey) === '1';
+        window.localStorage.removeItem(this.localKey);
+
         // 来自 worker
         this.worker.onmessage = event => {
             const { type, data } = event.data;
@@ -50,11 +54,9 @@ class Content {
                     this.config = data;
                     sleep(1000).then(() => {
                         const $video = document.querySelector('video');
-                        const $reload = document.querySelector(
-                            '.bilibili-live-player-video-controller-reload-btn button',
-                        );
-                        if ($video && $reload) {
-                            $reload.click();
+                        if ($video) {
+                            localStorage.setItem(this.localKey, '1');
+                            location.reload();
                             this.worker.postMessage({
                                 type: START_RECORD,
                                 data,
@@ -97,10 +99,12 @@ class Content {
                 case MP4_BUFFER:
                     break;
                 case FLV_BUFFER:
-                    this.worker.postMessage({
-                        type: FLV_BUFFER,
-                        data,
-                    });
+                    if (this.record) {
+                        this.worker.postMessage({
+                            type: FLV_BUFFER,
+                            data,
+                        });
+                    }
                     break;
                 default:
                     break;
