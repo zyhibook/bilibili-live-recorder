@@ -34,7 +34,7 @@ class FLVParser {
         return Date.now();
     }
 
-    static createRate(callback) {
+    static createRate(callback, average = true) {
         let totalSize = 0;
         let lastTime = FLVParser.getNowTime();
         return (size = 1) => {
@@ -42,7 +42,7 @@ class FLVParser {
             const thisTime = FLVParser.getNowTime();
             const diffTime = thisTime - lastTime;
             if (diffTime >= 1000) {
-                callback((totalSize / diffTime) * 1000);
+                callback(average ? (totalSize / diffTime) * 1000 : size);
                 lastTime = thisTime;
                 totalSize = 0;
             }
@@ -80,6 +80,52 @@ class FLVParser {
                 },
             });
         });
+
+        this.durationRate = FLVParser.createRate(rate => {
+            if (!this.recording) return;
+            postMessage({
+                type: UPDATE_CONFIG,
+                data: {
+                    currentDuration: (rate / 1000 / 60).toFixed(3),
+                },
+            });
+        }, false);
+
+        this.sizeRate = FLVParser.createRate(rate => {
+            if (!this.recording) return;
+            postMessage({
+                type: UPDATE_CONFIG,
+                data: {
+                    currentSize: (rate / 1024 / 1024).toFixed(3),
+                },
+            });
+        }, false);
+    }
+
+    get resultSize() {
+        return (
+            this.header.byteLength +
+            this.scripTag.byteLength +
+            this.videoAndAudioTag.reduce((result, item) => {
+                result += item.byteLength;
+                return result;
+            }, 0)
+        );
+    }
+
+    get resultDuration() {
+        if (this.videoAndAudioTag.length < 2) return 0;
+        const startTag = this.videoAndAudioTag[0];
+        const endTag = this.videoAndAudioTag[this.videoAndAudioTag.length - 1];
+        return this.getTagTime(endTag) - this.getTagTime(startTag);
+    }
+
+    getTagTime(tag) {
+        const ts2 = tag[4];
+        const ts1 = tag[5];
+        const ts0 = tag[6];
+        const ts3 = tag[7];
+        return ts0 | (ts1 << 8) | (ts2 << 16) | (ts3 << 24);
     }
 
     reset() {
@@ -98,7 +144,9 @@ class FLVParser {
     debug(...args) {
         const d = new Date();
         const time = `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`;
-        this.debugStr = `${this.debugStr}\\n\\n${time} -> ${args.map(item => JSON.stringify(item)).join('|')}`.trim();
+        this.debugStr = `${this.debugStr}\\n\\n${time} -> ${args
+            .map(item => (typeof item === 'string' ? item : JSON.stringify(item)))
+            .join('|')}`.trim();
         postMessage({
             type: UPDATE_CONFIG,
             data: {
@@ -146,7 +194,7 @@ class FLVParser {
             if (this.readable(11)) {
                 tagData = FLVParser.mergeBuffer(tagData, this.read(11));
                 tagType = tagData[0];
-                tagSize = FLVParser.readBufferSum(tagData.slice(1, 4));
+                tagSize = FLVParser.readBufferSum(tagData.subarray(1, 4));
             } else {
                 this.index = restIndex;
                 return;
@@ -156,9 +204,8 @@ class FLVParser {
                 tagData = FLVParser.mergeBuffer(tagData, this.read(tagSize));
                 const prevTagSize = FLVParser.readBufferSum(this.read(4));
                 if (prevTagSize !== tagSize + 11) {
-                    const msg = `FLVParser: Prev tag size does not match in tag type: ${tagType}`;
-                    this.debug(msg);
-                    throw new Error(msg);
+                    this.debug(this.constructor.name, `Prev tag size does not match in tag type: ${tagType}`);
+                    return;
                 }
             } else {
                 this.index = restIndex;
@@ -167,11 +214,13 @@ class FLVParser {
 
             if (tagType === 18) {
                 this.scripTag = tagData;
-            } else {
+            } else if (this.recording) {
                 this.videoAndAudioTag.push(tagData);
             }
 
             this.writeRate(tagData.byteLength);
+            this.sizeRate(this.resultSize);
+            this.durationRate(this.resultDuration);
             this.data = this.data.subarray(this.index);
             this.index = 0;
         }
@@ -182,18 +231,18 @@ class FLVParser {
         this.config = config;
         this.debugStr = '';
         this.config.debug = '';
-        this.debug(START_RECORD, this.config);
+        this.debug(START_RECORD, 'config', this.config);
         this.recordStartTime = FLVParser.getNowTime();
     }
 
     [STOP_RECORD]() {
         this.recording = false;
-        this.debug(STOP_RECORD);
         this.recordDuration = FLVParser.getNowTime() - this.recordStartTime;
+        this.debug(STOP_RECORD, 'duration', this.recordDuration);
     }
 
     [START_DOWNLOAD]() {
-        this.debug(START_DOWNLOAD);
+        this.debug(START_DOWNLOAD, 'byteLength', this.result.byteLength);
         postMessage({
             type: START_DOWNLOAD,
             data: this.result,
@@ -212,10 +261,10 @@ onmessage = event => {
             flv[START_RECORD](data);
             break;
         case STOP_RECORD:
-            flv[STOP_RECORD]();
+            flv[STOP_RECORD](data);
             break;
         case START_DOWNLOAD:
-            flv[START_DOWNLOAD]();
+            flv[START_DOWNLOAD](data);
             break;
         default:
             break;
