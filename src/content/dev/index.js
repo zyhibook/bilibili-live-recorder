@@ -50,7 +50,11 @@ class Content {
                     this.config = data;
                     sleep(1000).then(() => {
                         const $video = document.querySelector('video');
-                        if ($video) {
+                        const $reload = document.querySelector(
+                            '.bilibili-live-player-video-controller-reload-btn button',
+                        );
+                        if ($video && $reload) {
+                            $reload.click();
                             this.worker.postMessage({
                                 type: START_RECORD,
                                 data,

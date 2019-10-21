@@ -186,9 +186,18 @@ class FLVParser {
     [FLV_BUFFER](uint8) {
         this.downloadRate(uint8.byteLength);
         this.data = FLVParser.mergeBuffer(this.data, uint8);
-        if (!this.header.length && this.readable(13)) {
+
+        if (uint8[0] === 70 && uint8[1] === 76 && uint8[2] === 86 && uint8[3] === 1) {
+            this[RESET_RECORD]();
+            this.data = FLVParser.mergeBuffer(this.data, uint8);
             this.header = this.read(13);
+            console.log(this.header);
         }
+
+        // if (!this.header.length && this.readable(13)) {
+        //     this.header = this.read(13);
+        //     console.log(this.header);
+        // }
 
         while (this.index < this.data.length) {
             let tagSize = 0;
@@ -244,11 +253,13 @@ class FLVParser {
         this.debugStr = '';
         this.config.debug = '';
         this.debug(START_RECORD, 'config', this.config);
+        console.log(START_RECORD, 'config', this.config);
     }
 
     [STOP_RECORD]() {
         this.recording = false;
         this.debug(STOP_RECORD, 'duration', this.resultDuration);
+        console.log(STOP_RECORD, 'duration', this.resultDuration);
     }
 
     [START_DOWNLOAD]() {
@@ -257,6 +268,7 @@ class FLVParser {
             data: this.resultData,
         });
         this.debug(START_DOWNLOAD, 'byteLength', this.resultData.byteLength);
+        console.log(START_DOWNLOAD, 'byteLength', this.resultData.byteLength);
     }
 }
 
