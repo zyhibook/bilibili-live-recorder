@@ -189,7 +189,20 @@ class FLVParser {
         const durationBody = Uint8Array.from(FLVParser.numToFloat64Arr(durationSecond));
         const filesizeHeader = Uint8Array.from([0x00, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x69, 0x7a, 0x65, 0x00]);
         const filesizeBody = Uint8Array.from(FLVParser.numToFloat64Arr(this.resultSize));
-        return FLVParser.mergeBuffer(this.scripTag, durationHeader, durationBody, filesizeHeader, filesizeBody);
+        const scripTag = FLVParser.mergeBuffer(
+            this.scripTag,
+            durationHeader,
+            durationBody,
+            filesizeHeader,
+            filesizeBody,
+        );
+
+        const tagSize = FLVParser.readBufferSum(scripTag.subarray(1, 4)) + 38;
+        const size = new Uint8Array(new Uint32Array([tagSize]).buffer);
+        scripTag[1] = size[2];
+        scripTag[2] = size[1];
+        scripTag[3] = size[0];
+        return scripTag;
     }
 
     [FLV_BUFFER](uint8) {
@@ -216,7 +229,9 @@ class FLVParser {
 
             if (this.readable(tagSize + 4)) {
                 tagData = FLVParser.mergeBuffer(tagData, this.read(tagSize));
-                const prevTagSize = FLVParser.readBufferSum(this.read(4));
+                const prevTag = this.read(4);
+                tagData = FLVParser.mergeBuffer(tagData, prevTag);
+                const prevTagSize = FLVParser.readBufferSum(prevTag);
                 if (prevTagSize !== tagSize + 11) {
                     this.debug(this.constructor.name, `Prev tag size does not match in tag type: ${tagType}`);
                     return;
@@ -230,7 +245,7 @@ class FLVParser {
                 this.scripTag = tagData;
             } else {
                 this.videoAndAudioTag.push(tagData);
-                if (this.resultSize > 5 * 1024 * 1024 && !this.test) {
+                if (this.resultSize > 10 * 1024 * 1024 && !this.test) {
                     this.test = true;
                     postMessage({
                         type: START_DOWNLOAD,
@@ -272,20 +287,10 @@ class FLVParser {
 }
 
 const flv = new FLVParser();
-let test = new Uint8Array();
-let ok = false;
 onmessage = event => {
     const { type, data } = event.data;
     switch (type) {
         case FLV_BUFFER:
-            test = FLVParser.mergeBuffer(test, data);
-            if (test.byteLength > 5 * 1024 * 1024 && !ok) {
-                ok = true;
-                postMessage({
-                    type: START_DOWNLOAD,
-                    data: test,
-                });
-            }
             flv[FLV_BUFFER](data);
             break;
         case START_RECORD:
