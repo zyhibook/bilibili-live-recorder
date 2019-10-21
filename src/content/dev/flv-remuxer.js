@@ -58,15 +58,13 @@ class FLVParser {
         this.data = new Uint8Array();
         this.header = new Uint8Array();
         this.scripTag = new Uint8Array();
-        this.videoAndAudioTags = [];
+        this.videoAndAudioTags = new Uint8Array();
         this.tagStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
         this.debugStr = '';
         this.config = {};
         this.index = 0;
-
-        this.test = false;
 
         this.downloadRate = FLVParser.createRate(rate => {
             if (!this.recording) return;
@@ -110,18 +108,11 @@ class FLVParser {
     }
 
     get resultData() {
-        return FLVParser.mergeBuffer(this.header, this.scripTag, ...this.videoAndAudioTags);
+        return FLVParser.mergeBuffer(this.header, this.scripTag, this.videoAndAudioTags);
     }
 
     get resultSize() {
-        return (
-            this.header.byteLength +
-            this.scripTag.byteLength +
-            this.videoAndAudioTags.reduce((result, item) => {
-                result += item.byteLength;
-                return result;
-            }, 0)
-        );
+        return this.header.byteLength + this.scripTag.byteLength + this.videoAndAudioTags.byteLength;
     }
 
     getTagTime(tag) {
@@ -179,32 +170,11 @@ class FLVParser {
         return uint8;
     }
 
-    rebuildScripTag() {
-        const durationSecond = Number((this.resultDuration / 1000 / 60).toFixed(3));
-        const durationHeader = Uint8Array.from([0x00, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x00]);
-        const durationBody = Uint8Array.from(FLVParser.numToFloat64Arr(durationSecond));
-        const filesizeHeader = Uint8Array.from([0x00, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x69, 0x7a, 0x65, 0x00]);
-        const filesizeBody = Uint8Array.from(FLVParser.numToFloat64Arr(this.resultData.byteLength));
-        const scripTag = FLVParser.mergeBuffer(
-            this.scripTag,
-            durationHeader,
-            durationBody,
-            filesizeHeader,
-            filesizeBody,
-        );
-        const tagSize = FLVParser.readBufferSum(scripTag.subarray(1, 4)) + 38;
-        const size = new Uint8Array(new Uint32Array([tagSize]).buffer);
-        scripTag[1] = size[2];
-        scripTag[2] = size[1];
-        scripTag[3] = size[0];
-        return scripTag;
-    }
-
     [RESET_RECORD]() {
         this.data = new Uint8Array();
         this.header = new Uint8Array();
         this.scripTag = new Uint8Array();
-        this.videoAndAudioTags = [];
+        this.videoAndAudioTags = new Uint8Array();
         this.tagStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
@@ -257,20 +227,12 @@ class FLVParser {
                     this.tagStartTime = this.getTagTime(tagData);
                 }
                 this.resultDuration = this.getTagTime(tagData) - this.tagStartTime;
-                tagData.set(this.setTagTime(this.resultDuration), 4);
-                this.videoAndAudioTags.push(tagData);
-                if (this.resultSize > 5 * 1024 * 1024 && !this.test) {
-                    this.test = true;
-                    postMessage({
-                        type: START_DOWNLOAD,
-                        data: this.resultData,
-                    });
-                }
+                this.videoAndAudioTags = FLVParser.mergeBuffer(this.videoAndAudioTags, tagData);
             }
 
             this.writeRate(tagData.byteLength);
-            // this.sizeRate(this.resultData.byteLength);
-            // this.durationRate(this.resultDuration);
+            this.sizeRate(this.resultData.byteLength);
+            this.durationRate(this.resultDuration);
             this.data = this.data.subarray(this.index);
             this.index = 0;
         }
@@ -299,22 +261,10 @@ class FLVParser {
 }
 
 const flv = new FLVParser();
-
-let test1 = new Uint8Array();
-let test2 = false;
-
 onmessage = event => {
     const { type, data } = event.data;
     switch (type) {
         case FLV_BUFFER:
-            test1 = FLVParser.mergeBuffer(test1, data);
-            if (test1.byteLength > 5 * 1024 * 1024 && !test2) {
-                test2 = true;
-                postMessage({
-                    type: START_DOWNLOAD,
-                    data: test1,
-                });
-            }
             flv[FLV_BUFFER](data);
             break;
         case START_RECORD:
