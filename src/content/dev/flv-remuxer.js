@@ -66,10 +66,25 @@ class FLVParser {
         this.config = {};
         this.index = 0;
 
+        this.runing = false;
+        this.tasks = [];
         this[FLV_BUFFER] = uint8 => {
-            setTimeout(() => {
-                this.load.call(this, uint8);
-            }, 1000);
+            this.tasks.push(this.load.bind(this, uint8));
+            if (!this.runing) {
+                (function loop() {
+                    const task = this.tasks.shift();
+                    if (task) {
+                        this.runing = true;
+                        task().then(() => {
+                            setTimeout(() => {
+                                loop.call(this);
+                            }, 100);
+                        });
+                    } else {
+                        this.runing = false;
+                    }
+                }.call(this));
+            }
         };
 
         this.downloadRate = FLVParser.createRate(rate => {
@@ -185,75 +200,89 @@ class FLVParser {
     }
 
     load(uint8) {
-        if (!this.recording) return;
-        this.downloadRate(uint8.byteLength / 1024 / 1024);
-        this.data = FLVParser.mergeBuffer(this.data, uint8);
-
-        if (!this.header.length && this.readable(13)) {
-            this.header = this.read(13);
-        }
-
-        while (this.index < this.data.length) {
-            let tagSize = 0;
-            let tagType = 0;
-            let tagData = new Uint8Array();
-            const restIndex = this.index;
-            if (this.readable(11)) {
-                tagData = FLVParser.mergeBuffer(tagData, this.read(11));
-                tagType = tagData[0];
-                tagSize = FLVParser.readBufferSum(tagData.subarray(1, 4));
-            } else {
-                this.index = restIndex;
+        return new Promise((resolve, reject) => {
+            if (!this.recording) {
+                resolve();
                 return;
             }
-            if (this.readable(tagSize + 4)) {
-                tagData = FLVParser.mergeBuffer(tagData, this.read(tagSize));
-                const prevTag = this.read(4);
-                tagData = FLVParser.mergeBuffer(tagData, prevTag);
-                const prevTagSize = FLVParser.readBufferSum(prevTag);
-                if (prevTagSize !== tagSize + 11) {
+            this.downloadRate(uint8.byteLength / 1024 / 1024);
+            this.data = FLVParser.mergeBuffer(this.data, uint8);
+
+            if (!this.header.length && this.readable(13)) {
+                this.header = this.read(13);
+            }
+
+            while (this.index < this.data.length) {
+                let tagSize = 0;
+                let tagType = 0;
+                let tagData = new Uint8Array();
+                const restIndex = this.index;
+                if (this.readable(11)) {
+                    tagData = FLVParser.mergeBuffer(tagData, this.read(11));
+                    tagType = tagData[0];
+                    tagSize = FLVParser.readBufferSum(tagData.subarray(1, 4));
+                } else {
+                    this.index = restIndex;
+                    resolve();
+                    return;
+                }
+                if (this.readable(tagSize + 4)) {
+                    tagData = FLVParser.mergeBuffer(tagData, this.read(tagSize));
+                    const prevTag = this.read(4);
+                    tagData = FLVParser.mergeBuffer(tagData, prevTag);
+                    const prevTagSize = FLVParser.readBufferSum(prevTag);
+                    if (prevTagSize !== tagSize + 11) {
+                        this.recording = false;
+                        this.notify('视频录制失败，你可以下载已经录制好的部分');
+                        postMessage({
+                            type: UPDATE_CONFIG,
+                            data: {
+                                state: AFTER_RECORD,
+                            },
+                        });
+                        reject(new Error(`Prev tag size does not match in tag type: ${tagType}`));
+                        return;
+                    }
+                } else {
+                    this.index = restIndex;
+                    resolve();
+                    return;
+                }
+
+                if (tagType === 18) {
+                    this.scripTag = tagData;
+                } else {
+                    this.videoAndAudioTags = FLVParser.mergeBuffer(this.videoAndAudioTags, tagData);
+                }
+
+                this.resultDuration = FLVParser.getNowTime() - this.recordStartTime;
+                this.writeRate(tagData.byteLength / 1024 / 1024);
+                this.sizeRate(this.resultData.byteLength / 1024 / 1024);
+                this.durationRate(this.resultDuration / 1000 / 60);
+                this.expectedSizeRate(
+                    this.config.maxDuration *
+                        60 *
+                        1000 *
+                        (this.resultData.byteLength / 1024 / 1024 / this.resultDuration),
+                );
+
+                if (this.resultDuration >= this.config.maxDuration * 60 * 1000) {
                     this.recording = false;
-                    this.notify('视频录制失败，你可以下载已经录制好的部分');
+                    this.notify('视频录制完成，可以下载了！');
                     postMessage({
                         type: UPDATE_CONFIG,
                         data: {
                             state: AFTER_RECORD,
                         },
                     });
-                    throw new Error(`Prev tag size does not match in tag type: ${tagType}`);
+                    resolve();
+                    return;
                 }
-            } else {
-                this.index = restIndex;
-                return;
-            }
-            if (tagType === 18) {
-                this.scripTag = tagData;
-            } else {
-                this.videoAndAudioTags = FLVParser.mergeBuffer(this.videoAndAudioTags, tagData);
-            }
 
-            this.data = this.data.subarray(this.index);
-            this.index = 0;
-
-            this.resultDuration = FLVParser.getNowTime() - this.recordStartTime;
-            this.writeRate(tagData.byteLength / 1024 / 1024);
-            this.sizeRate(this.resultData.byteLength / 1024 / 1024);
-            this.durationRate(this.resultDuration / 1000 / 60);
-            this.expectedSizeRate(
-                this.config.maxDuration * 60 * 1000 * (this.resultData.byteLength / 1024 / 1024 / this.resultDuration),
-            );
-
-            if (this.resultDuration >= this.config.maxDuration * 60 * 1000) {
-                this.recording = false;
-                this.notify('视频录制完成，可以下载了！');
-                postMessage({
-                    type: UPDATE_CONFIG,
-                    data: {
-                        state: AFTER_RECORD,
-                    },
-                });
+                this.data = this.data.subarray(this.index);
+                this.index = 0;
             }
-        }
+        });
     }
 
     [START_RECORD](config) {
@@ -267,7 +296,6 @@ class FLVParser {
     }
 
     [START_DOWNLOAD]() {
-        console.log('2');
         postMessage({
             type: START_DOWNLOAD,
             data: URL.createObjectURL(new Blob([this.resultData])),
@@ -289,7 +317,6 @@ onmessage = event => {
             flv[STOP_RECORD](data);
             break;
         case START_DOWNLOAD:
-            console.log('1');
             flv[START_DOWNLOAD](data);
             break;
         case RESET_RECORD:

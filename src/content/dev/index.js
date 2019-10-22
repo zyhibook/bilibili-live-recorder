@@ -75,7 +75,6 @@ class Content {
                     break;
                 case START_DOWNLOAD:
                     this.config = data;
-                    console.log('0');
                     this.worker.postMessage({
                         type: START_DOWNLOAD,
                         data,
@@ -115,7 +114,6 @@ class Content {
     }
 
     download(data) {
-        console.log('5');
         const name = this.config.name + '.' + this.config.format;
         download(data, name);
         this.updateConfig({
