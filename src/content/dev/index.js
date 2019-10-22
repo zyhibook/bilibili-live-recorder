@@ -44,7 +44,6 @@ class Content {
                     this.updateConfig(data);
                     break;
                 case START_DOWNLOAD:
-                    console.log('4');
                     this.download(data);
                     break;
                 default:
@@ -64,7 +63,6 @@ class Content {
                     const $video = document.querySelector('video');
                     if ($video) {
                         this.storage.set(location.href, data);
-                        this.worker.terminate();
                         location.reload();
                     } else {
                         this.notify({

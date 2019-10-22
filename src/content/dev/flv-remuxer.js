@@ -186,6 +186,7 @@ class FLVParser {
                 let tagType = 0;
                 let tagData = new Uint8Array();
                 const restIndex = this.index;
+
                 if (this.readable(11)) {
                     tagData = FLVParser.mergeBuffer(tagData, this.read(11));
                     tagType = tagData[0];
@@ -195,6 +196,7 @@ class FLVParser {
                     resolve();
                     return;
                 }
+
                 if (this.readable(tagSize + 4)) {
                     tagData = FLVParser.mergeBuffer(tagData, this.read(tagSize));
                     const prevTag = this.read(4);
@@ -251,10 +253,12 @@ class FLVParser {
                 this.data = this.data.subarray(this.index);
                 this.index = 0;
             }
+            resolve();
         });
     }
 
     [FLV_BUFFER](uint8) {
+        if (!this.recording) return;
         this.tasks.push(this.remuxer.bind(this, uint8));
         if (!this.running) {
             (function loop() {
