@@ -4,7 +4,7 @@ export const LIVE_PATTERN = '*://*.bilibili.com/*';
 export const LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com/i;
 export const TITLE_PATTERN = /(\s-\s哔哩哔哩直播，二次元弹幕直播平台)|\s*/g;
 export const GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
-export const WEBSTORE = 'https://chrome.google.com/webstore/detail/bilibili-%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BD%95%E5%88%B6%E5%99%A8/nagmkdppcmenlcgelpgkjoknakghllml';
+export const WEBSTORE = 'https://chrome.google.com/webstore/detail/nagmkdppcmenlcgelpgkjoknakghllml';
 
 // 状态
 export const BEFORE_RECORD = 'before_record';
