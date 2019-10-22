@@ -43,6 +43,7 @@ class Content {
                     this.updateConfig(data);
                     break;
                 case START_DOWNLOAD:
+                    console.log('4');
                     this.download(data);
                     break;
                 default:
@@ -74,6 +75,7 @@ class Content {
                     break;
                 case START_DOWNLOAD:
                     this.config = data;
+                    console.log('0');
                     this.worker.postMessage({
                         type: START_DOWNLOAD,
                         data,
@@ -113,6 +115,7 @@ class Content {
     }
 
     download(data) {
+        console.log('5');
         const name = this.config.name + '.' + this.config.format;
         download(data, name);
         this.updateConfig({

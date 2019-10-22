@@ -44,14 +44,14 @@ class FLVParser {
         let totalSize = 0;
         let lastTime = FLVParser.getNowTime();
         return (size = 1) => {
-            // totalSize += size;
-            // const thisTime = FLVParser.getNowTime();
-            // const diffTime = thisTime - lastTime;
-            // if (diffTime >= 1000) {
-            //     callback(average ? (totalSize / diffTime) * 1000 : size);
-            //     lastTime = thisTime;
-            //     totalSize = 0;
-            // }
+            totalSize += size;
+            const thisTime = FLVParser.getNowTime();
+            const diffTime = thisTime - lastTime;
+            if (diffTime >= 1000) {
+                callback(average ? (totalSize / diffTime) * 1000 : size);
+                lastTime = thisTime;
+                totalSize = 0;
+            }
         };
     }
 
@@ -65,6 +65,12 @@ class FLVParser {
         this.recording = false;
         this.config = {};
         this.index = 0;
+
+        this[FLV_BUFFER] = uint8 => {
+            setTimeout(() => {
+                this.load.call(this, uint8);
+            }, 1000);
+        };
 
         this.downloadRate = FLVParser.createRate(rate => {
             if (!this.recording) return;
@@ -178,7 +184,7 @@ class FLVParser {
         this.index = 0;
     }
 
-    [FLV_BUFFER](uint8) {
+    load(uint8) {
         if (!this.recording) return;
         this.downloadRate(uint8.byteLength / 1024 / 1024);
         this.data = FLVParser.mergeBuffer(this.data, uint8);
@@ -261,6 +267,7 @@ class FLVParser {
     }
 
     [START_DOWNLOAD]() {
+        console.log('2');
         postMessage({
             type: START_DOWNLOAD,
             data: URL.createObjectURL(new Blob([this.resultData])),
@@ -282,6 +289,7 @@ onmessage = event => {
             flv[STOP_RECORD](data);
             break;
         case START_DOWNLOAD:
+            console.log('1');
             flv[START_DOWNLOAD](data);
             break;
         case RESET_RECORD:
