@@ -18,6 +18,20 @@ import {
     LIVE_ROOM_PATTERN,
 } from '../../share/constant';
 
+const baseConfig = {
+    id: 0,
+    url: '',
+    name: '',
+    format: 'flv',
+    currentSize: 0,
+    maxDuration: 10,
+    expectedSize: 0,
+    currentDuration: 0,
+    downloadRate: 0,
+    writeRate: 0,
+    state: BEFORE_RECORD,
+};
+
 export default new Vue({
     el: '#app',
     data: {
@@ -31,19 +45,7 @@ export default new Vue({
         manifest: chrome.runtime.getManifest(),
         logo: chrome.extension.getURL('icons/icon48.png'),
         donate: chrome.extension.getURL('icons/donate.png'),
-        config: {
-            id: 0,
-            url: '',
-            name: '',
-            format: 'flv',
-            currentSize: 0,
-            maxDuration: 10,
-            expectedSize: 0,
-            currentDuration: 0,
-            downloadRate: 0,
-            writeRate: 0,
-            state: BEFORE_RECORD,
-        },
+        config: baseConfig,
     },
     computed: {
         fileUrl() {
@@ -76,16 +78,6 @@ export default new Vue({
                         config => {
                             if (config) {
                                 this.config = config;
-                                switch (config.state) {
-                                    case RECORDING:
-                                        this.setBadgeText('ON', '#fb7299');
-                                        break;
-                                    case AFTER_RECORD:
-                                        this.setBadgeText('OK', '#23ade5');
-                                        break;
-                                    default:
-                                        break;
-                                }
                             }
                         },
                     );
@@ -130,12 +122,11 @@ export default new Vue({
         },
         startRecord() {
             const config = {
-                ...this.config,
+                ...baseConfig,
                 name: this.config.name.trim() || Date.now(),
                 state: RECORDING,
             };
             this.config = config;
-            this.setBadgeText('ON', '#fb7299');
             this.sendMessage({
                 type: START_RECORD,
                 data: config,
@@ -147,7 +138,6 @@ export default new Vue({
                 state: AFTER_RECORD,
             };
             this.config = config;
-            this.setBadgeText('OK', '#23ade5');
             this.sendMessage({
                 type: STOP_RECORD,
                 data: config,
@@ -159,11 +149,25 @@ export default new Vue({
                 state: DOWNLOADING,
             };
             this.config = config;
-            this.setBadgeText('');
             this.sendMessage({
                 type: START_DOWNLOAD,
                 data: config,
             });
+        },
+    },
+    watch: {
+        'config.state': function(val) {
+            switch (val) {
+                case RECORDING:
+                    this.setBadgeText('ON', '#fb7299');
+                    break;
+                case AFTER_RECORD:
+                    this.setBadgeText('OK', '#23ade5');
+                    break;
+                default:
+                    this.setBadgeText('');
+                    break;
+            }
         },
     },
 });

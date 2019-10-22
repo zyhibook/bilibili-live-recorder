@@ -35,6 +35,7 @@
                     </div>
                     <div class="tip" v-if="config.state === BEFORE_RECORD">录制开始后页面会刷新一遍以获取完整数据</div>
                     <div class="tip" v-if="config.state === RECORDING">录制中不要切换画质、线路和播放器</div>
+                    <div class="tip" v-if="config.state === AFTER_RECORD">在页面刷新前都可以点击下载一次</div>
                     <div class="tip" v-if="config.state === DOWNLOADING">文件处理可能需要一点时间，请稍等</div>
                 </section>
                 <section class="info">

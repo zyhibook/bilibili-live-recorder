@@ -11997,6 +11997,19 @@
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  var baseConfig = {
+    id: 0,
+    url: '',
+    name: '',
+    format: 'flv',
+    currentSize: 0,
+    maxDuration: 10,
+    expectedSize: 0,
+    currentDuration: 0,
+    downloadRate: 0,
+    writeRate: 0,
+    state: BEFORE_RECORD
+  };
   var index = new Vue({
     el: '#app',
     data: {
@@ -12010,19 +12023,7 @@
       manifest: chrome.runtime.getManifest(),
       logo: chrome.extension.getURL('icons/icon48.png'),
       donate: chrome.extension.getURL('icons/donate.png'),
-      config: {
-        id: 0,
-        url: '',
-        name: '',
-        format: 'flv',
-        currentSize: 0,
-        maxDuration: 10,
-        expectedSize: 0,
-        currentDuration: 0,
-        downloadRate: 0,
-        writeRate: 0,
-        state: BEFORE_RECORD
-      }
+      config: baseConfig
     },
     computed: {
       fileUrl: function fileUrl() {
@@ -12052,21 +12053,6 @@
           }, function (config) {
             if (config) {
               _this.config = config;
-
-              switch (config.state) {
-                case RECORDING:
-                  _this.setBadgeText('ON', '#fb7299');
-
-                  break;
-
-                case AFTER_RECORD:
-                  _this.setBadgeText('OK', '#23ade5');
-
-                  break;
-
-                default:
-                  break;
-              }
             }
           });
         }
@@ -12121,13 +12107,12 @@
         chrome.tabs.sendMessage(this.tab.id, data, callback);
       },
       startRecord: function startRecord() {
-        var config = _objectSpread({}, this.config, {
+        var config = _objectSpread({}, baseConfig, {
           name: this.config.name.trim() || Date.now(),
           state: RECORDING
         });
 
         this.config = config;
-        this.setBadgeText('ON', '#fb7299');
         this.sendMessage({
           type: START_RECORD,
           data: config
@@ -12139,7 +12124,6 @@
         });
 
         this.config = config;
-        this.setBadgeText('OK', '#23ade5');
         this.sendMessage({
           type: STOP_RECORD,
           data: config
@@ -12151,11 +12135,27 @@
         });
 
         this.config = config;
-        this.setBadgeText('');
         this.sendMessage({
           type: START_DOWNLOAD,
           data: config
         });
+      }
+    },
+    watch: {
+      'config.state': function configState(val) {
+        switch (val) {
+          case RECORDING:
+            this.setBadgeText('ON', '#fb7299');
+            break;
+
+          case AFTER_RECORD:
+            this.setBadgeText('OK', '#23ade5');
+            break;
+
+          default:
+            this.setBadgeText('');
+            break;
+        }
       }
     }
   });

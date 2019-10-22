@@ -30,6 +30,7 @@ class Content {
                 type: START_RECORD,
                 data: this.config,
             });
+            this.updateConfig(this.config);
         }
 
         // 来自 worker
@@ -57,6 +58,7 @@ class Content {
             switch (type) {
                 case TAB_INFO:
                     this.tab = data;
+                    sendResponse(this.config);
                     break;
                 case START_RECORD:
                     const $video = document.querySelector('video');
@@ -74,23 +76,18 @@ class Content {
                     }
                     break;
                 case START_DOWNLOAD:
-                    this.config = data;
                     this.worker.postMessage({
                         type: START_DOWNLOAD,
-                        data,
                     });
                     break;
                 case STOP_RECORD:
-                    this.config = data;
                     this.worker.postMessage({
                         type: STOP_RECORD,
-                        data,
                     });
                     break;
                 default:
                     break;
             }
-            sendResponse(this.config);
         });
 
         // 来自 injected

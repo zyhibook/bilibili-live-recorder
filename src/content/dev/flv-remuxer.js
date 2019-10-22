@@ -65,27 +65,8 @@ class FLVParser {
         this.recording = false;
         this.config = {};
         this.index = 0;
-
-        this.runing = false;
         this.tasks = [];
-        this[FLV_BUFFER] = uint8 => {
-            this.tasks.push(this.load.bind(this, uint8));
-            if (!this.runing) {
-                (function loop() {
-                    const task = this.tasks.shift();
-                    if (task) {
-                        this.runing = true;
-                        task().then(() => {
-                            setTimeout(() => {
-                                loop.call(this);
-                            }, 100);
-                        });
-                    } else {
-                        this.runing = false;
-                    }
-                }.call(this));
-            }
-        };
+        this.running = false;
 
         this.downloadRate = FLVParser.createRate(rate => {
             if (!this.recording) return;
@@ -187,19 +168,7 @@ class FLVParser {
         return uint8;
     }
 
-    [RESET_RECORD]() {
-        this.data = new Uint8Array();
-        this.header = new Uint8Array();
-        this.scripTag = new Uint8Array();
-        this.videoAndAudioTags = new Uint8Array();
-        this.tagStartTime = 0;
-        this.resultDuration = 0;
-        this.recording = false;
-        this.config = {};
-        this.index = 0;
-    }
-
-    load(uint8) {
+    remuxer(uint8) {
         return new Promise((resolve, reject) => {
             if (!this.recording) {
                 resolve();
@@ -285,6 +254,23 @@ class FLVParser {
         });
     }
 
+    [FLV_BUFFER](uint8) {
+        this.tasks.push(this.remuxer.bind(this, uint8));
+        if (!this.running) {
+            (function loop() {
+                const task = this.tasks.shift();
+                if (task) {
+                    this.running = true;
+                    task().then(() => {
+                        setTimeout(loop.bind(this), 100);
+                    });
+                } else {
+                    this.running = false;
+                }
+            }.call(this));
+        }
+    }
+
     [START_RECORD](config) {
         this.recording = true;
         this.config = config;
@@ -300,6 +286,20 @@ class FLVParser {
             type: START_DOWNLOAD,
             data: URL.createObjectURL(new Blob([this.resultData])),
         });
+    }
+
+    [RESET_RECORD]() {
+        this.data = new Uint8Array();
+        this.header = new Uint8Array();
+        this.scripTag = new Uint8Array();
+        this.videoAndAudioTags = new Uint8Array();
+        this.tagStartTime = 0;
+        this.resultDuration = 0;
+        this.recording = false;
+        this.config = {};
+        this.index = 0;
+        this.tasks = [];
+        this.running = false;
     }
 }
 
