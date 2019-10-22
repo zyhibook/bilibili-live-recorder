@@ -10,9 +10,7 @@ export const WEBSTORE = 'https://chrome.google.com/webstore/category/extensions'
 export const BEFORE_RECORD = 'before_record';
 export const RECORDING = 'recording';
 export const AFTER_RECORD = 'after_record';
-export const BEFORE_DOWNLOAD = 'before_download';
 export const DOWNLOADING = 'downloading';
-export const AFTER_DOWNLOAD = 'after_download';
 
 // 动作
 export const TAB_INFO = 'tab_info';

@@ -23,11 +23,13 @@ class Background {
             }
         });
 
+        // 点击关闭提示
         chrome.notifications.onClicked.addListener(id => {
             chrome.notifications.clear(id);
         });
     }
 
+    // 修改CSP响应头
     changeCSP() {
         chrome.webRequest.onHeadersReceived.addListener(
             details => {

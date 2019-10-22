@@ -1,6 +1,6 @@
 export default class Storage {
-    constructor() {
-        this.name = 'bilibili-live-recorder';
+    constructor(name) {
+        this.name = name;
     }
 
     get(key) {

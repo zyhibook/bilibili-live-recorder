@@ -3,6 +3,7 @@ const FLV_BUFFER = 'flv_buffer';
 const STOP_RECORD = 'stop_record';
 const RESET_RECORD = 'reset_record';
 const START_RECORD = 'start_record';
+const AFTER_RECORD = 'after_record';
 const UPDATE_CONFIG = 'update_config';
 const START_DOWNLOAD = 'start_download';
 
@@ -43,14 +44,14 @@ class FLVParser {
         let totalSize = 0;
         let lastTime = FLVParser.getNowTime();
         return (size = 1) => {
-            totalSize += size;
-            const thisTime = FLVParser.getNowTime();
-            const diffTime = thisTime - lastTime;
-            if (diffTime >= 1000) {
-                callback(average ? (totalSize / diffTime) * 1000 : size);
-                lastTime = thisTime;
-                totalSize = 0;
-            }
+            // totalSize += size;
+            // const thisTime = FLVParser.getNowTime();
+            // const diffTime = thisTime - lastTime;
+            // if (diffTime >= 1000) {
+            //     callback(average ? (totalSize / diffTime) * 1000 : size);
+            //     lastTime = thisTime;
+            //     totalSize = 0;
+            // }
         };
     }
 
@@ -62,7 +63,6 @@ class FLVParser {
         this.tagStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
-        this.debugStr = '';
         this.config = {};
         this.index = 0;
 
@@ -71,17 +71,27 @@ class FLVParser {
             postMessage({
                 type: UPDATE_CONFIG,
                 data: {
-                    downloadRate: (rate / 1024 / 1024).toFixed(3),
+                    downloadRate: rate.toFixed(3),
                 },
             });
         });
+
+        this.expectedSizeRate = FLVParser.createRate(rate => {
+            if (!this.recording) return;
+            postMessage({
+                type: UPDATE_CONFIG,
+                data: {
+                    expectedSize: rate.toFixed(3),
+                },
+            });
+        }, false);
 
         this.writeRate = FLVParser.createRate(rate => {
             if (!this.recording) return;
             postMessage({
                 type: UPDATE_CONFIG,
                 data: {
-                    writeRate: (rate / 1024 / 1024).toFixed(3),
+                    writeRate: rate.toFixed(3),
                 },
             });
         });
@@ -91,7 +101,7 @@ class FLVParser {
             postMessage({
                 type: UPDATE_CONFIG,
                 data: {
-                    currentDuration: (rate / 1000 / 60).toFixed(3),
+                    currentDuration: rate.toFixed(3),
                 },
             });
         }, false);
@@ -101,7 +111,7 @@ class FLVParser {
             postMessage({
                 type: UPDATE_CONFIG,
                 data: {
-                    currentSize: (rate / 1024 / 1024).toFixed(3),
+                    currentSize: rate.toFixed(3),
                 },
             });
         }, false);
@@ -131,20 +141,6 @@ class FLVParser {
         uint[2] = size[0];
         uint[3] = size[3];
         return uint;
-    }
-
-    debug(...args) {
-        const d = new Date();
-        const time = `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`;
-        this.debugStr = `${this.debugStr}\\n\\n${time} -> ${args
-            .map(item => (typeof item === 'string' ? item : JSON.stringify(item)))
-            .join('|')}`.trim();
-        postMessage({
-            type: UPDATE_CONFIG,
-            data: {
-                debug: this.debugStr,
-            },
-        });
     }
 
     notify(message) {
@@ -178,33 +174,24 @@ class FLVParser {
         this.tagStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
-        this.debugStr = '';
         this.config = {};
         this.index = 0;
     }
 
     [FLV_BUFFER](uint8) {
-        this.downloadRate(uint8.byteLength);
+        if (!this.recording) return;
+        this.downloadRate(uint8.byteLength / 1024 / 1024);
         this.data = FLVParser.mergeBuffer(this.data, uint8);
 
-        if (uint8[0] === 70 && uint8[1] === 76 && uint8[2] === 86 && uint8[3] === 1) {
-            this[RESET_RECORD]();
-            this.data = FLVParser.mergeBuffer(this.data, uint8);
+        if (!this.header.length && this.readable(13)) {
             this.header = this.read(13);
-            console.log(this.header);
         }
-
-        // if (!this.header.length && this.readable(13)) {
-        //     this.header = this.read(13);
-        //     console.log(this.header);
-        // }
 
         while (this.index < this.data.length) {
             let tagSize = 0;
             let tagType = 0;
             let tagData = new Uint8Array();
             const restIndex = this.index;
-
             if (this.readable(11)) {
                 tagData = FLVParser.mergeBuffer(tagData, this.read(11));
                 tagType = tagData[0];
@@ -213,62 +200,71 @@ class FLVParser {
                 this.index = restIndex;
                 return;
             }
-
             if (this.readable(tagSize + 4)) {
                 tagData = FLVParser.mergeBuffer(tagData, this.read(tagSize));
                 const prevTag = this.read(4);
                 tagData = FLVParser.mergeBuffer(tagData, prevTag);
                 const prevTagSize = FLVParser.readBufferSum(prevTag);
                 if (prevTagSize !== tagSize + 11) {
-                    const msg = `Prev tag size does not match in tag type: ${tagType}`;
-                    this.debug(msg);
-                    throw new Error(msg);
+                    this.recording = false;
+                    this.notify('视频录制失败，你可以下载已经录制好的部分');
+                    postMessage({
+                        type: UPDATE_CONFIG,
+                        data: {
+                            state: AFTER_RECORD,
+                        },
+                    });
+                    throw new Error(`Prev tag size does not match in tag type: ${tagType}`);
                 }
             } else {
                 this.index = restIndex;
                 return;
             }
-
             if (tagType === 18) {
                 this.scripTag = tagData;
             } else {
-                if (!this.tagStartTime) {
-                    this.tagStartTime = this.getTagTime(tagData);
-                }
-                this.resultDuration = this.getTagTime(tagData) - this.tagStartTime;
                 this.videoAndAudioTags = FLVParser.mergeBuffer(this.videoAndAudioTags, tagData);
             }
 
-            this.writeRate(tagData.byteLength);
-            this.sizeRate(this.resultData.byteLength);
-            this.durationRate(this.resultDuration);
             this.data = this.data.subarray(this.index);
             this.index = 0;
+
+            this.resultDuration = FLVParser.getNowTime() - this.recordStartTime;
+            this.writeRate(tagData.byteLength / 1024 / 1024);
+            this.sizeRate(this.resultData.byteLength / 1024 / 1024);
+            this.durationRate(this.resultDuration / 1000 / 60);
+            this.expectedSizeRate(
+                this.config.maxDuration * 60 * 1000 * (this.resultData.byteLength / 1024 / 1024 / this.resultDuration),
+            );
+
+            if (this.resultDuration >= this.config.maxDuration * 60 * 1000) {
+                this.recording = false;
+                this.notify('视频录制完成，可以下载了！');
+                postMessage({
+                    type: UPDATE_CONFIG,
+                    data: {
+                        state: AFTER_RECORD,
+                    },
+                });
+            }
         }
     }
 
     [START_RECORD](config) {
         this.recording = true;
         this.config = config;
-        this.debugStr = '';
-        this.config.debug = '';
-        this.debug(START_RECORD, 'config', this.config);
-        console.log(START_RECORD, 'config', this.config);
+        this.recordStartTime = FLVParser.getNowTime();
     }
 
     [STOP_RECORD]() {
         this.recording = false;
-        this.debug(STOP_RECORD, 'duration', this.resultDuration);
-        console.log(STOP_RECORD, 'duration', this.resultDuration);
     }
 
     [START_DOWNLOAD]() {
         postMessage({
             type: START_DOWNLOAD,
-            data: this.resultData,
+            data: URL.createObjectURL(new Blob([this.resultData])),
         });
-        this.debug(START_DOWNLOAD, 'byteLength', this.resultData.byteLength);
-        console.log(START_DOWNLOAD, 'byteLength', this.resultData.byteLength);
     }
 }
 

@@ -113,11 +113,13 @@
           default:
             break;
         }
-      });
+      }); // 点击关闭提示
+
       chrome.notifications.onClicked.addListener(function (id) {
         chrome.notifications.clear(id);
       });
-    }
+    } // 修改CSP响应头
+
 
     createClass(Background, [{
       key: "changeCSP",

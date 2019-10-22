@@ -11986,6 +11986,7 @@
   var BEFORE_RECORD = 'before_record';
   var RECORDING = 'recording';
   var AFTER_RECORD = 'after_record';
+  var DOWNLOADING = 'downloading'; // 动作
 
   var TAB_INFO = 'tab_info';
   var START_RECORD = 'start_record';
@@ -12001,6 +12002,7 @@
     data: {
       tab: {},
       RECORDING: RECORDING,
+      DOWNLOADING: DOWNLOADING,
       AFTER_RECORD: AFTER_RECORD,
       BEFORE_RECORD: BEFORE_RECORD,
       isLiveRoom: false,
@@ -12012,11 +12014,10 @@
         id: 0,
         url: '',
         name: '',
-        chunk: 0,
-        debug: '',
         format: 'flv',
         currentSize: 0,
         maxDuration: 10,
+        expectedSize: 0,
         currentDuration: 0,
         downloadRate: 0,
         writeRate: 0,
@@ -12049,28 +12050,39 @@
             type: TAB_INFO,
             data: tab
           }, function (config) {
-            console.log(config);
-
             if (config) {
               _this.config = config;
-            }
-          }); // 来自 content
 
+              switch (config.state) {
+                case RECORDING:
+                  _this.setBadgeText('ON', '#fb7299');
 
-          chrome.runtime.onMessage.addListener(function (request) {
-            var type = request.type,
-                data = request.data;
+                  break;
 
-            switch (type) {
-              case UPDATE_CONFIG:
-                if (_this.config.state !== RECORDING) return;
-                _this.config = _objectSpread({}, _this.config, {}, data);
-                break;
+                case AFTER_RECORD:
+                  _this.setBadgeText('OK', '#23ade5');
 
-              default:
-                break;
+                  break;
+
+                default:
+                  break;
+              }
             }
           });
+        }
+      }); // 来自 content
+
+      chrome.runtime.onMessage.addListener(function (request) {
+        var type = request.type,
+            data = request.data;
+
+        switch (type) {
+          case UPDATE_CONFIG:
+            _this.config = _objectSpread({}, _this.config, {}, data);
+            break;
+
+          default:
+            break;
         }
       });
     },
@@ -12093,13 +12105,6 @@
       showPanel: function showPanel(panel) {
         this.panel = panel;
       },
-      openDebug: function openDebug() {
-        var base64 = btoa(unescape(encodeURIComponent(this.config.debug)));
-        var debug = 'data:text/plain;charset=UTF-8;base64,' + base64;
-        chrome.tabs.create({
-          url: debug
-        });
-      },
       setBadgeText: function setBadgeText(text, background) {
         chrome.browserAction.setBadgeText({
           text: text,
@@ -12116,52 +12121,40 @@
         chrome.tabs.sendMessage(this.tab.id, data, callback);
       },
       startRecord: function startRecord() {
-        var _this2 = this;
-
         var config = _objectSpread({}, this.config, {
-          name: this.config.name.trim() ? this.config.name.trim() : Date.now(),
+          name: this.config.name.trim() || Date.now(),
           state: RECORDING
         });
 
+        this.config = config;
+        this.setBadgeText('ON', '#fb7299');
         this.sendMessage({
           type: START_RECORD,
           data: config
-        }, function () {
-          _this2.config = config;
-
-          _this2.setBadgeText('ON', '#fb7299');
         });
       },
       stopRecord: function stopRecord() {
-        var _this3 = this;
-
         var config = _objectSpread({}, this.config, {
           state: AFTER_RECORD
         });
 
+        this.config = config;
+        this.setBadgeText('OK', '#23ade5');
         this.sendMessage({
           type: STOP_RECORD,
           data: config
-        }, function () {
-          _this3.config = config;
-
-          _this3.setBadgeText('OK', '#23ade5');
         });
       },
       startDownload: function startDownload() {
-        var _this4 = this;
-
         var config = _objectSpread({}, this.config, {
-          state: BEFORE_RECORD
+          state: DOWNLOADING
         });
 
+        this.config = config;
+        this.setBadgeText('');
         this.sendMessage({
           type: START_DOWNLOAD,
           data: config
-        }, function () {
-          _this4.config = config;
-
-          _this4.setBadgeText('');
         });
       }
     }

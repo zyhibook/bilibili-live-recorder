@@ -1,8 +1,10 @@
 import { sleep, download } from '../../share';
+import Storage from '../../share/storage';
 import {
     LIVE,
     NOTIFY,
     TAB_INFO,
+    RECORDING,
     MP4_BUFFER,
     FLV_BUFFER,
     START_RECORD,
@@ -18,12 +20,17 @@ class Content {
         this.injectStyle();
 
         this.tab = null;
-        this.config = null;
         this.worker = new Worker('./flv-remuxer.js');
+        this.storage = new Storage('bilibili-live-recorder');
+        this.config = this.storage.get(location.href);
+        this.storage.del(location.href);
 
-        this.localKey = 'bilibili-live-recorder';
-        this.record = localStorage.getItem(this.localKey) === '1';
-        window.localStorage.removeItem(this.localKey);
+        if (this.config) {
+            this.worker.postMessage({
+                type: START_RECORD,
+                data: this.config,
+            });
+        }
 
         // 来自 worker
         this.worker.onmessage = event => {
@@ -51,25 +58,19 @@ class Content {
                     this.tab = data;
                     break;
                 case START_RECORD:
-                    this.config = data;
-                    sleep(1000).then(() => {
-                        const $video = document.querySelector('video');
-                        if ($video) {
-                            localStorage.setItem(this.localKey, '1');
-                            location.reload();
-                            this.worker.postMessage({
-                                type: START_RECORD,
-                                data,
-                            });
-                        } else {
-                            this.notify({
-                                message: '未找到视频播放器',
-                            });
-                            this.updateConfig({
-                                state: BEFORE_RECORD,
-                            });
-                        }
-                    });
+                    const $video = document.querySelector('video');
+                    if ($video) {
+                        this.storage.set(location.href, data);
+                        this.worker.terminate();
+                        location.reload();
+                    } else {
+                        this.notify({
+                            message: '未找到视频播放器',
+                        });
+                        this.updateConfig({
+                            state: BEFORE_RECORD,
+                        });
+                    }
                     break;
                 case START_DOWNLOAD:
                     this.config = data;
@@ -93,29 +94,30 @@ class Content {
 
         // 来自 injected
         window.addEventListener('message', event => {
-            if (event.origin !== LIVE) return;
-            const { type, data } = event.data;
-            switch (type) {
-                case MP4_BUFFER:
-                    break;
-                case FLV_BUFFER:
-                    if (this.record) {
+            if (event.origin === LIVE && this.config && this.config.state === RECORDING) {
+                const { type, data } = event.data;
+                switch (type) {
+                    case MP4_BUFFER:
+                        break;
+                    case FLV_BUFFER:
                         this.worker.postMessage({
                             type: FLV_BUFFER,
                             data,
                         });
-                    }
-                    break;
-                default:
-                    break;
+                        break;
+                    default:
+                        break;
+                }
             }
         });
     }
 
     download(data) {
-        const url = URL.createObjectURL(new Blob([data]));
-        // const name = this.config.name + '.' + this.config.format;
-        download(url, 'test.flv');
+        const name = this.config.name + '.' + this.config.format;
+        download(data, name);
+        this.updateConfig({
+            state: BEFORE_RECORD,
+        });
     }
 
     notify(data) {

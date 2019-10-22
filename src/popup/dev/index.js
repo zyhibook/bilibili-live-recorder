@@ -7,6 +7,7 @@ import {
     TAB_INFO,
     WEBSTORE,
     RECORDING,
+    DOWNLOADING,
     AFTER_RECORD,
     BEFORE_RECORD,
     TITLE_PATTERN,
@@ -22,6 +23,7 @@ export default new Vue({
     data: {
         tab: {},
         RECORDING,
+        DOWNLOADING,
         AFTER_RECORD,
         BEFORE_RECORD,
         isLiveRoom: false,
@@ -33,11 +35,10 @@ export default new Vue({
             id: 0,
             url: '',
             name: '',
-            chunk: 0,
-            debug: '',
             format: 'flv',
             currentSize: 0,
             maxDuration: 10,
+            expectedSize: 0,
             currentDuration: 0,
             downloadRate: 0,
             writeRate: 0,
@@ -73,31 +74,39 @@ export default new Vue({
                             data: tab,
                         },
                         config => {
-                            console.log(config);
                             if (config) {
                                 this.config = config;
+                                switch (config.state) {
+                                    case RECORDING:
+                                        this.setBadgeText('ON', '#fb7299');
+                                        break;
+                                    case AFTER_RECORD:
+                                        this.setBadgeText('OK', '#23ade5');
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                         },
                     );
-
-                    // 来自 content
-                    chrome.runtime.onMessage.addListener(request => {
-                        const { type, data } = request;
-                        switch (type) {
-                            case UPDATE_CONFIG:
-                                if (this.config.state !== RECORDING) return;
-                                this.config = {
-                                    ...this.config,
-                                    ...data,
-                                };
-                                break;
-                            default:
-                                break;
-                        }
-                    });
                 }
             },
         );
+
+        // 来自 content
+        chrome.runtime.onMessage.addListener(request => {
+            const { type, data } = request;
+            switch (type) {
+                case UPDATE_CONFIG:
+                    this.config = {
+                        ...this.config,
+                        ...data,
+                    };
+                    break;
+                default:
+                    break;
+            }
+        });
     },
     methods: {
         goWebstore() {
@@ -112,11 +121,6 @@ export default new Vue({
         showPanel(panel) {
             this.panel = panel;
         },
-        openDebug() {
-            const base64 = btoa(unescape(encodeURIComponent(this.config.debug)));
-            const debug = 'data:text/plain;charset=UTF-8;base64,' + base64;
-            chrome.tabs.create({ url: debug });
-        },
         setBadgeText(text, background) {
             chrome.browserAction.setBadgeText({ text: text, tabId: this.tab.id });
             chrome.browserAction.setBadgeBackgroundColor({ color: background || 'red' });
@@ -127,51 +131,39 @@ export default new Vue({
         startRecord() {
             const config = {
                 ...this.config,
-                name: this.config.name.trim() ? this.config.name.trim() : Date.now(),
+                name: this.config.name.trim() || Date.now(),
                 state: RECORDING,
             };
-            this.sendMessage(
-                {
-                    type: START_RECORD,
-                    data: config,
-                },
-                () => {
-                    this.config = config;
-                    this.setBadgeText('ON', '#fb7299');
-                },
-            );
+            this.config = config;
+            this.setBadgeText('ON', '#fb7299');
+            this.sendMessage({
+                type: START_RECORD,
+                data: config,
+            });
         },
         stopRecord() {
             const config = {
                 ...this.config,
                 state: AFTER_RECORD,
             };
-            this.sendMessage(
-                {
-                    type: STOP_RECORD,
-                    data: config,
-                },
-                () => {
-                    this.config = config;
-                    this.setBadgeText('OK', '#23ade5');
-                },
-            );
+            this.config = config;
+            this.setBadgeText('OK', '#23ade5');
+            this.sendMessage({
+                type: STOP_RECORD,
+                data: config,
+            });
         },
         startDownload() {
             const config = {
                 ...this.config,
-                state: BEFORE_RECORD,
+                state: DOWNLOADING,
             };
-            this.sendMessage(
-                {
-                    type: START_DOWNLOAD,
-                    data: config,
-                },
-                () => {
-                    this.config = config;
-                    this.setBadgeText('');
-                },
-            );
+            this.config = config;
+            this.setBadgeText('');
+            this.sendMessage({
+                type: START_DOWNLOAD,
+                data: config,
+            });
         },
     },
 });
