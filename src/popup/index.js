@@ -12066,9 +12066,6 @@
               case UPDATE_CONFIG:
                 _this.config = _objectSpread({}, _this.config, {}, data);
                 break;
-
-              default:
-                break;
             }
           });
         }

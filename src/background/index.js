@@ -125,9 +125,6 @@
             }
 
             break;
-
-          default:
-            break;
         }
       }); // 点击关闭提示
 
