@@ -85,12 +85,17 @@
 
   // 常用
   var LIVE_PATTERN = '*://*.bilibili.com/*';
+  var RECORDING = 'recording';
+  var AFTER_RECORD = 'after_record';
+  var UPDATE_CONFIG = 'update_config';
   var NOTIFY = 'notify';
 
   var Background =
   /*#__PURE__*/
   function () {
     function Background() {
+      var _this = this;
+
       classCallCheck(this, Background);
 
       this.changeCSP(); // 来自 content
@@ -110,6 +115,17 @@
             });
             break;
 
+          case UPDATE_CONFIG:
+            if (data.state === RECORDING) {
+              _this.setBadgeText(data.id, 'ON');
+            } else if (data.state === AFTER_RECORD) {
+              _this.setBadgeText(data.id, 'OK');
+            } else {
+              _this.setBadgeText(data.id, '');
+            }
+
+            break;
+
           default:
             break;
         }
@@ -124,9 +140,9 @@
     createClass(Background, [{
       key: "setBadgeText",
       value: function setBadgeText(tabId, text) {
-        var color = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'red';
+        var color = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '#23ade5';
         chrome.browserAction.setBadgeText({
-          text: text,
+          text: String(text),
           tabId: tabId
         });
         chrome.browserAction.setBadgeBackgroundColor({

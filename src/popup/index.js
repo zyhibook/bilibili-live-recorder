@@ -12054,21 +12054,23 @@
             if (config) {
               _this.config = config;
             }
+          }); // 来自 content
+
+
+          chrome.runtime.onMessage.addListener(function (request) {
+            var type = request.type,
+                data = request.data;
+            if (tab.id !== data.id) return;
+
+            switch (type) {
+              case UPDATE_CONFIG:
+                _this.config = _objectSpread({}, _this.config, {}, data);
+                break;
+
+              default:
+                break;
+            }
           });
-        }
-      }); // 来自 content
-
-      chrome.runtime.onMessage.addListener(function (request) {
-        var type = request.type,
-            data = request.data;
-
-        switch (type) {
-          case UPDATE_CONFIG:
-            _this.config = _objectSpread({}, _this.config, {}, data);
-            break;
-
-          default:
-            break;
         }
       });
     },

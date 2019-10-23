@@ -1,5 +1,5 @@
 import 'crx-hotreload';
-import { LIVE_PATTERN, NOTIFY } from '../../share/constant';
+import { LIVE_PATTERN, NOTIFY, UPDATE_CONFIG, RECORDING, AFTER_RECORD } from '../../share/constant';
 
 class Background {
     constructor() {
@@ -18,6 +18,15 @@ class Background {
                         iconUrl: chrome.extension.getURL('icons/icon128.png'),
                     });
                     break;
+                case UPDATE_CONFIG:
+                    if (data.state === RECORDING) {
+                        this.setBadgeText(data.id, 'ON');
+                    } else if (data.state === AFTER_RECORD) {
+                        this.setBadgeText(data.id, 'OK');
+                    } else {
+                        this.setBadgeText(data.id, '');
+                    }
+                    break;
                 default:
                     break;
             }
@@ -30,8 +39,8 @@ class Background {
     }
 
     // 设置小图标文字
-    setBadgeText(tabId, text, color = 'red') {
-        chrome.browserAction.setBadgeText({ text, tabId });
+    setBadgeText(tabId, text, color = '#23ade5') {
+        chrome.browserAction.setBadgeText({ text: String(text), tabId });
         chrome.browserAction.setBadgeBackgroundColor({ color });
     }
 

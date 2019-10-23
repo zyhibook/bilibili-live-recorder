@@ -207,6 +207,8 @@
             break;
 
           case START_DOWNLOAD:
+            _this.updateConfig(data);
+
             _this.worker.postMessage({
               type: START_DOWNLOAD
             });
@@ -214,6 +216,8 @@
             break;
 
           case STOP_RECORD:
+            _this.updateConfig(data);
+
             _this.worker.postMessage({
               type: STOP_RECORD
             });

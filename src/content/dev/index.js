@@ -74,11 +74,13 @@ class Content {
                     }
                     break;
                 case START_DOWNLOAD:
+                    this.updateConfig(data);
                     this.worker.postMessage({
                         type: START_DOWNLOAD,
                     });
                     break;
                 case STOP_RECORD:
+                    this.updateConfig(data);
                     this.worker.postMessage({
                         type: STOP_RECORD,
                     });

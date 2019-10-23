@@ -81,24 +81,25 @@ export default new Vue({
                             }
                         },
                     );
+
+                    // 来自 content
+                    chrome.runtime.onMessage.addListener(request => {
+                        const { type, data } = request;
+                        if (tab.id !== data.id) return;
+                        switch (type) {
+                            case UPDATE_CONFIG:
+                                this.config = {
+                                    ...this.config,
+                                    ...data,
+                                };
+                                break;
+                            default:
+                                break;
+                        }
+                    });
                 }
             },
         );
-
-        // 来自 content
-        chrome.runtime.onMessage.addListener(request => {
-            const { type, data } = request;
-            switch (type) {
-                case UPDATE_CONFIG:
-                    this.config = {
-                        ...this.config,
-                        ...data,
-                    };
-                    break;
-                default:
-                    break;
-            }
-        });
     },
     methods: {
         goWebstore() {
