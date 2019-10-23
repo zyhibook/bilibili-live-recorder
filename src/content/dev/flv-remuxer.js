@@ -55,12 +55,31 @@ class FLVParser {
         };
     }
 
+    static getTagTime(tag) {
+        const ts2 = tag[4];
+        const ts1 = tag[5];
+        const ts0 = tag[6];
+        const ts3 = tag[7];
+        return ts0 | (ts1 << 8) | (ts2 << 16) | (ts3 << 24);
+    }
+
+    static setTagTime(time) {
+        const uint = new Uint8Array(4);
+        const size = new Uint8Array(new Uint32Array([time]).buffer);
+        uint[0] = size[2];
+        uint[1] = size[1];
+        uint[2] = size[0];
+        uint[3] = size[3];
+        return uint;
+    }
+
     constructor() {
         this.data = new Uint8Array();
         this.header = new Uint8Array();
         this.scripTag = new Uint8Array();
         this.videoAndAudioTags = new Uint8Array();
         this.tagStartTime = 0;
+        this.recordStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
         this.config = {};
@@ -125,24 +144,6 @@ class FLVParser {
 
     get resultSize() {
         return this.header.byteLength + this.scripTag.byteLength + this.videoAndAudioTags.byteLength;
-    }
-
-    getTagTime(tag) {
-        const ts2 = tag[4];
-        const ts1 = tag[5];
-        const ts0 = tag[6];
-        const ts3 = tag[7];
-        return ts0 | (ts1 << 8) | (ts2 << 16) | (ts3 << 24);
-    }
-
-    setTagTime(time) {
-        const uint = new Uint8Array(4);
-        const size = new Uint8Array(new Uint32Array([time]).buffer);
-        uint[0] = size[2];
-        uint[1] = size[1];
-        uint[2] = size[0];
-        uint[3] = size[3];
-        return uint;
     }
 
     notify(message) {
@@ -223,10 +224,13 @@ class FLVParser {
                 if (tagType === 18) {
                     this.scripTag = tagData;
                 } else {
+                    if (!this.tagStartTime) {
+                        this.tagStartTime = FLVParser.getTagTime(tagData);
+                    }
+                    this.resultDuration = FLVParser.getTagTime(tagData) - this.tagStartTime;
                     this.videoAndAudioTags = FLVParser.mergeBuffer(this.videoAndAudioTags, tagData);
                 }
 
-                this.resultDuration = FLVParser.getNowTime() - this.recordStartTime;
                 this.writeRate(tagData.byteLength / 1024 / 1024);
                 this.sizeRate(this.resultData.byteLength / 1024 / 1024);
                 this.durationRate(this.resultDuration / 1000 / 60);
@@ -298,6 +302,7 @@ class FLVParser {
         this.scripTag = new Uint8Array();
         this.videoAndAudioTags = new Uint8Array();
         this.tagStartTime = 0;
+        this.recordStartTime = 0;
         this.resultDuration = 0;
         this.recording = false;
         this.config = {};
