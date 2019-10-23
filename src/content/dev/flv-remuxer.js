@@ -266,7 +266,7 @@ class FLVParser {
                 if (task) {
                     this.running = true;
                     task().then(() => {
-                        setTimeout(loop.bind(this), 100);
+                        setTimeout(loop.bind(this), 0);
                     });
                 } else {
                     this.running = false;

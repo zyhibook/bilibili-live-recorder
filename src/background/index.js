@@ -118,10 +118,23 @@
       chrome.notifications.onClicked.addListener(function (id) {
         chrome.notifications.clear(id);
       });
-    } // 修改CSP响应头
+    } // 设置小图标文字
 
 
     createClass(Background, [{
+      key: "setBadgeText",
+      value: function setBadgeText(tabId, text) {
+        var color = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'red';
+        chrome.browserAction.setBadgeText({
+          text: text,
+          tabId: tabId
+        });
+        chrome.browserAction.setBadgeBackgroundColor({
+          color: color
+        });
+      } // 修改CSP响应头
+
+    }, {
       key: "changeCSP",
       value: function changeCSP() {
         chrome.webRequest.onHeadersReceived.addListener(function (details) {

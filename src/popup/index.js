@@ -11981,7 +11981,7 @@
   var LIVE_ROOM_PATTERN = /^https:\/\/live\.bilibili\.com/i;
   var TITLE_PATTERN = /(\s-\s哔哩哔哩直播，二次元弹幕直播平台)|\s*/g;
   var GITHUB = 'https://github.com/zhw2590582/bilibili-live-recorder';
-  var WEBSTORE = 'https://chrome.google.com/webstore/category/extensions'; // 状态
+  var WEBSTORE = 'https://chrome.google.com/webstore/detail/nagmkdppcmenlcgelpgkjoknakghllml'; // 状态
 
   var BEFORE_RECORD = 'before_record';
   var RECORDING = 'recording';
@@ -12091,15 +12091,6 @@
       showPanel: function showPanel(panel) {
         this.panel = panel;
       },
-      setBadgeText: function setBadgeText(text, background) {
-        chrome.browserAction.setBadgeText({
-          text: text,
-          tabId: this.tab.id
-        });
-        chrome.browserAction.setBadgeBackgroundColor({
-          color: background || 'red'
-        });
-      },
       sendMessage: function sendMessage(data) {
         var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
           return null;
@@ -12139,23 +12130,6 @@
           type: START_DOWNLOAD,
           data: config
         });
-      }
-    },
-    watch: {
-      'config.state': function configState(val) {
-        switch (val) {
-          case RECORDING:
-            this.setBadgeText('ON', '#fb7299');
-            break;
-
-          case AFTER_RECORD:
-            this.setBadgeText('OK', '#23ade5');
-            break;
-
-          default:
-            this.setBadgeText('');
-            break;
-        }
       }
     }
   });

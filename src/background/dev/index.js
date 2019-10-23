@@ -29,6 +29,12 @@ class Background {
         });
     }
 
+    // 设置小图标文字
+    setBadgeText(tabId, text, color = 'red') {
+        chrome.browserAction.setBadgeText({ text, tabId });
+        chrome.browserAction.setBadgeBackgroundColor({ color });
+    }
+
     // 修改CSP响应头
     changeCSP() {
         chrome.webRequest.onHeadersReceived.addListener(

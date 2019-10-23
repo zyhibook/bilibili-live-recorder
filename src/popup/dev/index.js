@@ -113,10 +113,6 @@ export default new Vue({
         showPanel(panel) {
             this.panel = panel;
         },
-        setBadgeText(text, background) {
-            chrome.browserAction.setBadgeText({ text: text, tabId: this.tab.id });
-            chrome.browserAction.setBadgeBackgroundColor({ color: background || 'red' });
-        },
         sendMessage(data, callback = () => null) {
             chrome.tabs.sendMessage(this.tab.id, data, callback);
         },
@@ -153,21 +149,6 @@ export default new Vue({
                 type: START_DOWNLOAD,
                 data: config,
             });
-        },
-    },
-    watch: {
-        'config.state': function(val) {
-            switch (val) {
-                case RECORDING:
-                    this.setBadgeText('ON', '#fb7299');
-                    break;
-                case AFTER_RECORD:
-                    this.setBadgeText('OK', '#23ade5');
-                    break;
-                default:
-                    this.setBadgeText('');
-                    break;
-            }
         },
     },
 });
