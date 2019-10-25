@@ -31,10 +31,6 @@ class Content {
                 data: this.config,
             });
             this.updateConfig(this.config);
-        } else {
-            this.updateConfig({
-                state: BEFORE_RECORD,
-            });
         }
 
         // 来自 worker
