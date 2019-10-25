@@ -1,35 +1,58 @@
 import './index.scss';
-import { MP4_BUFFER, FLV_BUFFER } from '../../share/constant';
+import Storage from '../../share/storage';
 
 class Injected {
     constructor() {
-        this.proxyRead();
+        this.name = 'bilibili-live-recorder';
+        this.storage = new Storage(this.name);
+        this.createUI();
+
+        if (this.storage.get(location.href)) {
+            this.storage.del(location.href);
+            this.intercept();
+        }
     }
 
-    proxyRead() {
+    // 创建UI
+    createUI() {
+        this.$container = document.createElement('div');
+        this.$container.classList.add(this.name);
+        this.$container.innerHTML = `
+            <div class="${this.name}-states">
+                <div class="${this.name}-state ${this.name}-state-before-record show">开始录制</div>
+                <div class="${this.name}-state ${this.name}-state-recording">停止录制</div>
+                <div class="${this.name}-state ${this.name}-state-after-record">下载视频</div>
+            </div>
+            <div class="${this.name}-monitor">
+                <div class="${this.name}-monitor-top">时长：24:23:59</div>
+                <div class="${this.name}-monitor-bottom">大小：12.345M</div>
+            </div>
+            <div class="${this.name}-handle"></div>
+        `;
+        document.body.appendChild(this.$container);
+    }
+
+    // 开始录制
+    start() {
+        this.storage.set(location.href, 1);
+    }
+
+    // 拦截视频流
+    intercept() {
         const { read } = ReadableStreamDefaultReader.prototype;
+        const that = this;
         ReadableStreamDefaultReader.prototype.read = function() {
             const promiseResult = read.call(this);
             promiseResult.then(({ done, value }) => {
                 if (done) return;
-                window.postMessage({
-                    type: FLV_BUFFER,
-                    data: value.slice(),
-                });
+                that.read(value.slice());
             });
             return promiseResult;
         };
     }
 
-    proxyAppendBuffer() {
-        const { appendBuffer } = SourceBuffer.prototype;
-        SourceBuffer.prototype.appendBuffer = function(buf) {
-            window.postMessage({
-                type: MP4_BUFFER,
-                data: new Uint8Array(buf.slice()),
-            });
-            return appendBuffer.call(this, buf);
-        };
+    read(uint8) {
+        //
     }
 }
 
