@@ -18,8 +18,11 @@
 
         .value {
             flex: 1;
-            color: #0366d6;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
             cursor: pointer;
+            color: #0366d6;
         }
     }
 }

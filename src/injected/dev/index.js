@@ -33,29 +33,21 @@ class Injected {
             this.storage.del(location.href);
             this.loading = true;
             this.intercept();
-            sleep(20).then(() => {
-                this.changeState('recording');
-            });
         }
 
-        sleep(10).then(() => {
-            this.createUI();
-            this.bindEvent();
-        });
+        this.createUI();
     }
 
     // 创建UI
     createUI() {
+        if (!document.body) {
+            return sleep(100).then(() => {
+                return this.createUI();
+            });
+        }
+
         this.$container = document.createElement('div');
         this.$container.classList.add(this.name);
-        const x = this.storage.get('x');
-        const y = this.storage.get('y');
-        if (x) {
-            this.$container.style.left = `${x}px`;
-        }
-        if (y) {
-            this.$container.style.top = `${y}px`;
-        }
         this.$container.innerHTML = `
             <div class="blr-states">
                 <div class="blr-state blr-state-before-record blr-active">开始</div>
@@ -74,7 +66,20 @@ class Injected {
         this.$duration = this.$container.querySelector('.blr-duration');
         this.$size = this.$container.querySelector('.blr-size');
         this.$monitor = this.$container.querySelector('.blr-monitor');
+
+        if (this.loading) {
+            this.changeState('recording');
+        }
+
+        const x = this.storage.get('x');
+        const y = this.storage.get('y');
+        if (x && y) {
+            this.$container.style.left = `${x}px`;
+            this.$container.style.top = `${y}px`;
+        }
+
         document.body.appendChild(this.$container);
+        this.bindEvent();
     }
 
     // 更改状态
