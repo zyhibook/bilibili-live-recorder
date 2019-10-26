@@ -15,3 +15,25 @@ export function download(url, name) {
     elink.click();
     document.body.removeChild(elink);
 }
+
+export function mergeBuffer(...buffers) {
+    const Cons = buffers[0].constructor;
+    return buffers.reduce((pre, val) => {
+        const merge = new Cons((pre.byteLength | 0) + (val.byteLength | 0));
+        merge.set(pre, 0);
+        merge.set(val, pre.byteLength | 0);
+        return merge;
+    }, new Cons());
+}
+
+export function readBufferSum(array, uint = true) {
+    return array.reduce((totle, num, index) => totle + (uint ? num : num - 128) * 256 ** (array.length - index - 1), 0);
+}
+
+export function getTagTime(tag) {
+    const ts2 = tag[4];
+    const ts1 = tag[5];
+    const ts0 = tag[6];
+    const ts3 = tag[7];
+    return ts0 | (ts1 << 8) | (ts2 << 16) | (ts3 << 24);
+}

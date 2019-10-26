@@ -27,6 +27,22 @@ var bilibiliLiveRecorderInjected = (function () {
 
   var createClass = _createClass;
 
+  function sleep() {
+    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+    return new Promise(function (resolve) {
+      return setTimeout(resolve, ms);
+    });
+  }
+  function download(url, name) {
+    var elink = document.createElement('a');
+    elink.style.display = 'none';
+    elink.href = url;
+    elink.download = name;
+    document.body.appendChild(elink);
+    elink.click();
+    document.body.removeChild(elink);
+  }
+
   function _defineProperty(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
@@ -91,16 +107,56 @@ var bilibiliLiveRecorderInjected = (function () {
   /*#__PURE__*/
   function () {
     function Injected() {
+      var _this = this;
+
       classCallCheck(this, Injected);
 
       this.name = 'bilibili-live-recorder';
       this.storage = new Storage(this.name);
-      this.createUI();
+      this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";function _classCallCheck(a,b){if(!(a instanceof b))throw new TypeError(\"Cannot call a class as a function\")}function _defineProperties(a,b){for(var c,d=0;d<b.length;d++)c=b[d],c.enumerable=c.enumerable||!1,c.configurable=!0,\"value\"in c&&(c.writable=!0),Object.defineProperty(a,c.key,c)}function _createClass(a,b,c){return b&&_defineProperties(a.prototype,b),c&&_defineProperties(a,c),a}// \u5408\u5E76\u6570\u636E\nfunction mergeBuffer(){for(var a=arguments.length,b=Array(a),c=0;c<a;c++)b[c]=arguments[c];var d=b[0].constructor;return b.reduce(function(a,b){var c=new d((0|a.byteLength)+(0|b.byteLength));return c.set(a,0),c.set(b,0|a.byteLength),c},new d)}// \u8BFB\u53D6\u957F\u5EA6\nfunction readBufferSum(a){var b=!(1<arguments.length&&arguments[1]!==void 0)||arguments[1];return a.reduce(function(c,d,e){return c+(b?d:d-128)*Math.pow(256,a.length-e-1)},0)}// \u83B7\u53D6\u65F6\u95F4\u6233\nfunction getTagTime(a){var b=a[4],c=a[5],d=a[6],e=a[7];return d|c<<8|b<<16|e<<24}// \u65F6\u957F\u8F6C\u65F6\u95F4\nfunction durationToTime(a){var b=Math.floor(a/60)+\"\",c=a%60+\"\";return\"\".concat(1===b.length?\"0\".concat(b):b,\":\").concat(1===c.length?\"0\".concat(c):c)}// FLV\u89E3\u5C01\u88C5\u7C7B\nvar Flv=/*#__PURE__*/function(){function a(){_classCallCheck(this,a),this.index=0,this.tasks=[],this.timer=null,this.loading=!1,this.running=!1,this.tagStartTime=0,this.resultDuration=0,this.data=new Uint8Array,this.header=new Uint8Array,this.scripTag=new Uint8Array,this.videoAndAudioTags=new Uint8Array,function a(){var b=this;this.timer=setTimeout(function(){b.running&&b.loading&&b.report(),a.call(b)},1e3)}.call(this)}// \u6700\u7EC8\u5408\u6210\u89C6\u9891\nreturn _createClass(a,[{key:\"report\",// \u6C47\u62A5\u72B6\u6001\nvalue:function report(){postMessage({type:\"report\",data:{duration:durationToTime(Math.floor(this.resultDuration/1e3)),size:(this.resultSize/1024/1024).toFixed(2)}})}// \u5224\u65AD\u6570\u636E\u662F\u5426\u8DB3\u591F\n},{key:\"readable\",value:function readable(a){return this.data.length-this.index>=a}// \u6309\u5B57\u8282\u8BFB\u53D6\n},{key:\"read\",value:function read(a){for(var b=new Uint8Array(a),c=0;c<a;c+=1)b[c]=this.data[this.index],this.index+=1;return b}// \u52A0\u8F7D\u89C6\u9891\u6D41\n},{key:\"load\",value:function load(a){this.loading=!0,this.tasks.push(this.demuxer.bind(this,a)),this.running||function a(){var b=this,c=this.tasks.shift();c&&this.loading?(this.running=!0,c().then(function(){setTimeout(a.bind(b),0)})):this.running=!1}.call(this)}// \u6570\u636E\u89E3\u5C01\u88C5\n},{key:\"demuxer\",value:function demuxer(a){var b=this;return new Promise(function(c,d){if(!b.loading)return void c();for(b.data=mergeBuffer(b.data,a),!b.header.length&&b.readable(13)&&(b.header=b.read(13));b.index<b.data.length;){var e=0,f=0,g=new Uint8Array,h=b.index;if(b.readable(11))g=mergeBuffer(g,b.read(11)),f=g[0],e=readBufferSum(g.subarray(1,4));else return b.index=h,void c();if(b.readable(e+4)){g=mergeBuffer(g,b.read(e));var i=b.read(4);g=mergeBuffer(g,i);var j=readBufferSum(i);if(j!==e+11)return b.stop(),postMessage({type:\"error\"}),void d(new Error(\"bilibili-live-recorder: Prev tag size does not match in tag type: \".concat(f)))}else return b.index=h,void c();18===f?b.scripTag=g:(!b.tagStartTime&&(b.tagStartTime=getTagTime(g)),b.resultDuration=getTagTime(g)-b.tagStartTime,b.videoAndAudioTags=mergeBuffer(b.videoAndAudioTags,g)),b.data=b.data.subarray(b.index),b.index=0}c()})}// \u505C\u6B62\u89E3\u5C01\u88C5\n},{key:\"stop\",value:function stop(){this.loading=!1,clearTimeout(this.timer),this.report()}// \u4E0B\u8F7D\u5F53\u524D\u89C6\u9891\n},{key:\"download\",value:function download(){postMessage({type:\"report\",data:{duration:durationToTime(0),size:0 .toFixed(2)}}),postMessage({type:\"download\",data:URL.createObjectURL(new Blob([this.resultData]))})}},{key:\"resultData\",get:function get(){return mergeBuffer(this.header,this.scripTag,this.videoAndAudioTags)}// \u5F53\u524D\u89C6\u9891\u65F6\u957F\n},{key:\"resultSize\",get:function get(){return this.header.byteLength+this.scripTag.byteLength+this.videoAndAudioTags.byteLength}}]),a}(),flv=new Flv;onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case\"load\":flv.load(d);break;case\"stop\":flv.stop();break;case\"download\":flv.download();break;default:}};"])));
+      this.loading = false;
+
+      this.worker.onmessage = function (event) {
+        var _event$data = event.data,
+            type = _event$data.type,
+            data = _event$data.data;
+
+        switch (type) {
+          case 'report':
+            _this.$duration.textContent = data.duration;
+            _this.$size.textContent = data.size;
+            break;
+
+          case 'download':
+            download(data, "".concat(document.title, ".flv"));
+
+            _this.worker.terminate();
+
+            break;
+
+          case 'error':
+            _this.loading = false;
+
+            _this.changeState('after-record');
+
+            break;
+        }
+      };
 
       if (this.storage.get(location.href)) {
         this.storage.del(location.href);
+        this.loading = true;
         this.intercept();
+        sleep(20).then(function () {
+          _this.changeState('recording');
+        });
       }
+
+      sleep(10).then(function () {
+        _this.createUI();
+
+        _this.bindEvent();
+      });
     } // 创建UI
 
 
@@ -109,14 +165,58 @@ var bilibiliLiveRecorderInjected = (function () {
       value: function createUI() {
         this.$container = document.createElement('div');
         this.$container.classList.add(this.name);
-        this.$container.innerHTML = "\n            <div class=\"".concat(this.name, "-states\">\n                <div class=\"").concat(this.name, "-state ").concat(this.name, "-state-before-record show\">\u5F00\u59CB\u5F55\u5236</div>\n                <div class=\"").concat(this.name, "-state ").concat(this.name, "-state-recording\">\u505C\u6B62\u5F55\u5236</div>\n                <div class=\"").concat(this.name, "-state ").concat(this.name, "-state-after-record\">\u4E0B\u8F7D\u89C6\u9891</div>\n            </div>\n            <div class=\"").concat(this.name, "-monitor\">\n                <div class=\"").concat(this.name, "-monitor-top\">\u65F6\u957F\uFF1A24:23:59</div>\n                <div class=\"").concat(this.name, "-monitor-bottom\">\u5927\u5C0F\uFF1A12.345M</div>\n            </div>\n            <div class=\"").concat(this.name, "-handle\"></div>\n        ");
+        this.$container.innerHTML = "\n            <div class=\"blr-states\">\n                <div class=\"blr-state blr-state-before-record blr-active\">\u5F00\u59CB</div>\n                <div class=\"blr-state blr-state-recording\">\u505C\u6B62</div>\n                <div class=\"blr-state blr-state-after-record\">\u4E0B\u8F7D</div>\n            </div>\n            <div class=\"blr-monitor\">\n                <div class=\"blr-monitor-top\">\u65F6\u957F\uFF1A<span class=\"blr-duration\">00:00</span></div>\n                <div class=\"blr-monitor-bottom\">\u5927\u5C0F\uFF1A<span class=\"blr-size\">0.00</span>M</div>\n            </div>\n        ";
+        this.$states = Array.from(this.$container.querySelectorAll('.blr-state'));
+        this.$beforeRecord = this.$container.querySelector('.blr-state-before-record');
+        this.$recording = this.$container.querySelector('.blr-state-recording');
+        this.$afterRecord = this.$container.querySelector('.blr-state-after-record');
+        this.$duration = this.$container.querySelector('.blr-duration');
+        this.$size = this.$container.querySelector('.blr-size');
         document.body.appendChild(this.$container);
-      } // 开始录制
+      } // 更改状态
 
     }, {
-      key: "start",
-      value: function start() {
-        this.storage.set(location.href, 1);
+      key: "changeState",
+      value: function changeState(state) {
+        this.$states.forEach(function (item) {
+          if (item.classList.contains("blr-state-".concat(state))) {
+            item.classList.add('blr-active');
+          } else {
+            item.classList.remove('blr-active');
+          }
+        });
+      } // 绑定事件
+
+    }, {
+      key: "bindEvent",
+      value: function bindEvent() {
+        var _this2 = this;
+
+        this.$beforeRecord.addEventListener('click', function () {
+          _this2.storage.set(location.href, 1);
+
+          sleep(500).then(function () {
+            location.reload();
+          });
+        });
+        this.$recording.addEventListener('click', function () {
+          _this2.loading = false;
+
+          _this2.changeState('after-record');
+
+          _this2.worker.postMessage({
+            type: 'stop'
+          });
+        });
+        this.$afterRecord.addEventListener('click', function () {
+          _this2.loading = false;
+
+          _this2.changeState('before-record');
+
+          _this2.worker.postMessage({
+            type: 'download'
+          });
+        });
       } // 拦截视频流
 
     }, {
@@ -130,15 +230,14 @@ var bilibiliLiveRecorderInjected = (function () {
           promiseResult.then(function (_ref) {
             var done = _ref.done,
                 value = _ref.value;
-            if (done) return;
-            that.read(value.slice());
+            if (done || !that.loading) return;
+            that.worker.postMessage({
+              type: 'load',
+              data: value.slice()
+            });
           });
           return promiseResult;
         };
-      }
-    }, {
-      key: "read",
-      value: function read(uint8) {//
       }
     }]);
 

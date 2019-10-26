@@ -12,95 +12,90 @@ $color: #23ade5;
     z-index: 9999;
     top: 100px;
     right: 100px;
-    width: 200px;
+    width: 180px;
     height: 60px;
-    border-radius: 3px;
+    border-radius: 60px;
     overflow: hidden;
     user-select: none;
-    background: #fff;
-    border: 1px solid $color;
+    background-color: rgba(0, 0, 0, 0.85);
+    box-shadow: 0 0 20px 0 rgba(0, 85, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.85);
 
-    .bilibili-live-recorder-states {
+    .blr-states {
         display: flex;
         width: 60px;
-        font-size: 16px;
-        border-radius: 4px;
-        color: #fff;
-        border: 1px solid #fff;
+        height: 100%;
+        font-size: 12px;
+        padding: 5px;
+        color: rgba(255, 255, 255, 0.8);
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
 
-        .bilibili-live-recorder-state {
+        .blr-state {
             display: none;
+            height: 100%;
+            width: 100%;
             justify-content: center;
             align-items: center;
             text-align: center;
             cursor: pointer;
-            padding: 5px;
-            letter-spacing: 2px;
-            line-height: 1.4;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            transform: scale3d(1, 1, 1);
 
-            &.show {
+            &.blr-active {
                 display: flex;
             }
 
-            &.bilibili-live-recorder-state-before-record {
-                background: $color;
+            &:hover {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+
+            &:active {
+                transform: scale3d(0.9, 0.9, 0.9);
+            }
+
+            &.blr-state-before-record {
+                background-image: linear-gradient(0deg, #be1974, #ff1c68);
+                border: 5px solid rgba(103, 10, 57, 0.8);
+            }
+
+            &.blr-state-recording {
+                background-image: linear-gradient(0deg, #be1974, #ff1c68);
+                border: 5px solid rgba(103, 10, 57, 0.8);
+            }
+
+            &.blr-state-after-record {
+                background-image: linear-gradient(0deg, #007b94, #01b5da);
+                border: 5px solid rgba(0, 65, 78, 0.8);
             }
         }
     }
 
-    .bilibili-live-recorder-monitor {
+    .blr-monitor {
         display: flex;
         flex-direction: column;
         flex: 1;
         font-size: 13px;
         letter-spacing: 1px;
-        color: #666;
-        background: #fff;
+        padding: 4px 5px 4px 0;
+        color: rgba(255, 255, 255, 0.7);
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
 
-        .bilibili-live-recorder-monitor-top {
+        .blr-monitor-top {
             display: flex;
             align-items: center;
             flex: 1;
             padding: 0 5px;
             line-height: 1;
-            border-bottom: 1px solid $color;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .bilibili-live-recorder-monitor-bottom {
+        .blr-monitor-bottom {
             display: flex;
             align-items: center;
             flex: 1;
             padding: 0 5px;
             line-height: 1;
-        }
-    }
-
-    .bilibili-live-recorder-handle {
-        position: relative;
-        width: 10px;
-        cursor: move;
-        border-radius: 4px;
-        background: $color;
-        border: 1px solid #fff;
-
-        &::before {
-            content: '';
-            position: absolute;
-            left: 3px;
-            bottom: 4px;
-            width: 3px;
-            height: 3px;
-            background: #c75744;
-        }
-
-        &::after {
-            content: '';
-            position: absolute;
-            left: 3px;
-            bottom: 10px;
-            width: 3px;
-            height: 3px;
-            background: #c75744;
         }
     }
 }

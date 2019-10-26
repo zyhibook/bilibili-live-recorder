@@ -54,5 +54,21 @@
         }
     });
 
+    chrome.webRequest.onHeadersReceived.addListener(function (details) {
+      var header = details.responseHeaders.find(function (e) {
+        return e.name.toLowerCase() === 'content-security-policy-report-only';
+      });
+
+      if (header && header.value) {
+        header.value = 'worker-src blob: ; ' + header.value;
+      }
+
+      return {
+        responseHeaders: details.responseHeaders
+      };
+    }, {
+      urls: ['*://*.bilibili.com/*']
+    }, ['blocking', 'responseHeaders']);
+
 }());
 //# sourceMappingURL=index.js.map
