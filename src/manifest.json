@@ -11,13 +11,13 @@
         "48": "icons/icon48.png",
         "128": "icons/icon128.png"
     },
-    "permissions": ["tabs", "webRequest", "webRequestBlocking", "*://*.bilibili.com/*"],
+    "permissions": ["tabs", "webRequest", "webRequestBlocking", "*://live.bilibili.com/*"],
     "browser_action": {
         "default_popup": "popup/index.html"
     },
     "content_scripts": [
         {
-            "matches": ["*://*.bilibili.com/*"],
+            "matches": ["*://live.bilibili.com/*"],
             "js": ["content/index.js"],
             "run_at": "document_start"
         }

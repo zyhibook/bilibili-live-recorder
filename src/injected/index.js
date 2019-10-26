@@ -193,11 +193,13 @@ var bilibiliLiveRecorderInjected = (function () {
         var _this2 = this;
 
         this.$beforeRecord.addEventListener('click', function () {
-          _this2.storage.set(location.href, 1);
+          var $video = document.querySelector('video');
 
-          sleep(500).then(function () {
+          if ($video) {
+            _this2.storage.set(location.href, 1);
+
             location.reload();
-          });
+          }
         });
         this.$recording.addEventListener('click', function () {
           _this2.loading = false;

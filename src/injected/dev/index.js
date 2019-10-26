@@ -82,10 +82,11 @@ class Injected {
     // 绑定事件
     bindEvent() {
         this.$beforeRecord.addEventListener('click', () => {
-            this.storage.set(location.href, 1);
-            sleep(500).then(() => {
+            const $video = document.querySelector('video');
+            if ($video) {
+                this.storage.set(location.href, 1);
                 location.reload();
-            });
+            }
         });
 
         this.$recording.addEventListener('click', () => {
