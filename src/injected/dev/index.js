@@ -14,7 +14,7 @@ class Injected {
             switch (type) {
                 case 'report':
                     this.$duration.textContent = data.duration;
-                    this.$size.textContent = data.size;
+                    this.$size.textContent = data.size + 'M';
                     break;
                 case 'download':
                     download(data, `${document.title}.flv`);
@@ -54,9 +54,15 @@ class Injected {
                 <div class="blr-state blr-state-recording">停止</div>
                 <div class="blr-state blr-state-after-record">下载</div>
             </div>
-            <div class="blr-monitor">
-                <div class="blr-monitor-top">时长：<span class="blr-duration">00:00</span></div>
-                <div class="blr-monitor-bottom">大小：<span class="blr-size">0.00</span>M</div>
+            <div class="blr-monitors">
+                <div class="blr-monitor blr-monitor-top">
+                    <div class="blr-monitor-name">时长：</div>
+                    <div class="blr-monitor-value blr-duration">00:00</div>
+                </div>
+                <div class="blr-monitor blr-monitor-bottom">
+                    <div class="blr-monitor-name">大小：</div>
+                    <div class="blr-monitor-value blr-size">0.00M</div>
+                </div>
             </div>
         `;
         this.$states = Array.from(this.$container.querySelectorAll('.blr-state'));

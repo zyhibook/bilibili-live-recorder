@@ -25,7 +25,7 @@ function getTagTime(tag) {
 
 // 时长转时间
 function durationToTime(duration) {
-    const m = String(Math.floor(duration / 60));
+    const m = String(Math.floor(duration / 60)).slice(-5);
     const s = String(duration % 60);
     return `${m.length === 1 ? `0${m}` : m}:${s.length === 1 ? `0${s}` : s}`;
 }
@@ -71,7 +71,7 @@ class Flv {
             type: 'report',
             data: {
                 duration: durationToTime(Math.floor(this.resultDuration / 1000)),
-                size: (this.resultSize / 1024 / 1024).toFixed(2),
+                size: (this.resultSize / 1024 / 1024).toFixed(2).slice(-8),
             },
         });
     }

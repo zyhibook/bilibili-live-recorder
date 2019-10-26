@@ -18,8 +18,7 @@ $color: #23ade5;
     overflow: hidden;
     user-select: none;
     color: #fff;
-    backdrop-filter: saturate(180%) blur(20px);
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: rgba(0, 0, 0, 0.85);
     box-shadow: 0 0 20px 0 rgba(0, 85, 255, 0.1);
 
     .blr-states {
@@ -114,7 +113,7 @@ $color: #23ade5;
         }
     }
 
-    .blr-monitor {
+    .blr-monitors {
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -124,21 +123,27 @@ $color: #23ade5;
         color: rgba(255, 255, 255, 0.75);
         text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
 
-        .blr-monitor-top {
+        .blr-monitor {
             display: flex;
             align-items: center;
             flex: 1;
             padding: 0 5px;
             line-height: 1;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+            .blr-monitor-name {
+                width: 40px;
+            }
+
+            .blr-monitor-value {
+                flex: 1;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+            }
         }
 
-        .blr-monitor-bottom {
-            display: flex;
-            align-items: center;
-            flex: 1;
-            padding: 0 5px;
-            line-height: 1;
+        .blr-monitor-top {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
         }
     }
 }
