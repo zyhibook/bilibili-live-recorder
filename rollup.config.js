@@ -12,14 +12,14 @@ const cssnano = require('cssnano');
 const { name, version, homepage } = require('./package.json');
 
 const isProd = process.env.NODE_ENV === 'production';
-module.exports = ['background', 'content', 'injected', 'popup'].map(item => {
+module.exports = ['background', 'popup', 'content', 'injected'].map(item => {
     return {
         input: `src/${item}/dev/index.js`,
         output: {
+            name: `bilibiliLiveRecorder${item[0].toUpperCase()}${item.slice(1)}`,
             file: isProd ? `dist/${name}/${item}/index.js` : `src/${item}/index.js`,
-            format: 'umd',
+            format: 'iife',
             sourcemap: !isProd,
-            name: item[0].toUpperCase() + item.slice(1),
         },
         plugins: [
             eslint({

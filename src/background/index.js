@@ -1,179 +1,74 @@
-(function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  (global = global || self, global.Background = factory());
-}(this, function () { 'use strict';
+(function () {
+    'use strict';
 
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
+    const filesInDirectory = dir => new Promise (resolve =>
 
-  var classCallCheck = _classCallCheck;
+        dir.createReader ().readEntries (entries =>
 
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
+            Promise.all (entries.filter (e => e.name[0] !== '.').map (e =>
 
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
+                e.isDirectory
+                    ? filesInDirectory (e)
+                    : new Promise (resolve => e.file (resolve))
+            ))
+            .then (files => [].concat (...files))
+            .then (resolve)
+        )
+    );
 
-  var createClass = _createClass;
+    const timestampForFilesInDirectory = dir =>
+            filesInDirectory (dir).then (files =>
+                files.map (f => f.name + f.lastModifiedDate).join ());
 
-  const filesInDirectory = dir => new Promise (resolve =>
+    const reload = () => {
 
-      dir.createReader ().readEntries (entries =>
+        chrome.tabs.query ({ active: true, currentWindow: true }, tabs => { // NB: see https://github.com/xpl/crx-hotreload/issues/5
 
-          Promise.all (entries.filter (e => e.name[0] !== '.').map (e =>
+            if (tabs[0]) { chrome.tabs.reload (tabs[0].id); }
 
-              e.isDirectory
-                  ? filesInDirectory (e)
-                  : new Promise (resolve => e.file (resolve))
-          ))
-          .then (files => [].concat (...files))
-          .then (resolve)
-      )
-  );
+            chrome.runtime.reload ();
+        });
+    };
 
-  const timestampForFilesInDirectory = dir =>
-          filesInDirectory (dir).then (files =>
-              files.map (f => f.name + f.lastModifiedDate).join ());
+    const watchChanges = (dir, lastTimestamp) => {
 
-  const reload = () => {
+        timestampForFilesInDirectory (dir).then (timestamp => {
 
-      chrome.tabs.query ({ active: true, currentWindow: true }, tabs => { // NB: see https://github.com/xpl/crx-hotreload/issues/5
+            if (!lastTimestamp || (lastTimestamp === timestamp)) {
 
-          if (tabs[0]) { chrome.tabs.reload (tabs[0].id); }
+                setTimeout (() => watchChanges (dir, timestamp), 1000); // retry after 1s
 
-          chrome.runtime.reload ();
-      });
-  };
-
-  const watchChanges = (dir, lastTimestamp) => {
-
-      timestampForFilesInDirectory (dir).then (timestamp => {
-
-          if (!lastTimestamp || (lastTimestamp === timestamp)) {
-
-              setTimeout (() => watchChanges (dir, timestamp), 1000); // retry after 1s
-
-          } else {
-
-              reload ();
-          }
-      });
-
-  };
-
-  chrome.management.getSelf (self => {
-
-      if (self.installType === 'development') {
-
-          chrome.runtime.getPackageDirectoryEntry (dir => watchChanges (dir));
-      }
-  });
-
-  // 常用
-  var LIVE_PATTERN = '*://*.bilibili.com/*';
-  var RECORDING = 'recording';
-  var AFTER_RECORD = 'after_record';
-  var UPDATE_CONFIG = 'update_config';
-  var NOTIFY = 'notify';
-
-  var Background =
-  /*#__PURE__*/
-  function () {
-    function Background() {
-      var _this = this;
-
-      classCallCheck(this, Background);
-
-      this.changeCSP(); // 来自 content
-
-      chrome.runtime.onMessage.addListener(function (request) {
-        var type = request.type,
-            data = request.data;
-
-        switch (type) {
-          case NOTIFY:
-            chrome.notifications.create(String(Math.random()), {
-              type: 'basic',
-              message: data.message,
-              contextMessage: data.title || '',
-              title: chrome.runtime.getManifest().name,
-              iconUrl: chrome.extension.getURL('icons/icon128.png')
-            });
-            break;
-
-          case UPDATE_CONFIG:
-            if (data.state === RECORDING) {
-              _this.setBadgeText(data.id, 'ON');
-            } else if (data.state === AFTER_RECORD) {
-              _this.setBadgeText(data.id, 'OK');
             } else {
-              _this.setBadgeText(data.id, '');
+
+                reload ();
             }
+        });
 
-            break;
+    };
+
+    chrome.management.getSelf (self => {
+
+        if (self.installType === 'development') {
+
+            chrome.runtime.getPackageDirectoryEntry (dir => watchChanges (dir));
         }
-      }); // 点击关闭提示
+    });
 
-      chrome.notifications.onClicked.addListener(function (id) {
-        chrome.notifications.clear(id);
+    chrome.webRequest.onHeadersReceived.addListener(function (details) {
+      var header = details.responseHeaders.find(function (e) {
+        return e.name.toLowerCase() === 'content-security-policy-report-only';
       });
-    } // 设置小图标文字
 
-
-    createClass(Background, [{
-      key: "setBadgeText",
-      value: function setBadgeText(tabId, text) {
-        var color = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '#23ade5';
-        chrome.browserAction.setBadgeText({
-          text: String(text),
-          tabId: tabId
-        });
-        chrome.browserAction.setBadgeBackgroundColor({
-          color: color
-        });
-      } // 修改CSP响应头
-
-    }, {
-      key: "changeCSP",
-      value: function changeCSP() {
-        chrome.webRequest.onHeadersReceived.addListener(function (details) {
-          var header = details.responseHeaders.find(function (e) {
-            return e.name.toLowerCase() === 'content-security-policy-report-only';
-          });
-
-          if (header && header.value) {
-            header.value = 'worker-src blob: ; ' + header.value;
-          }
-
-          return {
-            responseHeaders: details.responseHeaders
-          };
-        }, {
-          urls: [LIVE_PATTERN]
-        }, ['blocking', 'responseHeaders']);
+      if (header && header.value) {
+        header.value = 'worker-src blob: ; ' + header.value;
       }
-    }]);
 
-    return Background;
-  }();
+      return {
+        responseHeaders: details.responseHeaders
+      };
+    }, {
+      urls: ['*://*.bilibili.com/*']
+    }, ['blocking', 'responseHeaders']);
 
-  var index = new Background();
-
-  return index;
-
-}));
+}());
 //# sourceMappingURL=index.js.map
