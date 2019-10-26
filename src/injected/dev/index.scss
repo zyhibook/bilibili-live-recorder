@@ -18,9 +18,9 @@ $color: #23ade5;
     overflow: hidden;
     user-select: none;
     color: #fff;
-    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    background-color: rgba(0, 0, 0, 0.75);
     box-shadow: 0 0 20px 0 rgba(0, 85, 255, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.85);
 
     .blr-states {
         display: flex;

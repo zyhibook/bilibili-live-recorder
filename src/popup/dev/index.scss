@@ -1,0 +1,25 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+
+    .item {
+        display: flex;
+        font-size: 13px;
+        padding: 5px 0;
+        box-sizing: border-box;
+        color: #666;
+
+        .name {
+            width: 40px;
+        }
+
+        .value {
+            flex: 1;
+            color: #0366d6;
+            cursor: pointer;
+        }
+    }
+}

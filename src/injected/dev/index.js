@@ -48,6 +48,14 @@ class Injected {
     createUI() {
         this.$container = document.createElement('div');
         this.$container.classList.add(this.name);
+        const x = this.storage.get('x');
+        const y = this.storage.get('y');
+        if (x) {
+            this.$container.style.left = `${x}px`;
+        }
+        if (y) {
+            this.$container.style.top = `${y}px`;
+        }
         this.$container.innerHTML = `
             <div class="blr-states">
                 <div class="blr-state blr-state-before-record blr-active">开始</div>
@@ -65,6 +73,7 @@ class Injected {
         this.$afterRecord = this.$container.querySelector('.blr-state-after-record');
         this.$duration = this.$container.querySelector('.blr-duration');
         this.$size = this.$container.querySelector('.blr-size');
+        this.$monitor = this.$container.querySelector('.blr-monitor');
         document.body.appendChild(this.$container);
     }
 
@@ -103,6 +112,33 @@ class Injected {
             this.worker.postMessage({
                 type: 'download',
             });
+        });
+
+        let isDroging = false;
+        let lastPageX = 0;
+        let lastPageY = 0;
+        let lastPlayerLeft = 0;
+        let lastPlayerTop = 0;
+
+        this.$monitor.addEventListener('mousedown', () => {
+            isDroging = true;
+            lastPageX = event.pageX;
+            lastPageY = event.pageY;
+            lastPlayerLeft = this.$container.offsetLeft;
+            lastPlayerTop = this.$container.offsetTop;
+        });
+
+        this.$monitor.addEventListener('mousemove', event => {
+            if (isDroging) {
+                this.$container.style.left = `${lastPlayerLeft + event.pageX - lastPageX}px`;
+                this.$container.style.top = `${lastPlayerTop + event.pageY - lastPageY}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDroging = false;
+            this.storage.set('x', this.$container.offsetLeft);
+            this.storage.set('y', this.$container.offsetTop);
         });
     }
 

@@ -165,6 +165,17 @@ var bilibiliLiveRecorderInjected = (function () {
       value: function createUI() {
         this.$container = document.createElement('div');
         this.$container.classList.add(this.name);
+        var x = this.storage.get('x');
+        var y = this.storage.get('y');
+
+        if (x) {
+          this.$container.style.left = "".concat(x, "px");
+        }
+
+        if (y) {
+          this.$container.style.top = "".concat(y, "px");
+        }
+
         this.$container.innerHTML = "\n            <div class=\"blr-states\">\n                <div class=\"blr-state blr-state-before-record blr-active\">\u5F00\u59CB</div>\n                <div class=\"blr-state blr-state-recording\">\u505C\u6B62</div>\n                <div class=\"blr-state blr-state-after-record\">\u4E0B\u8F7D</div>\n            </div>\n            <div class=\"blr-monitor\">\n                <div class=\"blr-monitor-top\">\u65F6\u957F\uFF1A<span class=\"blr-duration\">00:00</span></div>\n                <div class=\"blr-monitor-bottom\">\u5927\u5C0F\uFF1A<span class=\"blr-size\">0.00</span>M</div>\n            </div>\n        ";
         this.$states = Array.from(this.$container.querySelectorAll('.blr-state'));
         this.$beforeRecord = this.$container.querySelector('.blr-state-before-record');
@@ -172,6 +183,7 @@ var bilibiliLiveRecorderInjected = (function () {
         this.$afterRecord = this.$container.querySelector('.blr-state-after-record');
         this.$duration = this.$container.querySelector('.blr-duration');
         this.$size = this.$container.querySelector('.blr-size');
+        this.$monitor = this.$container.querySelector('.blr-monitor');
         document.body.appendChild(this.$container);
       } // 更改状态
 
@@ -218,6 +230,31 @@ var bilibiliLiveRecorderInjected = (function () {
           _this2.worker.postMessage({
             type: 'download'
           });
+        });
+        var isDroging = false;
+        var lastPageX = 0;
+        var lastPageY = 0;
+        var lastPlayerLeft = 0;
+        var lastPlayerTop = 0;
+        this.$monitor.addEventListener('mousedown', function () {
+          isDroging = true;
+          lastPageX = event.pageX;
+          lastPageY = event.pageY;
+          lastPlayerLeft = _this2.$container.offsetLeft;
+          lastPlayerTop = _this2.$container.offsetTop;
+        });
+        this.$monitor.addEventListener('mousemove', function (event) {
+          if (isDroging) {
+            _this2.$container.style.left = "".concat(lastPlayerLeft + event.pageX - lastPageX, "px");
+            _this2.$container.style.top = "".concat(lastPlayerTop + event.pageY - lastPageY, "px");
+          }
+        });
+        document.addEventListener('mouseup', function () {
+          isDroging = false;
+
+          _this2.storage.set('x', _this2.$container.offsetLeft);
+
+          _this2.storage.set('y', _this2.$container.offsetTop);
         });
       } // 拦截视频流
 
