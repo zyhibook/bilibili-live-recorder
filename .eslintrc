@@ -6,14 +6,12 @@
         "es6": true
     },
     "globals": {
-        "chrome": true,
+        "chrome": true
     },
     "rules": {
         "no-bitwise": 0,
-        "class-methods-use-this": 0,
         "no-param-reassign": 0,
-        "prefer-destructuring": 0,
-        "import/prefer-default-export": 0
+        "prefer-destructuring": 0
     },
     "parserOptions": {
         "sourceType": "module"
