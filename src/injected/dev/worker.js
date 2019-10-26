@@ -38,6 +38,7 @@ class Flv {
         this.timer = null;
         this.loading = false;
         this.running = false;
+        this.tagLength = 0;
         this.tagStartTime = 0;
         this.resultDuration = 0;
         this.data = new Uint8Array();
@@ -90,11 +91,9 @@ class Flv {
 
     // 按字节读取
     read(length) {
-        const uint8 = new Uint8Array(length);
-        for (let i = 0; i < length; i += 1) {
-            uint8[i] = this.data[this.index];
-            this.index += 1;
-        }
+        const end = this.index + length;
+        const uint8 = this.data.subarray(this.index, end);
+        this.index = end;
         return uint8;
     }
 
@@ -168,13 +167,22 @@ class Flv {
                     return;
                 }
 
+                this.tagLength += 1;
                 if (tagType === 18) {
                     this.scripTag = tagData;
                 } else {
+                    const tagTime = getTagTime(tagData);
+                    // 取第一帧的时间为开始时间
                     if (!this.tagStartTime) {
-                        this.tagStartTime = getTagTime(tagData);
+                        this.tagStartTime = tagTime;
                     }
-                    this.resultDuration = getTagTime(tagData) - this.tagStartTime;
+                    const tagDuration = tagTime - this.tagStartTime;
+                    // 前10帧内，凡是时间差大于1秒的都重新修正开始时间
+                    if (this.tagLength <= 10 && tagDuration - this.resultDuration >= 1000) {
+                        this.tagStartTime = tagTime;
+                    }
+                    this.resultDuration = tagTime - this.tagStartTime;
+                    // 每10M为一个元素，因为文件太大会引起合并时的长时间阻塞
                     const lastTagData = this.videoAndAudioTags[this.videoAndAudioTags.length - 1];
                     if (lastTagData) {
                         if (lastTagData.byteLength >= 10 * 1024 * 1024) {

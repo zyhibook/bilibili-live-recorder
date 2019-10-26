@@ -1,6 +1,6 @@
 {
     "name": "bilibili-live-recorder",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "Chrome 扩展 - Bilibili 直播间录制器",
     "scripts": {
         "dev": "cross-env NODE_ENV=development rollup -c -m -w",
