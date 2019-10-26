@@ -90,7 +90,7 @@ $color: #23ade5;
                 }
             }
 
-            &.blr-state-after-record {
+            &.blr-state-after-record, &.blr-state-wait {
                 background-image: linear-gradient(0deg, #007b94, #01b5da);
                 border: 5px solid rgba(0, 57, 68, 0.8);
 

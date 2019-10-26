@@ -18,6 +18,7 @@ class Injected {
                     break;
                 case 'download':
                     download(data, `${document.title}.flv`);
+                    this.changeState('before-record');
                     this.worker.terminate();
                     break;
                 case 'error':
@@ -53,6 +54,7 @@ class Injected {
                 <div class="blr-state blr-state-before-record blr-active">开始</div>
                 <div class="blr-state blr-state-recording">停止</div>
                 <div class="blr-state blr-state-after-record">下载</div>
+                <div class="blr-state blr-state-wait">稍等</div>
             </div>
             <div class="blr-monitors">
                 <div class="blr-monitor blr-monitor-top">
@@ -119,7 +121,7 @@ class Injected {
 
         this.$afterRecord.addEventListener('click', () => {
             this.loading = false;
-            this.changeState('before-record');
+            this.changeState('wait');
             this.worker.postMessage({
                 type: 'download',
             });

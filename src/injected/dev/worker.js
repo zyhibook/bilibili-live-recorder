@@ -43,7 +43,7 @@ class Flv {
         this.data = new Uint8Array();
         this.header = new Uint8Array();
         this.scripTag = new Uint8Array();
-        this.videoAndAudioTags = new Uint8Array();
+        this.videoAndAudioTags = [];
 
         (function loop() {
             this.timer = setTimeout(() => {
@@ -57,12 +57,19 @@ class Flv {
 
     // 最终合成视频
     get resultData() {
-        return mergeBuffer(this.header, this.scripTag, this.videoAndAudioTags);
+        return mergeBuffer(this.header, this.scripTag, ...this.videoAndAudioTags);
     }
 
     // 当前视频时长
     get resultSize() {
-        return this.header.byteLength + this.scripTag.byteLength + this.videoAndAudioTags.byteLength;
+        return (
+            this.header.byteLength +
+            this.scripTag.byteLength +
+            this.videoAndAudioTags.reduce((result, item) => {
+                result += item.byteLength;
+                return result;
+            }, 0)
+        );
     }
 
     // 汇报状态
@@ -168,7 +175,19 @@ class Flv {
                         this.tagStartTime = getTagTime(tagData);
                     }
                     this.resultDuration = getTagTime(tagData) - this.tagStartTime;
-                    this.videoAndAudioTags = mergeBuffer(this.videoAndAudioTags, tagData);
+                    const lastTagData = this.videoAndAudioTags[this.videoAndAudioTags.length - 1];
+                    if (lastTagData) {
+                        if (lastTagData.byteLength >= 10 * 1024 * 1024) {
+                            this.videoAndAudioTags.push(tagData);
+                        } else {
+                            this.videoAndAudioTags[this.videoAndAudioTags.length - 1] = mergeBuffer(
+                                lastTagData,
+                                tagData,
+                            );
+                        }
+                    } else {
+                        this.videoAndAudioTags.push(tagData);
+                    }
                 }
 
                 this.data = this.data.subarray(this.index);
