@@ -13,8 +13,7 @@
 目前扩展处于测试阶段，不能保证所有视频都能成功录制，遇到问题提`issues`时可以把你的完整操作步骤描述出来。
 
 ## 截图
-
-![截图](./images/screenshot.png)
+<img src="./images/screenshot.png" width="400">
 
 ## 功能
 
