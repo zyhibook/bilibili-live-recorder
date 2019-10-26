@@ -141,17 +141,25 @@ class Injected {
             lastPlayerTop = this.$container.offsetTop;
         });
 
-        this.$monitor.addEventListener('mousemove', event => {
+        document.addEventListener('mousemove', event => {
             if (isDroging) {
-                this.$container.style.left = `${lastPlayerLeft + event.pageX - lastPageX}px`;
-                this.$container.style.top = `${lastPlayerTop + event.pageY - lastPageY}px`;
+                const x = event.pageX - lastPageX;
+                const y = event.pageY - lastPageY;
+                this.$container.style.transform = `translate(${x}px, ${y}px)`;
             }
         });
 
         document.addEventListener('mouseup', () => {
-            isDroging = false;
-            this.storage.set('x', this.$container.offsetLeft);
-            this.storage.set('y', this.$container.offsetTop);
+            if (isDroging) {
+                isDroging = false;
+                this.$container.style.transform = 'translate(0, 0)';
+                const x = lastPlayerLeft + event.pageX - lastPageX;
+                const y = lastPlayerTop + event.pageY - lastPageY;
+                this.$container.style.left = `${x}px`;
+                this.$container.style.top = `${y}px`;
+                this.storage.set('x', x);
+                this.storage.set('y', y);
+            }
         });
     }
 

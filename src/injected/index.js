@@ -249,18 +249,26 @@ var bilibiliLiveRecorderInjected = (function () {
           lastPlayerLeft = _this3.$container.offsetLeft;
           lastPlayerTop = _this3.$container.offsetTop;
         });
-        this.$monitor.addEventListener('mousemove', function (event) {
+        document.addEventListener('mousemove', function (event) {
           if (isDroging) {
-            _this3.$container.style.left = "".concat(lastPlayerLeft + event.pageX - lastPageX, "px");
-            _this3.$container.style.top = "".concat(lastPlayerTop + event.pageY - lastPageY, "px");
+            var x = event.pageX - lastPageX;
+            var y = event.pageY - lastPageY;
+            _this3.$container.style.transform = "translate(".concat(x, "px, ").concat(y, "px)");
           }
         });
         document.addEventListener('mouseup', function () {
-          isDroging = false;
+          if (isDroging) {
+            isDroging = false;
+            _this3.$container.style.transform = 'translate(0, 0)';
+            var x = lastPlayerLeft + event.pageX - lastPageX;
+            var y = lastPlayerTop + event.pageY - lastPageY;
+            _this3.$container.style.left = "".concat(x, "px");
+            _this3.$container.style.top = "".concat(y, "px");
 
-          _this3.storage.set('x', _this3.$container.offsetLeft);
+            _this3.storage.set('x', x);
 
-          _this3.storage.set('y', _this3.$container.offsetTop);
+            _this3.storage.set('y', y);
+          }
         });
       } // 拦截视频流
 
