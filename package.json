@@ -34,8 +34,5 @@
         "rollup-plugin-terser": "^5.1.2",
         "rollup-plugin-worker-inline": "^1.0.6",
         "zip-folder": "^1.0.0"
-    },
-    "dependencies": {
-        "normalize.css": "^8.0.1"
     }
 }

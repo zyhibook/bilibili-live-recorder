@@ -28,7 +28,7 @@ $color: #23ade5;
     .blr-states {
         display: flex;
         width: 60px;
-        height: 100%;
+        height: 60px;
         padding: 5px;
         color: rgba(255, 255, 255, 0.8);
         text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
@@ -160,5 +160,21 @@ $color: #23ade5;
             transform: rotate(45deg);
             background: rgba(255, 255, 255, 0.15);
         }
+    }
+
+    @keyframes focus {
+        0% {
+            box-shadow: 0 0 0 2px rgba(255, 235, 59, 1);
+        }
+        50% {
+            box-shadow: 0 0 0 2px rgba(255, 235, 59, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 2px rgba(255, 235, 59, 1);
+        }
+    }
+
+    &.blr-focus {
+        animation: focus 1s linear infinite;
     }
 }
