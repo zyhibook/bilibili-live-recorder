@@ -67,8 +67,7 @@ class Flv {
             this.header.byteLength +
             this.scripTag.byteLength +
             this.videoAndAudioTags.reduce((result, item) => {
-                result += item.byteLength;
-                return result;
+                return result + item.byteLength;
             }, 0)
         );
     }
