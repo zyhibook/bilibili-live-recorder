@@ -4,7 +4,7 @@
     "description": "Chrome 扩展 - Bilibili 直播间录制器",
     "scripts": {
         "dev": "cross-env NODE_ENV=development rollup -c -m -w",
-        "build": "cross-env NODE_ENV=production rollup -c",
+        "build": "cross-env NODE_ENV=production rollup -c && node ./archive.js",
         "test": "eslint src"
     },
     "devDependencies": {
@@ -32,7 +32,8 @@
         "rollup-plugin-postcss": "^2.0.3",
         "rollup-plugin-replace": "^2.2.0",
         "rollup-plugin-terser": "^5.1.2",
-        "rollup-plugin-worker-inline": "^1.0.6"
+        "rollup-plugin-worker-inline": "^1.0.6",
+        "zip-folder": "^1.0.0"
     },
     "dependencies": {
         "normalize.css": "^8.0.1"
