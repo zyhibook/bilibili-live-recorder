@@ -78,8 +78,7 @@ class Injected {
         if (this.loading) {
             this.changeState('recording');
         } else if (location.href.includes('blr')) {
-            this.storage.del('x');
-            this.storage.del('y');
+            this.storage.clean();
             this.$container.classList.add('blr-focus');
             sleep(10000).then(() => {
                 this.$container.classList.remove('blr-focus');
