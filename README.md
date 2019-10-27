@@ -6,8 +6,6 @@
 
 [在线 chrome 网上应用店](https://chrome.google.com/webstore/detail/nagmkdppcmenlcgelpgkjoknakghllml)
 
-[离线 dist 目录](https://github.com/zhw2590582/bilibili-live-recorder/tree/master/dist)
-
 ## 注意
 
 目前扩展处于测试阶段，不能保证所有视频都能成功录制，遇到问题提`issues`时可以把你的完整操作步骤描述出来。
