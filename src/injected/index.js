@@ -220,7 +220,7 @@ var bilibiliLiveRecorderInjected = (function () {
           var $video = document.querySelector('video');
 
           if ($video) {
-            _this3.storage.set(location.href, 1);
+            _this3.storage.set(location.href, Date.now());
 
             location.reload();
           }

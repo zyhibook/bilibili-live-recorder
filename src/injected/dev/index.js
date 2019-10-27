@@ -112,7 +112,7 @@ class Injected {
         this.$beforeRecord.addEventListener('click', () => {
             const $video = document.querySelector('video');
             if ($video) {
-                this.storage.set(location.href, 1);
+                this.storage.set(location.href, Date.now());
                 location.reload();
             }
         });
