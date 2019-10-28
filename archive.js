@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const zipFolder = require('zip-folder');
+const { name } = require('./package.json');
 
-zipFolder('./dist/bilibili-live-recorder', './dist/bilibili-live-recorder.zip', err => {
+zipFolder(`./dist/${name}`, `./dist/${name}.zip`, err => {
     if (err) throw err;
 });
