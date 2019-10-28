@@ -14,12 +14,14 @@ class Injected {
             switch (type) {
                 case 'report':
                     this.$duration.textContent = data.duration;
-                    this.$size.textContent = data.size + 'M';
+                    this.$size.textContent = data.size;
                     break;
                 case 'download':
                     download(data, `${document.title}.flv`);
                     this.changeState('before-record');
                     this.worker.terminate();
+                    this.$duration.textContent = '00:00';
+                    this.$size.textContent = '0.00M';
                     break;
                 case 'error':
                     this.loading = false;

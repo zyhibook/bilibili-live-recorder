@@ -78,7 +78,7 @@ class Flv {
             type: 'report',
             data: {
                 duration: durationToTime(Math.floor(this.resultDuration / 1000)),
-                size: (this.resultSize / 1024 / 1024).toFixed(2).slice(-8),
+                size: `${(this.resultSize / 1024 / 1024).toFixed(2).slice(-8)}M`,
             },
         });
     }
@@ -213,13 +213,6 @@ class Flv {
 
     // 下载当前视频
     download() {
-        postMessage({
-            type: 'report',
-            data: {
-                duration: durationToTime(0),
-                size: (0).toFixed(2),
-            },
-        });
         postMessage({
             type: 'download',
             data: URL.createObjectURL(new Blob([this.resultData])),
