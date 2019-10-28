@@ -23,7 +23,7 @@
         "eslint-config-prettier": "^6.5.0",
         "eslint-plugin-import": "^2.18.2",
         "node-sass": "^4.13.0",
-        "puppeteer-crx": "^1.0.3",
+        "puppeteer-crx": "^1.0.4",
         "rollup": "^1.26.0",
         "rollup-plugin-babel": "^4.3.3",
         "rollup-plugin-commonjs": "^10.1.0",
