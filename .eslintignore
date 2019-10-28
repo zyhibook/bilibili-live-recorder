@@ -5,4 +5,4 @@
 /src/**/index.js.map
 package.json
 /src/manifest.json
-/src/config.json
+/archive.js

@@ -1,7 +1,8 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-const zipFolder = require('zip-folder');
-const { name } = require('./package.json');
+const crx = require('puppeteer-crx');
+const path = require('path');
 
-zipFolder(`./dist/${name}`, `./dist/${name}.zip`, err => {
-    if (err) throw err;
+const src = path.resolve(__dirname, './dist/bilibili-live-recorder');
+
+crx(src).then(result => {
+    console.log(`Packaged successfully: `, result);
 });
