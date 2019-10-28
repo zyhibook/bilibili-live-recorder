@@ -12,7 +12,7 @@
 
 ## 截图
 
-<img src="./images/screenshot.png" width="400">
+<img src="./images/screenshot.png" width="640">
 
 ## 功能
 
