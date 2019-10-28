@@ -179,7 +179,7 @@ class Injected {
                 if (done || !that.loading) return;
                 that.worker.postMessage({
                     type: 'load',
-                    data: value.slice(),
+                    data: value,
                 });
             });
             return promiseResult;
