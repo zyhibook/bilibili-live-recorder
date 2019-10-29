@@ -1,8 +1,11 @@
 const crx = require('puppeteer-crx');
 const path = require('path');
+const { name } = require('./package.json');
 
-const src = path.resolve(__dirname, './dist/bilibili-live-recorder');
-
-crx(src).then(result => {
-    console.log(`Packaged successfully: `, result);
+crx(path.resolve(__dirname, `./dist/${name}`)).then(result => {
+    Object.keys(result)
+        .filter(key => result[key])
+        .forEach(key => {
+            console.log(`Packaged ${key} successfully in ${result[key]}`);
+        });
 });
