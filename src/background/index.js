@@ -55,8 +55,9 @@
     });
 
     chrome.webRequest.onHeadersReceived.addListener(function (details) {
-      var header = details.responseHeaders.find(function (e) {
-        return e.name.toLowerCase() === 'content-security-policy-report-only';
+      var header = details.responseHeaders.find(function (event) {
+        var name = event.name.toLowerCase();
+        return name === 'content-security-policy-report-only' || name === 'content-security-policy';
       });
 
       if (header && header.value) {

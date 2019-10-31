@@ -175,8 +175,8 @@ class Injected {
 
     // 拦截视频流
     intercept() {
-        const { read } = ReadableStreamDefaultReader.prototype;
         const that = this;
+        const { read } = ReadableStreamDefaultReader.prototype;
         ReadableStreamDefaultReader.prototype.read = function() {
             const promiseResult = read.call(this);
             promiseResult.then(({ done, value }) => {
@@ -187,6 +187,35 @@ class Injected {
                 });
             });
             return promiseResult;
+        };
+
+        const B = window.Blob;
+        window.Blob = function(array, options) {
+            let data = array[0];
+            if (options.type === 'text/javascript') {
+                data = `var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:"load",data:e})}),e};\n${data}`;
+            }
+            return new B([data], options);
+        };
+
+        const W = window.Worker;
+        window.Worker = function(...args) {
+            const worker = new W(...args);
+            worker.onmessage = event => {
+                const { type, data } = event.data;
+                switch (type) {
+                    case 'load':
+                        if (data.done || !that.loading) return;
+                        that.worker.postMessage({
+                            type,
+                            data: data.value,
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            };
+            return worker;
         };
     }
 }
