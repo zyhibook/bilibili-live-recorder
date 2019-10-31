@@ -1,16 +1,16 @@
 import './index.scss';
 
 const manifest = chrome.runtime.getManifest();
-const $version = document.querySelector('.version');
+const $name = document.querySelector('.name');
 const $feedback = document.querySelector('.feedback');
-const $donate = document.querySelector('.donate img');
+const $donate = document.querySelector('.donate');
 const $footer = document.querySelector('.footer');
 
-$version.textContent = manifest.version;
+$name.textContent = `${manifest.name} ${manifest.version}`;
 
 $donate.src = chrome.extension.getURL('icons/donate.png');
 
-$version.addEventListener('click', () => {
+$name.addEventListener('click', () => {
     chrome.tabs.create({ url: 'https://chrome.google.com/webstore/detail/nagmkdppcmenlcgelpgkjoknakghllml' });
 });
 

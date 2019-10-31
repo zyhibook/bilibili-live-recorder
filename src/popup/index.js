@@ -2,13 +2,13 @@
     'use strict';
 
     var manifest = chrome.runtime.getManifest();
-    var $version = document.querySelector('.version');
+    var $name = document.querySelector('.name');
     var $feedback = document.querySelector('.feedback');
-    var $donate = document.querySelector('.donate img');
+    var $donate = document.querySelector('.donate');
     var $footer = document.querySelector('.footer');
-    $version.textContent = manifest.version;
+    $name.textContent = "".concat(manifest.name, " ").concat(manifest.version);
     $donate.src = chrome.extension.getURL('icons/donate.png');
-    $version.addEventListener('click', function () {
+    $name.addEventListener('click', function () {
       chrome.tabs.create({
         url: 'https://chrome.google.com/webstore/detail/nagmkdppcmenlcgelpgkjoknakghllml'
       });
