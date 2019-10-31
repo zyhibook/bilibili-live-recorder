@@ -12,8 +12,21 @@
 
 ## 支持
 
--   Bilibili 直播
--   企鹅电竞
+其实以下直播平台都支持录制，但本扩展由于不想申请过多域名权限，所以暂不打算把这些的直播平台全部加进来，假如你想添加你想要的平台可以自行添加到[manifest.json](./src/manifest.json)并打包。
+
+| 直播平台   | 域名权限                  | 内置支持           |
+| ---------- | ------------------------- | ------------------ |
+| B 站直播   | `*://live.bilibili.com/*` | :white_check_mark: |
+| 企鹅电竞   | `*://egame.qq.com/*`      | :white_check_mark: |
+| 战旗直播   | `*://*.zhanqi.tv/*`       | :white_check_mark: |
+| 龙珠直播   | `*://*.longzhu.com/*`     | :x:                |
+| CC 直播    | `*://cc.163.com/*`        | :x:                |
+| 快手直播   | `*://live.kuaishou.com/*` | :x:                |
+| 映客直播   | `*://*.inke.cn/*`         | :x:                |
+| NOW 直播   | `*://now.qq.com/*`        | :x:                |
+| 火猫直播   | `*://*.huomao.com/*`      | :x:                |
+| 来疯直播   | `*://*.laifeng.com/*`     | :x:                |
+| 爱奇艺直播 | `*://live.iqiyi.com/*`    | :x:                |
 
 ## 使用
 

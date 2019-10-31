@@ -350,7 +350,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	          if (done || !that.loading) return;
 	          that.worker.postMessage({
 	            type: 'load',
-	            data: value
+	            data: value.slice()
 	          });
 	        });
 	        return promiseResult;
@@ -361,7 +361,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	      window.Blob = function (array, options) {
 	        var data = array[0];
 
-	        if (options.type === 'text/javascript') {
+	        if (options && options.type === 'text/javascript') {
 	          data = "var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:\"blr-load\",data:e})}),e};\n".concat(data);
 	        }
 

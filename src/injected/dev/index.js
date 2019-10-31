@@ -185,7 +185,7 @@ class Injected {
                 if (done || !that.loading) return;
                 that.worker.postMessage({
                     type: 'load',
-                    data: value,
+                    data: value.slice(),
                 });
             });
             return promiseResult;
@@ -194,7 +194,7 @@ class Injected {
         const B = window.Blob;
         window.Blob = function(array, options) {
             let data = array[0];
-            if (options.type === 'text/javascript') {
+            if (options && options.type === 'text/javascript') {
                 data = `var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:"blr-load",data:e})}),e};\n${data}`;
             }
             return new B([data], options);
