@@ -27,6 +27,7 @@
 | 火猫直播   | `*://*.huomao.com/*`      | :x:                |
 | 来疯直播   | `*://*.laifeng.com/*`     | :x:                |
 | 爱奇艺直播 | `*://live.iqiyi.com/*`    | :x:                |
+| 西瓜直播   | `*://live.ixigua.com/*`   | :x:                |
 
 ## 使用
 
