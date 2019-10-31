@@ -13,8 +13,10 @@ class Injected {
             const { type, data } = event.data;
             switch (type) {
                 case 'report':
-                    this.$duration.textContent = data.duration;
-                    this.$size.textContent = data.size;
+                    if (this.$container) {
+                        this.$duration.textContent = data.duration;
+                        this.$size.textContent = data.size;
+                    }
                     break;
                 case 'download':
                     download(data, `${document.title}.flv`);
@@ -193,21 +195,22 @@ class Injected {
         window.Blob = function(array, options) {
             let data = array[0];
             if (options.type === 'text/javascript') {
-                data = `var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:"load",data:e})}),e};\n${data}`;
+                data = `var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:"blr-load",data:e})}),e};\n${data}`;
             }
             return new B([data], options);
         };
 
         const W = window.Worker;
         window.Worker = function(...args) {
+            if (args[0].slice(0, 5) === 'data:') return;
             const worker = new W(...args);
             worker.onmessage = event => {
                 const { type, data } = event.data;
                 switch (type) {
-                    case 'load':
+                    case 'blr-load':
                         if (data.done || !that.loading) return;
                         that.worker.postMessage({
-                            type,
+                            type: 'load',
                             data: data.value,
                         });
                         break;

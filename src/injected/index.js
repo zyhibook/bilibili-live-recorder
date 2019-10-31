@@ -174,8 +174,11 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	      switch (type) {
 	        case 'report':
-	          _this.$duration.textContent = data.duration;
-	          _this.$size.textContent = data.size;
+	          if (_this.$container) {
+	            _this.$duration.textContent = data.duration;
+	            _this.$size.textContent = data.size;
+	          }
+
 	          break;
 
 	        case 'download':
@@ -359,7 +362,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	        var data = array[0];
 
 	        if (options.type === 'text/javascript') {
-	          data = "var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:\"load\",data:e})}),e};\n".concat(data);
+	          data = "var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:\"blr-load\",data:e})}),e};\n".concat(data);
 	        }
 
 	        return new B([data], options);
@@ -372,6 +375,8 @@ var bilibiliLiveRecorderInjected = (function () {
 	          args[_key] = arguments[_key];
 	        }
 
+	        if (args[0].slice(0, 5) === 'data:') return;
+
 	        var worker = construct(W, args);
 
 	        worker.onmessage = function (event) {
@@ -380,10 +385,10 @@ var bilibiliLiveRecorderInjected = (function () {
 	              data = _event$data2.data;
 
 	          switch (type) {
-	            case 'load':
+	            case 'blr-load':
 	              if (data.done || !that.loading) return;
 	              that.worker.postMessage({
-	                type: type,
+	                type: 'load',
 	                data: data.value
 	              });
 	              break;
