@@ -155,9 +155,7 @@ class Flv {
                         postMessage({
                             type: 'error',
                         });
-                        reject(
-                            new Error(`bilibili-live-recorder: Prev tag size does not match in tag type: ${tagType}`),
-                        );
+                        reject(new Error(`Bilibili 录播姬: 视频流发生变化，已自动停止录制`));
                         return;
                     }
                 } else {
