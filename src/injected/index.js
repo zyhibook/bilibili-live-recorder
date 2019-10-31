@@ -153,7 +153,9 @@ var bilibiliLiveRecorderInjected = (function () {
         this.intercept();
       }
 
-      this.createUI();
+      sleep(1000).then(function () {
+        _this.createUI();
+      });
     } // 创建UI
 
 

@@ -38,7 +38,9 @@ class Injected {
             this.intercept();
         }
 
-        this.createUI();
+        sleep(1000).then(() => {
+            this.createUI();
+        });
     }
 
     // 创建UI
