@@ -54,6 +54,7 @@
         }
     });
 
+    var manifest = chrome.runtime.getManifest();
     chrome.webRequest.onHeadersReceived.addListener(function (details) {
       var header = details.responseHeaders.find(function (event) {
         var name = event.name.toLowerCase();
@@ -61,14 +62,14 @@
       });
 
       if (header && header.value) {
-        header.value = 'worker-src blob: ; ' + header.value;
+        header.value = 'worker-src blob: ;' + header.value;
       }
 
       return {
         responseHeaders: details.responseHeaders
       };
     }, {
-      urls: ['*://*.bilibili.com/*']
+      urls: manifest.content_scripts[0].matches
     }, ['blocking', 'responseHeaders']);
 
 }());

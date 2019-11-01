@@ -1,4 +1,3 @@
-// 合并数据
 function mergeBuffer(...buffers) {
     const Cons = buffers[0].constructor;
     return buffers.reduce((pre, val) => {
@@ -9,12 +8,10 @@ function mergeBuffer(...buffers) {
     }, new Cons());
 }
 
-// 读取长度
 function readBufferSum(array, uint = true) {
     return array.reduce((totle, num, index) => totle + (uint ? num : num - 128) * 256 ** (array.length - index - 1), 0);
 }
 
-// 获取时间戳
 function getTagTime(tag) {
     const ts2 = tag[4];
     const ts1 = tag[5];
@@ -23,14 +20,12 @@ function getTagTime(tag) {
     return ts0 | (ts1 << 8) | (ts2 << 16) | (ts3 << 24);
 }
 
-// 时长转时间
 function durationToTime(duration) {
     const m = String(Math.floor(duration / 60)).slice(-5);
     const s = String(duration % 60);
     return `${m.length === 1 ? `0${m}` : m}:${s.length === 1 ? `0${s}` : s}`;
 }
 
-// FLV解封装类
 class Flv {
     constructor() {
         this.index = 0;
@@ -56,12 +51,10 @@ class Flv {
         }.call(this));
     }
 
-    // 最终合成视频
     get resultData() {
         return mergeBuffer(this.header, this.scripTag, ...this.videoAndAudioTags);
     }
 
-    // 当前视频时长
     get resultSize() {
         return (
             this.header.byteLength +
@@ -72,7 +65,6 @@ class Flv {
         );
     }
 
-    // 汇报状态
     report() {
         postMessage({
             type: 'report',
@@ -83,12 +75,10 @@ class Flv {
         });
     }
 
-    // 判断数据是否足够
     readable(length) {
         return this.data.length - this.index >= length;
     }
 
-    // 按字节读取
     read(length) {
         const end = this.index + length;
         const uint8 = this.data.subarray(this.index, end);
@@ -96,7 +86,6 @@ class Flv {
         return uint8;
     }
 
-    // 加载视频流
     load(uint8) {
         this.loading = true;
         this.tasks.push(this.demuxer.bind(this, uint8));
@@ -115,7 +104,6 @@ class Flv {
         }
     }
 
-    // 数据解封装
     demuxer(uint8) {
         return new Promise((resolve, reject) => {
             if (!this.loading) {
@@ -169,17 +157,14 @@ class Flv {
                     this.scripTag = tagData;
                 } else {
                     const tagTime = getTagTime(tagData);
-                    // 取第一帧的时间为开始时间
                     if (!this.tagStartTime) {
                         this.tagStartTime = tagTime;
                     }
                     const tagDuration = tagTime - this.tagStartTime;
-                    // 前10帧内，凡是时间差大于1秒的都重新修正开始时间
                     if (this.tagLength <= 10 && tagDuration - this.resultDuration >= 1000) {
                         this.tagStartTime = tagTime;
                     }
                     this.resultDuration = tagTime - this.tagStartTime;
-                    // 每10M为一个元素，因为文件太大会引起合并时的长时间阻塞
                     const lastTagData = this.videoAndAudioTags[this.videoAndAudioTags.length - 1];
                     if (lastTagData) {
                         if (lastTagData.byteLength >= 10 * 1024 * 1024) {
@@ -202,14 +187,12 @@ class Flv {
         });
     }
 
-    // 停止解封装
     stop() {
         this.loading = false;
         clearTimeout(this.timer);
         this.report();
     }
 
-    // 下载当前视频
     download() {
         postMessage({
             type: 'download',
