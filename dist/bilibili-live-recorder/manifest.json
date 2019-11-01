@@ -4,7 +4,9 @@
     "description": "一键录制 Bilibili 直播间视频，不用错过主播的精彩时刻。",
     "manifest_version": 2,
     "background": {
-        "scripts": ["background/index.js"]
+        "scripts": [
+            "background/index.js"
+        ]
     },
     "icons": {
         "16": "icons/icon16.png",
@@ -24,11 +26,20 @@
     ],
     "content_scripts": [
         {
-            "matches": ["*://live.bilibili.com/*", "*://egame.qq.com/*", "*://*.zhanqi.tv/*"],
-            "js": ["content/index.js"],
+            "matches": [
+                "*://live.bilibili.com/*",
+                "*://egame.qq.com/*",
+                "*://*.zhanqi.tv/*"
+            ],
+            "js": [
+                "content/index.js"
+            ],
             "run_at": "document_start"
         }
     ],
-    "web_accessible_resources": ["injected/index.js", "injected/index.css"],
-    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+    "web_accessible_resources": [
+        "injected/index.js",
+        "injected/index.css"
+    ],
+    "content_security_policy": "script-src 'self'; object-src 'self'"
 }
