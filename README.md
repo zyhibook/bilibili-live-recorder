@@ -7,10 +7,6 @@
 -   [在线 chrome 网上应用商店](https://chrome.google.com/webstore/detail/nagmkdppcmenlcgelpgkjoknakghllml)
 -   [离线 dist 目录](./dist/)
 
-## 注意
-
-目前扩展处于测试阶段，不能保证所有视频都能成功录制，遇到问题提`issues`时可以把你的完整操作步骤描述出来。
-
 ## 支持
 
 目前以下全部直播平台都支持录制，但本扩展由于不想申请过多域名权限，所以暂不打算把这些的直播平台全部加进来，假如你想添加你想要的平台可以自行添加到 [manifest.json](./src/manifest.json) 并打包。
