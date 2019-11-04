@@ -1,6 +1,6 @@
+import CSP from 'csp-generator';
 import 'crx-hotreload';
 
-// 修改CSP请求头
 const manifest = chrome.runtime.getManifest();
 chrome.webRequest.onHeadersReceived.addListener(
     details => {
@@ -9,8 +9,12 @@ chrome.webRequest.onHeadersReceived.addListener(
             return name === 'content-security-policy-report-only' || name === 'content-security-policy';
         });
 
-        if (header) {
-            details.responseHeaders.splice(details.responseHeaders.indexOf(header), 1);
+        if (header && header.value) {
+            const csp = new CSP(header.value);
+            csp.append('worker-src', 'blob:');
+            csp.append('script-src', '*.baidu.com');
+            csp.append('img-src', '*.baidu.com');
+            header.value = csp.generate();
         }
 
         return { responseHeaders: details.responseHeaders };
