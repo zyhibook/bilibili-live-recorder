@@ -9,8 +9,8 @@ chrome.webRequest.onHeadersReceived.addListener(
             return name === 'content-security-policy-report-only' || name === 'content-security-policy';
         });
 
-        if (header && header.value) {
-            header.value = 'worker-src blob: ;' + header.value;
+        if (header) {
+            details.responseHeaders.splice(details.responseHeaders.indexOf(header), 1);
         }
 
         return { responseHeaders: details.responseHeaders };

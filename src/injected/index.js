@@ -209,9 +209,10 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	    sleep(1000).then(function () {
 	      _this.createUI();
-	    });
-	  } // 创建UI
 
+	      _this.analysis();
+	    });
+	  }
 
 	  createClass(Injected, [{
 	    key: "createUI",
@@ -255,8 +256,7 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	      document.body.appendChild(this.$container);
 	      this.bindEvent();
-	    } // 更改状态
-
+	    }
 	  }, {
 	    key: "changeState",
 	    value: function changeState(state) {
@@ -267,8 +267,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	          item.classList.remove('blr-active');
 	        }
 	      });
-	    } // 绑定事件
-
+	    }
 	  }, {
 	    key: "bindEvent",
 	    value: function bindEvent() {
@@ -334,8 +333,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	          _this3.storage.set('y', y);
 	        }
 	      });
-	    } // 拦截视频流
-
+	    }
 	  }, {
 	    key: "intercept",
 	    value: function intercept() {
@@ -397,6 +395,15 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	        return worker;
 	      };
+	    }
+	  }, {
+	    key: "analysis",
+	    value: function analysis() {
+	      window._hmt = window._hmt || [];
+	      var hm = document.createElement('script');
+	      hm.src = 'https://hm.baidu.com/hm.js?3c93ca28120f48d2a27889d0623cd7b7';
+	      var s = document.getElementsByTagName('script')[0];
+	      s.parentNode.insertBefore(hm, s);
 	    }
 	  }]);
 

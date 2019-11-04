@@ -42,10 +42,10 @@ class Injected {
 
         sleep(1000).then(() => {
             this.createUI();
+            this.analysis();
         });
     }
 
-    // 创建UI
     createUI() {
         if (!document.body) {
             return sleep(100).then(() => {
@@ -102,7 +102,6 @@ class Injected {
         this.bindEvent();
     }
 
-    // 更改状态
     changeState(state) {
         this.$states.forEach(item => {
             if (item.classList.contains(`blr-state-${state}`)) {
@@ -113,7 +112,6 @@ class Injected {
         });
     }
 
-    // 绑定事件
     bindEvent() {
         this.$beforeRecord.addEventListener('click', () => {
             const $video = document.querySelector('video');
@@ -175,7 +173,6 @@ class Injected {
         });
     }
 
-    // 拦截视频流
     intercept() {
         const that = this;
         const { read } = ReadableStreamDefaultReader.prototype;
@@ -220,6 +217,14 @@ class Injected {
             };
             return worker;
         };
+    }
+
+    analysis() {
+        window._hmt = window._hmt || [];
+        const hm = document.createElement('script');
+        hm.src = 'https://hm.baidu.com/hm.js?3c93ca28120f48d2a27889d0623cd7b7';
+        const s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(hm, s);
     }
 }
 
