@@ -24,6 +24,10 @@ class Injected {
                     this.worker.terminate();
                     this.$duration.textContent = '00:00';
                     this.$size.textContent = '0.00M';
+                    this.$wait.textContent = '0%';
+                    break;
+                case 'merging':
+                    this.$wait.textContent = data;
                     break;
                 case 'error':
                     this.loading = false;
@@ -60,7 +64,7 @@ class Injected {
                 <div class="blr-state blr-state-before-record blr-active">开始</div>
                 <div class="blr-state blr-state-recording">停止</div>
                 <div class="blr-state blr-state-after-record">下载</div>
-                <div class="blr-state blr-state-wait">稍等</div>
+                <div class="blr-state blr-state-wait">0%</div>
             </div>
             <div class="blr-monitors">
                 <div class="blr-monitor blr-monitor-top">
@@ -77,6 +81,7 @@ class Injected {
         this.$beforeRecord = this.$container.querySelector('.blr-state-before-record');
         this.$recording = this.$container.querySelector('.blr-state-recording');
         this.$afterRecord = this.$container.querySelector('.blr-state-after-record');
+        this.$wait = this.$container.querySelector('.blr-state-wait');
         this.$duration = this.$container.querySelector('.blr-duration');
         this.$size = this.$container.querySelector('.blr-size');
         this.$monitor = this.$container.querySelector('.blr-monitor');

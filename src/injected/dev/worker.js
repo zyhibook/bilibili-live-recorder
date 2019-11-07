@@ -52,7 +52,19 @@ class Flv {
     }
 
     get resultData() {
-        return mergeBuffer(this.header, this.scripTag, ...this.videoAndAudioTags);
+        const resultSize = this.resultSize;
+        const buffers = [this.header, this.scripTag, ...this.videoAndAudioTags];
+        const Cons = buffers[0].constructor;
+        return buffers.reduce((pre, val) => {
+            const merge = new Cons((pre.byteLength | 0) + (val.byteLength | 0));
+            merge.set(pre, 0);
+            merge.set(val, pre.byteLength | 0);
+            postMessage({
+                type: 'merging',
+                data: `${Math.floor((merge.byteLength / resultSize) * 100)}%`,
+            });
+            return merge;
+        }, new Cons());
     }
 
     get resultSize() {
