@@ -64,6 +64,7 @@ module.exports = ['background', 'popup', 'content', 'injected'].map(item => {
                             ` * (c) 2018-${new Date().getFullYear()} Harvey Zack\n` +
                             ' * Released under the MIT License.\n' +
                             ' */\n',
+                        comments: () => false,
                     },
                 }),
             isProd &&
