@@ -56,14 +56,19 @@ class Flv {
         const buffers = [this.header, this.scripTag, ...this.videoAndAudioTags];
         const Cons = buffers[0].constructor;
         return buffers.reduce((pre, val) => {
-            const merge = new Cons((pre.byteLength | 0) + (val.byteLength | 0));
-            merge.set(pre, 0);
-            merge.set(val, pre.byteLength | 0);
-            postMessage({
-                type: 'merging',
-                data: `${Math.floor((merge.byteLength / resultSize || 0) * 100)}%`,
-            });
-            return merge;
+            try {
+                const merge = new Cons((pre.byteLength | 0) + (val.byteLength | 0));
+                merge.set(pre, 0);
+                merge.set(val, pre.byteLength | 0);
+                postMessage({
+                    type: 'merging',
+                    data: `${Math.floor((merge.byteLength / resultSize || 0) * 100)}%`,
+                });
+                return merge;
+            } catch (error) {
+                console.warn(`Bilibili 录播姬: ${error.message.trim()}`);
+                return pre;
+            }
         }, new Cons());
     }
 
@@ -152,10 +157,12 @@ class Flv {
                     const prevTagSize = readBufferSum(prevTag);
                     if (prevTagSize !== tagSize + 11) {
                         this.stop();
+                        const msg = `Bilibili 录播姬: 视频流发生变化，已自动停止录制`;
                         postMessage({
                             type: 'error',
+                            data: msg,
                         });
-                        reject(new Error(`Bilibili 录播姬: 视频流发生变化，已自动停止录制`));
+                        reject(new Error(msg));
                         return;
                     }
                 } else {
