@@ -54,22 +54,29 @@ class Flv {
     get resultData() {
         const resultSize = this.resultSize;
         const buffers = [this.header, this.scripTag, ...this.videoAndAudioTags];
-        const Cons = buffers[0].constructor;
-        return buffers.reduce((pre, val) => {
+        const result = [new Uint8Array()];
+
+        for (let i = 0; i < buffers.length; i += 1) {
+            const item = buffers[i];
+            const last = result[result.length - 1];
+
             try {
-                const merge = new Cons((pre.byteLength | 0) + (val.byteLength | 0));
-                merge.set(pre, 0);
-                merge.set(val, pre.byteLength | 0);
-                postMessage({
-                    type: 'merging',
-                    data: `${Math.floor((merge.byteLength / resultSize || 0) * 100)}%`,
-                });
-                return merge;
+                result[result.length - 1] = mergeBuffer(last, item);
             } catch (error) {
-                console.warn(`Bilibili 录播姬: ${error.message.trim()}`);
-                return pre;
+                result[result.length] = item;
             }
-        }, new Cons());
+
+            const mergeSize = result.reduce((pre, val) => {
+                return pre + val.byteLength;
+            }, 0);
+
+            postMessage({
+                type: 'merging',
+                data: `${Math.floor((mergeSize.byteLength / resultSize || 0) * 100)}%`,
+            });
+        }
+
+        return result;
     }
 
     get resultSize() {
@@ -215,7 +222,7 @@ class Flv {
     download() {
         postMessage({
             type: 'download',
-            data: URL.createObjectURL(new Blob([this.resultData])),
+            data: URL.createObjectURL(new Blob(this.resultData)),
         });
     }
 }
