@@ -72,7 +72,7 @@ class Flv {
 
             postMessage({
                 type: 'merging',
-                data: `${Math.floor((mergeSize.byteLength / resultSize || 0) * 100)}%`,
+                data: `${Math.floor((mergeSize / resultSize || 0) * 100)}%`,
             });
         }
 
