@@ -1,11 +1,11 @@
 {
     "name": "bilibili-live-recorder",
-    "version": "2.0.8",
+    "version": "2.0.9",
     "description": "一键录制 Bilibili 直播间视频，不用错过主播的精彩时刻。",
     "scripts": {
         "dev": "cross-env NODE_ENV=development rollup -c -m -w",
         "build": "cross-env NODE_ENV=production rollup -c && node ./archive.js",
-        "test": "eslint src"
+        "test": "eslint src/**/dev/*.js"
     },
     "devDependencies": {
         "@babel/core": "^7.7.4",
@@ -16,7 +16,6 @@
         "autoprefixer": "^9.7.2",
         "babel-eslint": "^10.0.3",
         "cross-env": "^6.0.3",
-        "crx-hotreload": "^1.0.4",
         "cssnano": "^4.1.10",
         "eslint": "^6.7.0",
         "eslint-config-airbnb-base": "^14.0.0",
@@ -36,6 +35,7 @@
         "rollup-plugin-worker-inline": "^1.0.6"
     },
     "dependencies": {
+        "crx-hotreload": "^1.0.4",
         "csp-generator": "^1.0.2"
     }
 }

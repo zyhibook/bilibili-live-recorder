@@ -164,7 +164,7 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	    this.name = 'bilibili-live-recorder';
 	    this.storage = new Storage(this.name);
-	    this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";function _toConsumableArray(a){return _arrayWithoutHoles(a)||_iterableToArray(a)||_nonIterableSpread()}function _nonIterableSpread(){throw new TypeError(\"Invalid attempt to spread non-iterable instance\")}function _iterableToArray(a){if(Symbol.iterator in Object(a)||\"[object Arguments]\"===Object.prototype.toString.call(a))return Array.from(a)}function _arrayWithoutHoles(a){if(Array.isArray(a)){for(var b=0,c=Array(a.length);b<a.length;b++)c[b]=a[b];return c}}function _classCallCheck(a,b){if(!(a instanceof b))throw new TypeError(\"Cannot call a class as a function\")}function _defineProperties(a,b){for(var c,d=0;d<b.length;d++)c=b[d],c.enumerable=c.enumerable||!1,c.configurable=!0,\"value\"in c&&(c.writable=!0),Object.defineProperty(a,c.key,c)}function _createClass(a,b,c){return b&&_defineProperties(a.prototype,b),c&&_defineProperties(a,c),a}function mergeBuffer(){for(var a=arguments.length,b=Array(a),c=0;c<a;c++)b[c]=arguments[c];var d=b[0].constructor;return b.reduce(function(a,b){var c=new d((0|a.byteLength)+(0|b.byteLength));return c.set(a,0),c.set(b,0|a.byteLength),c},new d)}function readBufferSum(a){var b=!(1<arguments.length&&arguments[1]!==void 0)||arguments[1];return a.reduce(function(c,d,e){return c+(b?d:d-128)*Math.pow(256,a.length-e-1)},0)}function getTagTime(a){var b=a[4],c=a[5],d=a[6],e=a[7];return d|c<<8|b<<16|e<<24}function durationToTime(a){var b=(Math.floor(a/60)+\"\").slice(-5),c=a%60+\"\";return\"\".concat(1===b.length?\"0\".concat(b):b,\":\").concat(1===c.length?\"0\".concat(c):c)}var Flv=/*#__PURE__*/function(){function a(){_classCallCheck(this,a),this.index=0,this.tasks=[],this.timer=null,this.loading=!1,this.running=!1,this.tagLength=0,this.tagStartTime=0,this.resultDuration=0,this.data=new Uint8Array,this.header=new Uint8Array,this.scripTag=new Uint8Array,this.videoAndAudioTags=[],function a(){var b=this;this.timer=setTimeout(function(){b.running&&b.loading&&b.report(),a.call(b)},1e3)}.call(this)}return _createClass(a,[{key:\"report\",value:function report(){postMessage({type:\"report\",data:{duration:durationToTime(Math.floor(this.resultDuration/1e3)),size:\"\".concat((this.resultSize/1024/1024).toFixed(2).slice(-8),\"M\")}})}},{key:\"readable\",value:function readable(a){return this.data.length-this.index>=a}},{key:\"read\",value:function read(a){var b=this.index+a,c=this.data.subarray(this.index,b);return this.index=b,c}},{key:\"load\",value:function load(a){this.loading=!0,this.tasks.push(this.demuxer.bind(this,a)),this.running||function a(){var b=this,c=this.tasks.shift();c&&this.loading?(this.running=!0,c().then(function(){setTimeout(a.bind(b),0)})):this.running=!1}.call(this)}},{key:\"demuxer\",value:function demuxer(a){var b=this;return new Promise(function(c,d){if(!b.loading)return void c();for(b.data=mergeBuffer(b.data,a),!b.header.length&&b.readable(13)&&(b.header=b.read(13));b.index<b.data.length;){var e=0,f=0,g=new Uint8Array,h=b.index;if(b.readable(11))g=mergeBuffer(g,b.read(11)),f=g[0],e=readBufferSum(g.subarray(1,4));else return b.index=h,void c();if(b.readable(e+4)){g=mergeBuffer(g,b.read(e));var i=b.read(4);g=mergeBuffer(g,i);var j=readBufferSum(i);if(j!==e+11){b.stop();return postMessage({type:\"error\",data:\"Bilibili \u5F55\u64AD\u59EC: \u89C6\u9891\u6D41\u53D1\u751F\u53D8\u5316\uFF0C\u5DF2\u81EA\u52A8\u505C\u6B62\u5F55\u5236\"}),void d(new Error(\"Bilibili \u5F55\u64AD\u59EC: \u89C6\u9891\u6D41\u53D1\u751F\u53D8\u5316\uFF0C\u5DF2\u81EA\u52A8\u505C\u6B62\u5F55\u5236\"))}}else return b.index=h,void c();if(b.tagLength+=1,18===f)b.scripTag=g;else{var k=getTagTime(g);b.tagStartTime||(b.tagStartTime=k);var l=k-b.tagStartTime;10>=b.tagLength&&1e3<=l-b.resultDuration&&(b.tagStartTime=k),b.resultDuration=k-b.tagStartTime;var m=b.videoAndAudioTags[b.videoAndAudioTags.length-1];m?10485760<=m.byteLength?b.videoAndAudioTags.push(g):b.videoAndAudioTags[b.videoAndAudioTags.length-1]=mergeBuffer(m,g):b.videoAndAudioTags.push(g)}b.data=b.data.subarray(b.index),b.index=0}c()})}},{key:\"stop\",value:function stop(){this.loading=!1,clearTimeout(this.timer),this.report()}},{key:\"download\",value:function download(){postMessage({type:\"download\",data:URL.createObjectURL(new Blob(this.resultData))})}},{key:\"resultData\",get:function get(){for(var a=this.resultSize,b=[this.header,this.scripTag].concat(_toConsumableArray(this.videoAndAudioTags)),c=[new Uint8Array],d=0;d<b.length;d+=1){var e=b[d],f=c[c.length-1];try{c[c.length-1]=mergeBuffer(f,e)}catch(a){c[c.length]=e}var g=c.reduce(function(a,b){return a+b.byteLength},0);postMessage({type:\"merging\",data:\"\".concat(Math.floor(100*(g/a||0)),\"%\")})}return c}},{key:\"resultSize\",get:function get(){return this.header.byteLength+this.scripTag.byteLength+this.videoAndAudioTags.reduce(function(a,b){return a+b.byteLength},0)}}]),a}(),flv=new Flv;onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case\"load\":flv.load(d);break;case\"stop\":flv.stop();break;case\"download\":flv.download();break;default:}};"])));
+	    this.worker = new Worker(URL.createObjectURL(new Blob(["\"use strict\";function _toConsumableArray(a){return _arrayWithoutHoles(a)||_iterableToArray(a)||_nonIterableSpread()}function _nonIterableSpread(){throw new TypeError(\"Invalid attempt to spread non-iterable instance\")}function _iterableToArray(a){if(Symbol.iterator in Object(a)||\"[object Arguments]\"===Object.prototype.toString.call(a))return Array.from(a)}function _arrayWithoutHoles(a){if(Array.isArray(a)){for(var b=0,c=Array(a.length);b<a.length;b++)c[b]=a[b];return c}}function _slicedToArray(a,b){return _arrayWithHoles(a)||_iterableToArrayLimit(a,b)||_nonIterableRest()}function _nonIterableRest(){throw new TypeError(\"Invalid attempt to destructure non-iterable instance\")}function _iterableToArrayLimit(a,b){if(Symbol.iterator in Object(a)||\"[object Arguments]\"===Object.prototype.toString.call(a)){var c=[],d=!0,e=!1,f=void 0;try{for(var g,h=a[Symbol.iterator]();!(d=(g=h.next()).done)&&(c.push(g.value),!(b&&c.length===b));d=!0);}catch(a){e=!0,f=a}finally{try{d||null==h[\"return\"]||h[\"return\"]()}finally{if(e)throw f}}return c}}function _arrayWithHoles(a){if(Array.isArray(a))return a}function _classCallCheck(a,b){if(!(a instanceof b))throw new TypeError(\"Cannot call a class as a function\")}function _defineProperties(a,b){for(var c,d=0;d<b.length;d++)c=b[d],c.enumerable=c.enumerable||!1,c.configurable=!0,\"value\"in c&&(c.writable=!0),Object.defineProperty(a,c.key,c)}function _createClass(a,b,c){return b&&_defineProperties(a.prototype,b),c&&_defineProperties(a,c),a}function mergeBuffer(){for(var a=arguments.length,b=Array(a),c=0;c<a;c++)b[c]=arguments[c];var d=b[0].constructor;return b.reduce(function(a,b){var c=new d((0|a.byteLength)+(0|b.byteLength));return c.set(a,0),c.set(b,0|a.byteLength),c},new d)}function readBufferSum(a){var b=!(1<arguments.length&&arguments[1]!==void 0)||arguments[1];return a.reduce(function(c,d,e){return c+(b?d:d-128)*Math.pow(256,a.length-e-1)},0)}function getTagTime(a){var b=a[4],c=a[5],d=a[6],e=a[7];return d|c<<8|b<<16|e<<24}function durationToTime(a){var b=(Math.floor(a/60)+\"\").slice(-5),c=a%60+\"\";return\"\".concat(1===b.length?\"0\".concat(b):b,\":\").concat(1===c.length?\"0\".concat(c):c)}var Flv=/*#__PURE__*/function(){function a(){_classCallCheck(this,a),this.index=0,this.tasks=[],this.timer=null,this.loading=!1,this.running=!1,this.tagLength=0,this.tagStartTime=0,this.resultDuration=0,this.data=new Uint8Array,this.header=new Uint8Array,this.scripTag=new Uint8Array,this.videoAndAudioTags=[],function a(){var b=this;this.timer=setTimeout(function(){b.running&&b.loading&&b.report(),a.call(b)},1e3)}.call(this)}return _createClass(a,[{key:\"report\",value:function report(){postMessage({type:\"report\",data:{duration:durationToTime(Math.floor(this.resultDuration/1e3)),size:\"\".concat((this.resultSize/1024/1024).toFixed(2).slice(-8),\"M\")}})}},{key:\"readable\",value:function readable(a){return this.data.length-this.index>=a}},{key:\"read\",value:function read(a){var b=this.index+a,c=this.data.subarray(this.index,b);return this.index=b,c}},{key:\"load\",value:function load(a){this.loading=!0,this.tasks.push(this.demuxer.bind(this,a)),this.running||function a(){var b=this,c=this.tasks.shift();c&&this.loading?(this.running=!0,c().then(function(){setTimeout(a.bind(b),0)})):this.running=!1}.call(this)}},{key:\"demuxer\",value:function demuxer(a){var b=this;return new Promise(function(c,d){if(!b.loading)return void c();for(b.data=mergeBuffer(b.data,a),!b.header.length&&b.readable(13)&&(b.header=b.read(13));b.index<b.data.length;){var e=0,f=0,g=new Uint8Array,h=b.index;if(b.readable(11)){g=mergeBuffer(g,b.read(11));var i=g,j=_slicedToArray(i,1);f=j[0],e=readBufferSum(g.subarray(1,4))}else return b.index=h,void c();if(b.readable(e+4)){g=mergeBuffer(g,b.read(e));var k=b.read(4);g=mergeBuffer(g,k);var l=readBufferSum(k);if(l!==e+11){b.stop();return postMessage({type:\"error\",data:\"Bilibili \u5F55\u64AD\u59EC: \u89C6\u9891\u6D41\u53D1\u751F\u53D8\u5316\uFF0C\u5DF2\u81EA\u52A8\u505C\u6B62\u5F55\u5236\"}),void d(new Error(\"Bilibili \u5F55\u64AD\u59EC: \u89C6\u9891\u6D41\u53D1\u751F\u53D8\u5316\uFF0C\u5DF2\u81EA\u52A8\u505C\u6B62\u5F55\u5236\"))}}else return b.index=h,void c();if(b.tagLength+=1,18===f)b.scripTag=g;else{var m=getTagTime(g);b.tagStartTime||(b.tagStartTime=m);var n=m-b.tagStartTime;10>=b.tagLength&&1e3<=n-b.resultDuration&&(b.tagStartTime=m),b.resultDuration=m-b.tagStartTime;var o=b.videoAndAudioTags[b.videoAndAudioTags.length-1];o?10485760<=o.byteLength?b.videoAndAudioTags.push(g):b.videoAndAudioTags[b.videoAndAudioTags.length-1]=mergeBuffer(o,g):b.videoAndAudioTags.push(g)}b.data=b.data.subarray(b.index),b.index=0}c()})}},{key:\"stop\",value:function stop(){this.loading=!1,clearTimeout(this.timer),this.report()}},{key:\"download\",value:function download(){postMessage({type:\"download\",data:URL.createObjectURL(new Blob(this.resultData))})}},{key:\"resultData\",get:function get(){for(var a=this.resultSize,b=[this.header,this.scripTag].concat(_toConsumableArray(this.videoAndAudioTags)),c=[new Uint8Array],d=0;d<b.length;d+=1){var e=b[d],f=c[c.length-1];try{c[c.length-1]=mergeBuffer(f,e)}catch(a){c[c.length]=e}var g=c.reduce(function(a,b){return a+b.byteLength},0);postMessage({type:\"merging\",data:\"\".concat(Math.floor(100*(g/a||0)),\"%\")})}return c}},{key:\"resultSize\",get:function get(){return this.header.byteLength+this.scripTag.byteLength+this.videoAndAudioTags.reduce(function(a,b){return a+b.byteLength},0)}}]),a}(),flv=new Flv;onmessage=function onmessage(a){var b=a.data,c=b.type,d=b.data;switch(c){case\"load\":flv.load(d);break;case\"stop\":flv.stop();break;case\"download\":flv.download();break;default:}};"])));
 	    this.loading = false;
 
 	    this.worker.onmessage = function (event) {
@@ -206,8 +206,8 @@ var bilibiliLiveRecorderInjected = (function () {
 	      }
 	    };
 
-	    if (this.storage.get(location.href)) {
-	      this.storage.del(location.href);
+	    if (this.storage.get(window.location.href)) {
+	      this.storage.del(window.location.href);
 	      this.loading = true;
 	      this.intercept();
 	    }
@@ -244,7 +244,7 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	      if (this.loading) {
 	        this.changeState('recording');
-	      } else if (location.href.includes('blr')) {
+	      } else if (window.location.href.includes('blr')) {
 	        this.storage.clean();
 	        this.$container.classList.add('blr-focus');
 	        sleep(10000).then(function () {
@@ -262,6 +262,7 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	      document.body.appendChild(this.$container);
 	      this.bindEvent();
+	      return this.$container;
 	    }
 	  }, {
 	    key: "changeState",
@@ -283,9 +284,9 @@ var bilibiliLiveRecorderInjected = (function () {
 	        var $video = document.querySelector('video');
 
 	        if ($video) {
-	          _this3.storage.set(location.href, Date.now());
+	          _this3.storage.set(window.location.href, Date.now());
 
-	          location.reload();
+	          window.location.reload();
 	        }
 	      });
 	      this.$recording.addEventListener('click', function () {
@@ -311,7 +312,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	      var lastPageY = 0;
 	      var lastPlayerLeft = 0;
 	      var lastPlayerTop = 0;
-	      this.$monitor.addEventListener('mousedown', function () {
+	      this.$monitor.addEventListener('mousedown', function (event) {
 	        isDroging = true;
 	        lastPageX = event.pageX;
 	        lastPageY = event.pageY;
@@ -325,7 +326,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	          _this3.$container.style.transform = "translate(".concat(x, "px, ").concat(y, "px)");
 	        }
 	      });
-	      document.addEventListener('mouseup', function () {
+	      document.addEventListener('mouseup', function (event) {
 	        if (isDroging) {
 	          isDroging = false;
 	          _this3.$container.style.transform = 'translate(0, 0)';
@@ -344,9 +345,9 @@ var bilibiliLiveRecorderInjected = (function () {
 	    key: "intercept",
 	    value: function intercept() {
 	      var that = this;
-	      var read = ReadableStreamDefaultReader.prototype.read;
+	      var read = window.ReadableStreamDefaultReader.prototype.read;
 
-	      ReadableStreamDefaultReader.prototype.read = function () {
+	      window.ReadableStreamDefaultReader.prototype.read = function f() {
 	        var promiseResult = read.call(this);
 	        promiseResult.then(function (_ref) {
 	          var done = _ref.done,
@@ -362,7 +363,7 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	      var B = window.Blob;
 
-	      window.Blob = function (array, options) {
+	      window.Blob = function f(array, options) {
 	        var data = array[0];
 
 	        if (options && options.type === 'text/javascript') {
@@ -374,14 +375,14 @@ var bilibiliLiveRecorderInjected = (function () {
 
 	      var W = window.Worker;
 
-	      window.Worker = function () {
+	      window.Worker = function f() {
 	        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
 	          args[_key] = arguments[_key];
 	        }
 
-	        if (args[0].slice(0, 5) === 'data:') return;
-
 	        var worker = construct(W, args);
+
+	        if (args[0].slice(0, 5) === 'data:') return worker;
 
 	        worker.onmessage = function (event) {
 	          var _event$data2 = event.data,
@@ -405,6 +406,7 @@ var bilibiliLiveRecorderInjected = (function () {
 	  }, {
 	    key: "analysis",
 	    value: function analysis() {
+	      // eslint-disable-next-line
 	      window._hmt = window._hmt || [];
 	      var hm = document.createElement('script');
 	      hm.src = 'https://hm.baidu.com/hm.js?3c93ca28120f48d2a27889d0623cd7b7';

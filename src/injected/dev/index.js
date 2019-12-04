@@ -38,8 +38,8 @@ class Injected {
             }
         };
 
-        if (this.storage.get(location.href)) {
-            this.storage.del(location.href);
+        if (this.storage.get(window.location.href)) {
+            this.storage.del(window.location.href);
             this.loading = true;
             this.intercept();
         }
@@ -88,7 +88,7 @@ class Injected {
 
         if (this.loading) {
             this.changeState('recording');
-        } else if (location.href.includes('blr')) {
+        } else if (window.location.href.includes('blr')) {
             this.storage.clean();
             this.$container.classList.add('blr-focus');
             sleep(10000).then(() => {
@@ -105,6 +105,7 @@ class Injected {
 
         document.body.appendChild(this.$container);
         this.bindEvent();
+        return this.$container;
     }
 
     changeState(state) {
@@ -121,8 +122,8 @@ class Injected {
         this.$beforeRecord.addEventListener('click', () => {
             const $video = document.querySelector('video');
             if ($video) {
-                this.storage.set(location.href, Date.now());
-                location.reload();
+                this.storage.set(window.location.href, Date.now());
+                window.location.reload();
             }
         });
 
@@ -148,7 +149,7 @@ class Injected {
         let lastPlayerLeft = 0;
         let lastPlayerTop = 0;
 
-        this.$monitor.addEventListener('mousedown', () => {
+        this.$monitor.addEventListener('mousedown', event => {
             isDroging = true;
             lastPageX = event.pageX;
             lastPageY = event.pageY;
@@ -164,7 +165,7 @@ class Injected {
             }
         });
 
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('mouseup', event => {
             if (isDroging) {
                 isDroging = false;
                 this.$container.style.transform = 'translate(0, 0)';
@@ -180,8 +181,8 @@ class Injected {
 
     intercept() {
         const that = this;
-        const { read } = ReadableStreamDefaultReader.prototype;
-        ReadableStreamDefaultReader.prototype.read = function() {
+        const { read } = window.ReadableStreamDefaultReader.prototype;
+        window.ReadableStreamDefaultReader.prototype.read = function f() {
             const promiseResult = read.call(this);
             promiseResult.then(({ done, value }) => {
                 if (done || !that.loading) return;
@@ -194,7 +195,7 @@ class Injected {
         };
 
         const B = window.Blob;
-        window.Blob = function(array, options) {
+        window.Blob = function f(array, options) {
             let data = array[0];
             if (options && options.type === 'text/javascript') {
                 data = `var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:"blr-load",data:e})}),e};\n${data}`;
@@ -203,9 +204,9 @@ class Injected {
         };
 
         const W = window.Worker;
-        window.Worker = function(...args) {
-            if (args[0].slice(0, 5) === 'data:') return;
+        window.Worker = function f(...args) {
             const worker = new W(...args);
+            if (args[0].slice(0, 5) === 'data:') return worker;
             worker.onmessage = event => {
                 const { type, data } = event.data;
                 switch (type) {
@@ -225,6 +226,7 @@ class Injected {
     }
 
     analysis() {
+        // eslint-disable-next-line
         window._hmt = window._hmt || [];
         const hm = document.createElement('script');
         hm.src = 'https://hm.baidu.com/hm.js?3c93ca28120f48d2a27889d0623cd7b7';
