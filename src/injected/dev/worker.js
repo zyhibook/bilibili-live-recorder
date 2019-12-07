@@ -52,7 +52,7 @@ class Flv {
     }
 
     get resultData() {
-        const resultSize = this.resultSize;
+        const { resultSize } = this;
         const buffers = [this.header, this.scripTag, ...this.videoAndAudioTags];
         const result = [new Uint8Array()];
 
@@ -149,7 +149,7 @@ class Flv {
 
                 if (this.readable(11)) {
                     tagData = mergeBuffer(tagData, this.read(11));
-                    tagType = tagData[0];
+                    [tagType] = tagData;
                     tagSize = readBufferSum(tagData.subarray(1, 4));
                 } else {
                     this.index = restIndex;
