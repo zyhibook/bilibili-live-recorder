@@ -1,6 +1,6 @@
 /*!
- * bilibili-live-recorder v2.0.8
- * Github: undefined
+ * bilibili-live-recorder v2.0.9
+ * Github: https://github.com/zhw2590582/bilibili-live-recorder
  * (c) 2018-2019 Harvey Zack
  * Released under the MIT License.
  */
