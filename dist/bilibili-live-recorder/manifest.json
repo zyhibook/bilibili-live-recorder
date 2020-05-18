@@ -1,41 +1,25 @@
 {
     "name": "Bilibili 录播姬",
-    "version": "2.0.9",
+    "version": "2.1.3",
     "description": "一键录制 Bilibili 直播间视频，不用错过主播的精彩时刻。",
     "manifest_version": 2,
     "background": {
-        "scripts": [
-            "background/index.js"
-        ]
+        "scripts": ["background/index.js"]
     },
     "icons": {
         "16": "icons/icon16.png",
         "48": "icons/icon48.png",
         "128": "icons/icon128.png"
     },
-    "browser_action": {
-        "default_popup": "popup/index.html"
-    },
-    "permissions": [
-        "tabs",
-        "webRequest",
-        "webRequestBlocking",
-        "*://live.bilibili.com/*"
-    ],
+    "browser_action": {},
+    "permissions": ["*://*.bilibili.com/*"],
     "content_scripts": [
         {
-            "matches": [
-                "*://live.bilibili.com/*"
-            ],
-            "js": [
-                "content/index.js"
-            ],
-            "run_at": "document_start"
+            "matches": ["*://*.bilibili.com/*"],
+            "js": ["content/index.js"],
+            "all_frames": true
         }
     ],
-    "web_accessible_resources": [
-        "injected/index.js",
-        "injected/index.css"
-    ],
-    "content_security_policy": "script-src 'self'; object-src 'self'"
+    "web_accessible_resources": ["injected/index.js", "injected/index.css"],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

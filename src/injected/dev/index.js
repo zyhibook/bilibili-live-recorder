@@ -1,64 +1,70 @@
 import './index.scss';
-import { sleep, download } from '../../share';
-import Storage from '../../share/storage';
 
 class Injected {
     constructor() {
-        this.name = 'bilibili-live-recorder';
-        this.storage = new Storage(this.name);
-        this.worker = new Worker('./worker.js');
-        this.loading = false;
-
-        this.worker.onmessage = event => {
-            const { type, data } = event.data;
-            switch (type) {
-                case 'report':
-                    if (this.$container) {
-                        this.$duration.textContent = data.duration;
-                        this.$size.textContent = data.size;
-                    }
-                    break;
-                case 'download':
-                    download(data, `${document.title}.flv`);
-                    this.changeState('before-record');
-                    this.worker.terminate();
-                    this.$duration.textContent = '00:00';
-                    this.$size.textContent = '0.00M';
-                    this.$wait.textContent = '0%';
-                    break;
-                case 'merging':
-                    this.$wait.textContent = data;
-                    break;
-                case 'error':
-                    this.loading = false;
-                    this.changeState('after-record');
-                    break;
-                default:
-                    break;
-            }
-        };
-
-        if (this.storage.get(window.location.href)) {
-            this.storage.del(window.location.href);
-            this.loading = true;
-            this.intercept();
-        }
-
-        sleep(1000).then(() => {
+        this.blobs = [];
+        this.src = '';
+        this.timer = null;
+        this.video = null;
+        this.stream = null;
+        this.mediaRecorder = null;
+        if (/^https?:\/\/live/i.test(window.location.href)) {
             this.createUI();
-            this.analysis();
+            this.bindEvent();
+        }
+    }
+
+    static get options() {
+        return {
+            audioBitsPerSecond: 128000,
+            videoBitsPerSecond: 5000000,
+            mimeType: 'video/webm; codecs="vp8, opus"',
+        };
+    }
+
+    get size() {
+        return this.blobs.reduce((size, item) => size + item.size, 0);
+    }
+
+    log(msg) {
+        throw new Error(`录播姬 --> ${msg}`);
+    }
+
+    durationToTime(duration) {
+        const m = String(Math.floor(duration / 60)).slice(-5);
+        const s = String(duration % 60);
+        return `${m.length === 1 ? `0${m}` : m}:${s.length === 1 ? `0${s}` : s}`;
+    }
+
+    mergeBlobs(blobs = []) {
+        const { size } = this;
+        let result = new Blob([]);
+
+        const tasks = blobs.map((blob) => () => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    result = new Blob([result, blob]);
+                    this.$wait.textContent = `${Math.floor((result.size / size || 0) * 100)}%`;
+                    resolve();
+                }, 0);
+            });
+        });
+
+        return new Promise((resolve) => {
+            (function loop() {
+                const task = tasks.shift();
+                if (task) {
+                    task().then(loop);
+                } else {
+                    resolve(result);
+                }
+            })();
         });
     }
 
     createUI() {
-        if (!document.body) {
-            return sleep(100).then(() => {
-                return this.createUI();
-            });
-        }
-
         this.$container = document.createElement('div');
-        this.$container.classList.add(this.name);
+        this.$container.classList.add('bilibili-live-recorder');
         this.$container.innerHTML = `
             <div class="blr-states">
                 <div class="blr-state blr-state-before-record blr-active">开始</div>
@@ -77,6 +83,7 @@ class Injected {
                 </div>
             </div>
         `;
+
         this.$states = Array.from(this.$container.querySelectorAll('.blr-state'));
         this.$beforeRecord = this.$container.querySelector('.blr-state-before-record');
         this.$recording = this.$container.querySelector('.blr-state-recording');
@@ -85,62 +92,31 @@ class Injected {
         this.$duration = this.$container.querySelector('.blr-duration');
         this.$size = this.$container.querySelector('.blr-size');
         this.$monitor = this.$container.querySelector('.blr-monitor');
-
-        if (this.loading) {
-            this.changeState('recording');
-        } else if (window.location.href.includes('blr')) {
-            this.storage.clean();
-            this.$container.classList.add('blr-focus');
-            sleep(10000).then(() => {
-                this.$container.classList.remove('blr-focus');
-            });
-        }
-
-        const x = this.storage.get('x');
-        const y = this.storage.get('y');
-        if (x && y) {
-            this.$container.style.left = `${x}px`;
-            this.$container.style.top = `${y}px`;
-        }
-
+        this.$container.classList.add('blr-focus');
         document.body.appendChild(this.$container);
-        this.bindEvent();
-        return this.$container;
-    }
 
-    changeState(state) {
-        this.$states.forEach(item => {
-            if (item.classList.contains(`blr-state-${state}`)) {
-                item.classList.add('blr-active');
-            } else {
-                item.classList.remove('blr-active');
-            }
-        });
+        setTimeout(() => {
+            this.$container.classList.remove('blr-focus');
+        }, 3000);
     }
 
     bindEvent() {
         this.$beforeRecord.addEventListener('click', () => {
-            const $video = document.querySelector('video');
-            if ($video) {
-                this.storage.set(window.location.href, Date.now());
-                window.location.reload();
-            }
+            this.start();
         });
 
         this.$recording.addEventListener('click', () => {
-            this.loading = false;
-            this.changeState('after-record');
-            this.worker.postMessage({
-                type: 'stop',
-            });
+            this.stop();
         });
 
         this.$afterRecord.addEventListener('click', () => {
-            this.loading = false;
-            this.changeState('wait');
-            this.worker.postMessage({
-                type: 'download',
-            });
+            if (this.blobs.length) {
+                this.download().then(() => {
+                    this.reset();
+                });
+            } else {
+                this.reset();
+            }
         });
 
         let isDroging = false;
@@ -149,7 +125,7 @@ class Injected {
         let lastPlayerLeft = 0;
         let lastPlayerTop = 0;
 
-        this.$monitor.addEventListener('mousedown', event => {
+        this.$monitor.addEventListener('mousedown', (event) => {
             isDroging = true;
             lastPageX = event.pageX;
             lastPageY = event.pageY;
@@ -157,7 +133,7 @@ class Injected {
             lastPlayerTop = this.$container.offsetTop;
         });
 
-        document.addEventListener('mousemove', event => {
+        document.addEventListener('mousemove', (event) => {
             if (isDroging) {
                 const x = event.pageX - lastPageX;
                 const y = event.pageY - lastPageY;
@@ -165,7 +141,7 @@ class Injected {
             }
         });
 
-        document.addEventListener('mouseup', event => {
+        document.addEventListener('mouseup', (event) => {
             if (isDroging) {
                 isDroging = false;
                 this.$container.style.transform = 'translate(0, 0)';
@@ -173,65 +149,103 @@ class Injected {
                 const y = lastPlayerTop + event.pageY - lastPageY;
                 this.$container.style.left = `${x}px`;
                 this.$container.style.top = `${y}px`;
-                this.storage.set('x', x);
-                this.storage.set('y', y);
             }
         });
     }
 
-    intercept() {
-        const that = this;
-        const { read } = window.ReadableStreamDefaultReader.prototype;
-        window.ReadableStreamDefaultReader.prototype.read = function f() {
-            const promiseResult = read.call(this);
-            promiseResult.then(({ done, value }) => {
-                if (done || !that.loading) return;
-                that.worker.postMessage({
-                    type: 'load',
-                    data: value,
-                });
-            });
-            return promiseResult;
-        };
-
-        const B = window.Blob;
-        window.Blob = function f(array, options) {
-            let data = array[0];
-            if (options && options.type === 'text/javascript') {
-                data = `var read=ReadableStreamDefaultReader.prototype.read;ReadableStreamDefaultReader.prototype.read=function(){var e=read.call(this);return e.then(function(e){postMessage({type:"blr-load",data:e})}),e};\n${data}`;
-            }
-            return new B([data], options);
-        };
-
-        const W = window.Worker;
-        window.Worker = function f(...args) {
-            const worker = new W(...args);
-            if (args[0].slice(0, 5) === 'data:') return worker;
-            worker.onmessage = event => {
-                const { type, data } = event.data;
-                switch (type) {
-                    case 'blr-load':
-                        if (data.done || !that.loading) return;
-                        that.worker.postMessage({
-                            type: 'load',
-                            data: data.value,
-                        });
-                        break;
-                    default:
-                        break;
+    start() {
+        clearInterval(this.timer);
+        if (this.mediaRecorder) this.mediaRecorder.stop();
+        const videos = Array.from(document.querySelectorAll('video'));
+        if (videos.length) {
+            this.video = videos.find((item) => item.captureStream);
+            if (this.video) {
+                try {
+                    this.src = this.video.src;
+                    this.video.crossOrigin = 'anonymous';
+                    this.stream = this.video.captureStream();
+                    this.changeState('recording');
+                    if (MediaRecorder && MediaRecorder.isTypeSupported(Injected.options.mimeType)) {
+                        this.mediaRecorder = new MediaRecorder(this.stream, Injected.options);
+                        this.mediaRecorder.ondataavailable = (event) => {
+                            this.blobs.push(event.data);
+                            const size = this.size / 1024 / 1024;
+                            this.$size.textContent = `${size.toFixed(2).slice(-8)}M`;
+                            this.$duration.textContent = this.durationToTime(
+                                this.blobs.filter((item) => item.size > 1024).length,
+                            );
+                        };
+                        this.mediaRecorder.start(1000);
+                        this.timer = setInterval(() => {
+                            if (this.video && this.video.src && this.src !== this.video.src) {
+                                if (this.blobs.length) {
+                                    this.start();
+                                } else {
+                                    this.stop();
+                                }
+                            }
+                        }, 1000);
+                    } else {
+                        this.reset();
+                        this.log(`不支持录制格式：${Injected.options.mimeType}`);
+                    }
+                } catch (error) {
+                    this.reset();
+                    this.log(`录制视频流失败：${error.message.trim()}`);
                 }
-            };
-            return worker;
-        };
+            } else {
+                this.reset();
+                this.log('未发现视频流');
+            }
+        } else {
+            this.reset();
+            this.log('未发现视频元素');
+        }
     }
 
-    analysis() {
-        // eslint-disable-next-line
-        window._hmt = window._hmt || [];
-        const hm = document.createElement('script');
-        hm.src = 'https://hm.baidu.com/hm.js?3c93ca28120f48d2a27889d0623cd7b7';
-        const s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(hm, s);
+    stop() {
+        clearInterval(this.timer);
+        this.changeState('after-record');
+        if (this.mediaRecorder) {
+            this.mediaRecorder.stop();
+        }
+    }
+
+    download() {
+        this.changeState('wait');
+        return this.mergeBlobs(this.blobs).then((blob) => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${document.title || Date.now()}.webm`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
+    reset() {
+        clearInterval(this.timer);
+        this.changeState('before-record');
+        this.blobs = [];
+        this.src = '';
+        this.timer = null;
+        this.video = null;
+        this.stream = null;
+        this.mediaRecorder = null;
+        this.$duration.textContent = '00:00';
+        this.$size.textContent = '0.00M';
+        this.$wait.textContent = '0%';
+    }
+
+    changeState(state) {
+        this.$states.forEach((item) => {
+            if (item.classList.contains(`blr-state-${state}`)) {
+                item.classList.add('blr-active');
+            } else {
+                item.classList.remove('blr-active');
+            }
+        });
     }
 }
 
