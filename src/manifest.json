@@ -4,7 +4,9 @@
     "description": "一键录制 Bilibili 直播间视频，不用错过主播的精彩时刻。",
     "manifest_version": 2,
     "background": {
-        "scripts": ["background/index.js"]
+        "scripts": [
+            "background/index.js"
+        ]
     },
     "icons": {
         "16": "icons/icon16.png",
@@ -12,14 +14,23 @@
         "128": "icons/icon128.png"
     },
     "browser_action": {},
-    "permissions": ["*://*.bilibili.com/*"],
+    "permissions": [
+        "*://*.bilibili.com/*"
+    ],
     "content_scripts": [
         {
-            "matches": ["*://*.bilibili.com/*"],
-            "js": ["content/index.js"],
+            "matches": [
+                "*://*.bilibili.com/*"
+            ],
+            "js": [
+                "content/index.js"
+            ],
             "all_frames": true
         }
     ],
-    "web_accessible_resources": ["injected/index.js", "injected/index.css"],
+    "web_accessible_resources": [
+        "injected/index.js",
+        "injected/index.css"
+    ],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
